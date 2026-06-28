@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wealthspring CEO Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f9f8f6;
+            color: #0b0b0b;
+        }
+        
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e5e3e0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #185fa5;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #52514e;
+        }
+        
+        .navbar-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e6f1fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #185fa5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #0b0b0b;
+        }
+        
+        .alert-banner {
+            background: #fbeaea;
+            border-left: 4px solid #d03b3b;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d03b3b;
+            margin-bottom: 4px;
+        }
+        
+        .alert-text {
+            font-size: 13px;
+            color: #a32d2d;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e5e3e0;
+        }
+        
+        .tab-button {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #52514e;
+            border-radius: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .tab-button:hover {
+            background: #f9f8f6;
+        }
+        
+        .tab-button.active {
+            background: #e6f1fb;
+            color: #185fa5;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .kpi-card {
+            background: white;
+            border: 1px solid #e5e3e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        
+        .kpi-card:hover {
+            border-color: #185fa5;
+            box-shadow: 0 2px 8px rgba(24, 95, 165, 0.1);
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: #898781;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0b0b0b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-green { background: #0ca30c; }
+        .status-yellow { background: #fab219; }
+        .status-red { background: #d03b3b; }
+        
+        .kpi-target {
+            font-size: 12px;
+            color: #898781;
+        }
+        
+        .kpi-change {
+            font-size: 12px;
+            color: #0ca30c;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        
+        .section {
+            background: white;
+            border: 1px solid #e5e3e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #0b0b0b;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-bottom: 24px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #f9f8f6;
+            border-bottom: 1px solid #e5e3e0;
+            font-weight: 600;
+            font-size: 13px;
+            color: #52514e;
+        }
+        
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e5e3e0;
+            font-size: 13px;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: #f9f8f6;
+        }
+        
+        .progress-bar {
+            display: inline-block;
+            height: 6px;
+            background: #185fa5;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-on-track {
+            background: #e6f5eb;
+            color: #0ca30c;
+        }
+        
+        .status-at-risk {
+            background: #fef3e6;
+            color: #8b5e00;
+        }
+        
+        .status-critical {
+            background: #fbeaea;
+            color: #d03b3b;
+        }
+        
+        .status-in-progress {
+            background: #e6f1fb;
+            color: #185fa5;
+        }
+        
+        .action-link {
+            color: #185fa5;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 12px;
+            }
+            
+            .page-title {
+                font-size: 22px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-title">🏛️ Wealthspring CEO Dashboard</div>
+        <div class="navbar-user">
+            <div class="navbar-user-avatar">F</div>
+            <div>
+                <div style="font-weight: 500;">Felipe</div>
+                <div style="font-size: 11px; color: #898781;">CEO • Last updated: Now</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">Executive Dashboard</div>
+
+        <div class="alert-banner">
+            <div class="alert-title">⚠️ CEO Attention Required</div>
+            <div class="alert-text">2 clients flagged for retention risk • 2 quarterly rocks at risk • Monitor cash runway (8.2 months)</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(event, 'overview')">📊 Overview</button>
+            <button class="tab-button" onclick="switchTab(event, 'growth')">📈 Growth</button>
+            <button class="tab-button" onclick="switchTab(event, 'profitability')">💰 Profitability</button>
+            <button class="tab-button" onclick="switchTab(event, 'clients')">👥 Clients</button>
+            <button class="tab-button" onclick="switchTab(event, 'team')">👔 Team</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Monthly Revenue</div>
+                    <div class="kpi-value">
+                        $30.8K
+                        <span class="status-dot status-yellow"></span>
+                    </div>
+                    <div class="kpi-target">Target: $27.5K</div>
+                    <div class="kpi-change">↑ +12% vs target</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Monthly Recurring Revenue</div>
+                    <div class="kpi-value">
+                        $18.5K
+                        <span class="status-dot status-green"></span>
+                    </div>
+                    <div class="kpi-target">Core revenue stream</div>
+                    <div class="kpi-change">↑ +8% vs last month</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Net Profit Margin</div>
+                    <div class="kpi-value">
+                        22%
+                        <span class="status-dot status-yellow"></span>
+                    </div>
+                    <div class="kpi-target">Target: 25%</div>
+                    <div class="kpi-change">↑ +2% improvement</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Cash Balance</div>
+                    <div class="kpi-value">
+                        $125K
+                        <span class="status-dot status-green"></span>
+                    </div>
+                    <div class="kpi-target">Runway: 8.2 months</div>
+                    <div class="kpi-change">Healthy position</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Client Retention</div>
+                    <div class="kpi-value">
+                        94%
+                        <span class="status-dot status-green"></span>
+                    </div>
+                    <div class="kpi-target">Target: 95%</div>
+                    <div class="kpi-change">Strong retention</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">At-Risk Clients</div>
+                    <div class="kpi-value">
+                        2
+                        <span class="status-dot status-red"></span>
+                    </div>
+                    <div class="kpi-target">Action needed</div>
+                    <div class="kpi-change">↑ Follow up required</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Team Utilization</div>
+                    <div class="kpi-value">
+                        87%
+                        <span class="status-dot status-green"></span>
+                    </div>
+                    <div class="kpi-target">Optimal: 80-90%</div>
+                    <div class="kpi-change">Excellent capacity</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Quarterly Rocks</div>
+                    <div class="kpi-value">
+                        8/10
+                        <span class="status-dot status-yellow"></span>
+                    </div>
+                    <div class="kpi-target">80% progress</div>
+                    <div class="kpi-change">On schedule</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📈 Revenue Trend (Last 12 Months)</div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚠️ At-Risk Clients</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Health Score</th>
+                            <th>Churn Risk</th>
+                            <th>Last Activity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TechStart Inc</strong></td>
+                            <td><span style="color: #d03b3b; font-weight: 600;">42/100</span></td>
+                            <td><span class="status-badge status-critical">78%</span></td>
+                            <td>3 weeks ago</td>
+                            <td><span class="action-link">Follow up →</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GrowthLabs</strong></td>
+                            <td><span style="color: #fab219; font-weight: 600;">58/100</span></td>
+                            <td><span class="status-badge status-at-risk">65%</span></td>
+                            <td>1 week ago</td>
+                            <td><span class="action-link">Follow up →</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🎯 Quarterly Rocks Progress (Q2 2025)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rock</th>
+                            <th>Owner</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Launch advisory dashboard</strong></td>
+                            <td>Ricardo</td>
+                            <td><span class="progress-bar" style="width: 85px;"></span>85%</td>
+                            <td><span class="status-badge status-in-progress">In Progress</span></td>
+                            <td>June 30</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Acquire 20 new clients</strong></td>
+                            <td>Felipe</td>
+                            <td><span class="progress-bar" style="width: 65px;"></span>65%</td>
+                            <td><span class="status-badge status-at-risk">At Risk</span></td>
+                            <td>June 30</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Implement Profit First system</strong></td>
+                            <td>Claudia</td>
+                            <td><span class="progress-bar" style="width: 90px;"></span>90%</td>
+                            <td><span class="status-badge status-on-track">On Track</span></td>
+                            <td>June 30</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Team training program</strong></td>
+                            <td>Ricardo</td>
+                            <td><span class="progress-bar" style="width: 70px;"></span>70%</td>
+                            <td><span class="status-badge status-in-progress">In Progress</span></td>
+                            <td>July 15</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GROWTH TAB -->
+        <div id="growth" class="tab-content">
+            <div class="section">
+                <div class="section-title">📈 Growth & Revenue Metrics</div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">New Clients (This Month)</div>
+                        <div class="kpi-value">3<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Target: 5</div>
+                        <div class="kpi-change">↓ Below target</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Pipeline Value</div>
+                        <div class="kpi-value">$85K<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Potential revenue</div>
+                        <div class="kpi-change">6 prospects</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Average Sales Cycle</div>
+                        <div class="kpi-value">21 days<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Industry avg: 30 days</div>
+                        <div class="kpi-change">↑ Faster than avg</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Lead Conversion Rate</div>
+                        <div class="kpi-value">35%<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Target: 40%</div>
+                        <div class="kpi-change">↓ Slight decline</div>
+                    </div>
+                </div>
+                <p style="color: #52514e; font-size: 14px; margin-top: 20px;">📊 Growth metrics dashboard coming soon. This will track sales pipeline, new client acquisition, and revenue forecasts by service tier.</p>
+            </div>
+        </div>
+
+        <!-- PROFITABILITY TAB -->
+        <div id="profitability" class="tab-content">
+            <div class="section">
+                <div class="section-title">💰 Profitability Analysis</div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Gross Margin</div>
+                        <div class="kpi-value">72%<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Revenue - COGS</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Operating Expenses</div>
+                        <div class="kpi-value">$8.2K<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">26% of revenue</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Labor Cost %</div>
+                        <div class="kpi-value">45%<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Of total revenue</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Profit by Service</div>
+                        <div class="kpi-value">Mixed<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Advisory highest margin</div>
+                    </div>
+                </div>
+                <p style="color: #52514e; font-size: 14px; margin-top: 20px;">📊 Profit analysis will show margins by client, service type, and employee once billing rates are configured.</p>
+            </div>
+        </div>
+
+        <!-- CLIENTS TAB -->
+        <div id="clients" class="tab-content">
+            <div class="section">
+                <div class="section-title">👥 Client Health & Loyalty</div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Clients</div>
+                        <div class="kpi-value">47<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Active accounts</div>
+                        <div class="kpi-change">↑ +3 this month</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">NPS Score</div>
+                        <div class="kpi-value">62<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Target: 70+</div>
+                        <div class="kpi-change">Good reputation</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Avg Client Lifetime Value</div>
+                        <div class="kpi-value">$18.5K<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Annual value</div>
+                        <div class="kpi-change">Strong engagement</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Upsell Opportunities</div>
+                        <div class="kpi-value">8<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Growth potential</div>
+                        <div class="kpi-change">$24K opportunity</div>
+                    </div>
+                </div>
+                <p style="color: #52514e; font-size: 14px; margin-top: 20px;">📊 Detailed client metrics, segment analysis, and churn risk modeling coming soon.</p>
+            </div>
+        </div>
+
+        <!-- TEAM TAB -->
+        <div id="team" class="tab-content">
+            <div class="section">
+                <div class="section-title">👔 Team Capacity & Performance</div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Team Size</div>
+                        <div class="kpi-value">3<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Full-time equivalent</div>
+                        <div class="kpi-change">Ricardo, Claudia, Wes</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Revenue per Employee</div>
+                        <div class="kpi-value">$102.6K<span class="status-dot status-green"></span></div>
+                        <div class="kpi-target">Annual productivity</div>
+                        <div class="kpi-change">↑ Excellent output</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Training Completion</div>
+                        <div class="kpi-value">78%<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Target: 90%</div>
+                        <div class="kpi-change">↓ Development needed</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Capacity Available</div>
+                        <div class="kpi-value">13%<span class="status-dot status-yellow"></span></div>
+                        <div class="kpi-target">Room to grow</div>
+                        <div class="kpi-change">Consider hiring</div>
+                    </div>
+                </div>
+                <p style="color: #52514e; font-size: 14px; margin-top: 20px;">📊 Team metrics will show billable hours, utilization rates, and productivity by employee once QB time tracking is connected.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Revenue chart
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Monthly Revenue',
+                    data: [22, 24, 28, 30, 30, 33, 32, 32, 33, 34, 36, 30.8],
+                    borderColor: '#185fa5',
+                    backgroundColor: 'rgba(24, 95, 165, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#185fa5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 40,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value + 'K';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Tab switching
+        function switchTab(event, tabName) {
+            event.preventDefault();
+            
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
