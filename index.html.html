@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wealthspring CEO Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0f1f1d;
+            --primary-forest: #1a3a34;
+            --primary-darker: #0d2420;
+            --accent-gold: #c9a961;
+            --accent-teal: #4db8a8;
+            --accent-green: #2ecc71;
+            --wealthspring-green: #1b7c4f;
+            --status-red: #e74c3c;
+            --status-yellow: #f39c12;
+            --status-green: #27ae60;
+            --text-light: #e8e6e1;
+            --text-muted: #a8a39f;
+            --border-subtle: #2a4239;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        body.light-theme {
+            --primary-dark: #ffffff;
+            --primary-forest: #f5f3f0;
+            --primary-darker: #ede8e3;
+            --text-light: #1a1a1a;
+            --text-muted: #666666;
+            --border-subtle: #e0dcd8;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: var(--primary-forest);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .sidebar-logo-icon {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .sidebar-logo-name {
+            font-family: Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-logo-tagline {
+            font-family: Georgia, serif;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 400;
+            font-style: italic;
+            letter-spacing: 0px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar.collapsed .sidebar-logo-text {
+            display: none;
+        }
+
+        .nav-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 16px 8px 16px;
+        }
+
+        .nav-section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .sidebar.collapsed .nav-section-label {
+            display: none;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--accent-gold);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--primary-darker);
+            border-radius: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--primary-darker);
+            color: var(--accent-gold);
+        }
+
+        .nav-item.active {
+            color: var(--accent-gold);
+            background: var(--primary-darker);
+            border-left-color: var(--accent-gold);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-footer button {
+            background: none;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-light);
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-footer button:hover {
+            background: var(--primary-darker);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topbar {
+            background: var(--primary-forest);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-family: Georgia, serif;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            color: var(--text-light);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .topbar-date {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-right: 12px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .icon-button:hover {
+            color: var(--accent-gold);
+            background: var(--primary-darker);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 4px 6px;
+            display: flex;
+            gap: 4px;
+            cursor: pointer;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .theme-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            font-size: 14px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-icon.active {
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--primary-forest);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 8px 24px rgba(201, 169, 97, 0.1);
+        }
+
+        .kpi-status-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-status-indicator.green {
+            background: var(--status-green);
+            box-shadow: 0 0 8px var(--status-green);
+        }
+
+        .kpi-status-indicator.yellow {
+            background: var(--status-yellow);
+            box-shadow: 0 0 8px var(--status-yellow);
+        }
+
+        .kpi-status-indicator.red {
+            background: var(--status-red);
+            box-shadow: 0 0 8px var(--status-red);
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kpi-change {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-change.positive {
+            color: var(--status-green);
+        }
+
+        .kpi-change.negative {
+            color: var(--status-red);
+        }
+
+        .section {
+            background: var(--primary-forest);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 24px;
+            background: var(--accent-gold);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: var(--primary-darker);
+            border-bottom: 1px solid var(--border-subtle);
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background: var(--primary-forest);
+            color: var(--accent-gold);
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background: var(--primary-darker);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.green {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--status-green);
+        }
+
+        .status-badge.yellow {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--status-yellow);
+        }
+
+        .status-badge.red {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--status-red);
+        }
+
+        /* SETTINGS MODAL */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-panel {
+            width: 420px;
+            height: 100%;
+            background: var(--primary-forest);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .settings-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-header h2 {
+            font-family: Georgia, serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--text-light);
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+        }
+
+        .settings-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .setting-item label {
+            font-size: 13px;
+            color: var(--text-light);
+            flex: 1;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-gold);
+        }
+
+        .setting-item input[type="number"] {
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-light);
+            padding: 6px 8px;
+            border-radius: 4px;
+            width: 80px;
+            font-size: 13px;
+        }
+
+        /* HELP MODAL */
+        .help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .help-modal.active {
+            display: flex;
+        }
+
+        .help-panel {
+            width: 500px;
+            height: 100%;
+            background: var(--primary-forest);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .help-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .help-header h2 {
+            font-family: Georgia, serif;
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--text-light);
+        }
+
+        .close-help {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+        }
+
+        .help-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .help-section {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .help-section:last-child {
+            border-bottom: none;
+        }
+
+        .help-section-title {
+            font-family: Georgia, serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-section-title::before {
+            content: '';
+            width: 2px;
+            height: 20px;
+            background: var(--accent-gold);
+            border-radius: 1px;
+        }
+
+        .help-section p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .help-section strong {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .help-contact-card {
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .help-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .help-contact-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-contact-icon {
+            font-size: 18px;
+        }
+
+        .help-contact-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .help-contact-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .help-contact-value {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .help-contact-value a {
+            color: var(--accent-gold);
+            text-decoration: none;
+        }
+
+        .help-contact-value a:hover {
+            text-decoration: underline;
+        }
+
+        .help-step {
+            background: var(--primary-darker);
+            border-left: 3px solid var(--accent-gold);
+            padding: 12px 16px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .help-step-number {
+            font-weight: 600;
+            color: var(--accent-gold);
+            font-size: 12px;
+        }
+
+        .help-step-text {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-forest);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                z-index: 999;
+            }
+
+            .sidebar.collapsed {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .settings-panel, .help-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-container">
+                    <svg class="sidebar-logo-icon" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Outer dark green border circle -->
+                        <circle cx="40" cy="40" r="36" fill="none" stroke="#0d5a38" stroke-width="2.5"/>
+                        <!-- Inner green circle -->
+                        <circle cx="40" cy="40" r="33" fill="#1b7c4f"/>
+                        <!-- White stylized W -->
+                        <g transform="translate(40, 45)">
+                            <text x="0" y="0" font-family="Georgia, serif" font-size="38" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="central">W</text>
+                        </g>
+                    </svg>
+                    <div class="sidebar-logo-text">
+                        <div class="sidebar-logo-name">Wealthspring</div>
+                        <div class="sidebar-logo-tagline">Building Financial Clarity</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-section-header">
+                <div class="nav-section-label">Intelligence</div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">☰</button>
+            </div>
+            
+            <div class="nav-item active" onclick="switchTab(event, 'overview')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Overview</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(event, 'financial')">
+                <span class="nav-icon">💰</span>
+                <span class="nav-text">Financial Performance</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(event, 'clients')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-text">Client Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(event, 'pipeline')">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Pipeline & Sales</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(event, 'team')">
+                <span class="nav-icon">👔</span>
+                <span class="nav-text">Team & Operations</span>
+            </div>
+
+            <div class="sidebar-footer">
+                <button onclick="alert('Sign out clicked')">Sign Out</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="topbar">
+                <h1 class="page-title">Executive Dashboard</h1>
+                <div class="topbar-actions">
+                    <span class="topbar-date">Sunday, June 28, 2026</span>
+                    
+                    <div class="theme-toggle" id="themeToggle">
+                        <div class="theme-icon active" onclick="setTheme('dark')" title="Dark Theme">🌙</div>
+                        <div class="theme-icon" onclick="setTheme('light')" title="Light Theme">☀️</div>
+                    </div>
+
+                    <button class="icon-button" onclick="openHelp()" title="Help & Integration">?</button>
+                    <button class="icon-button" onclick="openSettings()" title="Settings">⚙️</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- OVERVIEW TAB -->
+                <div id="overview" class="tab-content active">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Monthly Revenue</div>
+                            <div class="kpi-value">$30.8K</div>
+                            <div class="kpi-change positive">↑ +12% vs target</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Monthly Recurring Revenue</div>
+                            <div class="kpi-value">$18.5K</div>
+                            <div class="kpi-change positive">↑ +8% vs last month</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Net Profit Margin</div>
+                            <div class="kpi-value">22%</div>
+                            <div class="kpi-change negative">↓ -3% vs target</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Cash Balance</div>
+                            <div class="kpi-value">$125K</div>
+                            <div class="kpi-change positive">Runway: 8.2 months</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Client Retention</div>
+                            <div class="kpi-value">94%</div>
+                            <div class="kpi-change positive">↑ Strong retention</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator red"></div>
+                            <div class="kpi-label">At-Risk Clients</div>
+                            <div class="kpi-value">2</div>
+                            <div class="kpi-change negative">↑ Needs attention</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Team Utilization</div>
+                            <div class="kpi-value">87%</div>
+                            <div class="kpi-change positive">↑ Excellent capacity</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Quarterly Rocks</div>
+                            <div class="kpi-value">8/10</div>
+                            <div class="kpi-change positive">80% progress</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Revenue Trend (Last 12 Months)</h2>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINANCIAL TAB -->
+                <div id="financial" class="tab-content">
+                    <div class="section">
+                        <h2 class="section-title">Financial Performance</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">P&L, margins, MRR, and expense analysis — YTD 2025 (sample data)</p>
+                        <p style="color: var(--text-muted); font-size: 13px;">📊 Detailed financial metrics dashboard. Once QB integration is live, this will show real data from your QuickBooks account.</p>
+                    </div>
+                </div>
+
+                <!-- CLIENTS TAB -->
+                <div id="clients" class="tab-content">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Active Clients</div>
+                            <div class="kpi-value">47</div>
+                            <div class="kpi-change positive">↑ +3 this month</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Client NPS Score</div>
+                            <div class="kpi-value">62</div>
+                            <div class="kpi-change positive">Good reputation</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Avg. Client LTV</div>
+                            <div class="kpi-value">$18.5K</div>
+                            <div class="kpi-change positive">Strong engagement</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Upsell Opportunities</div>
+                            <div class="kpi-value">8</div>
+                            <div class="kpi-change positive">$24K potential</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">At-Risk Clients</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    <th>Health Score</th>
+                                    <th>Risk Level</th>
+                                    <th>Last Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>TechStart Inc</strong></td>
+                                    <td style="color: var(--status-red);">42/100</td>
+                                    <td><span class="status-badge red">🔴 Critical</span></td>
+                                    <td>3 weeks ago</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>GrowthLabs</strong></td>
+                                    <td style="color: var(--status-yellow);">58/100</td>
+                                    <td><span class="status-badge yellow">🟡 At Risk</span></td>
+                                    <td>1 week ago</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PIPELINE TAB -->
+                <div id="pipeline" class="tab-content">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Open Pipeline</div>
+                            <div class="kpi-value">$36K</div>
+                            <div class="kpi-change positive">6 active deals</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Won YTD</div>
+                            <div class="kpi-value">$505K</div>
+                            <div class="kpi-change positive">↑ +9.4% vs last month</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Conversion Rate</div>
+                            <div class="kpi-value">76%</div>
+                            <div class="kpi-change positive">↑ +2.1% vs last month</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator red"></div>
+                            <div class="kpi-label">Sales Cycle</div>
+                            <div class="kpi-value">14d</div>
+                            <div class="kpi-change negative">↑ -3.4% vs last month</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Sales Pipeline</h2>
+                        <p style="color: var(--text-muted); font-size: 13px;">📊 Active deals by stage, conversion rates, and revenue forecasting. Coming soon with full integration.</p>
+                    </div>
+                </div>
+
+                <!-- TEAM TAB -->
+                <div id="team" class="tab-content">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Team Size</div>
+                            <div class="kpi-value">3</div>
+                            <div class="kpi-change positive">FTE</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-label">Revenue/Employee</div>
+                            <div class="kpi-value">$102.6K</div>
+                            <div class="kpi-change positive">Excellent productivity</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Training Completion</div>
+                            <div class="kpi-value">78%</div>
+                            <div class="kpi-change negative">Target: 90%</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-status-indicator yellow"></div>
+                            <div class="kpi-label">Available Capacity</div>
+                            <div class="kpi-value">13%</div>
+                            <div class="kpi-change positive">Room to grow</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Team Utilization</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Utilization</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Ricardo</strong></td>
+                                    <td>Director of Tech Ops</td>
+                                    <td>90%</td>
+                                    <td><span class="status-badge green">🟢 On Track</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Claudia</strong></td>
+                                    <td>Office Manager</td>
+                                    <td>85%</td>
+                                    <td><span class="status-badge green">🟢 On Track</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Wes</strong></td>
+                                    <td>Senior Accountant</td>
+                                    <td>92%</td>
+                                    <td><span class="status-badge green">🟢 On Track</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div class="modal-overlay" id="modalOverlay" onclick="closeSettings()"></div>
+        <div class="settings-modal" id="settingsModal">
+            <div class="settings-panel">
+                <div class="settings-header">
+                    <h2>Dashboard Settings</h2>
+                    <button class="close-settings" onclick="closeSettings()">✕</button>
+                </div>
+
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <div class="settings-section-title">Display Metrics</div>
+                        <div class="setting-item">
+                            <label>Monthly Revenue</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric1')">
+                        </div>
+                        <div class="setting-item">
+                            <label>MRR</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric2')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Profit Margin</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric3')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Cash Balance</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric4')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Client Retention</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric5')">
+                        </div>
+                        <div class="setting-item">
+                            <label>At-Risk Clients</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric6')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Team Utilization</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric7')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Quarterly Rocks</label>
+                            <input type="checkbox" checked onchange="toggleMetric('metric8')">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Tab Visibility</div>
+                        <div class="setting-item">
+                            <label>Overview</label>
+                            <input type="checkbox" checked onchange="toggleTabVisibility('overview')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Financial Performance</label>
+                            <input type="checkbox" checked onchange="toggleTabVisibility('financial')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Client Intelligence</label>
+                            <input type="checkbox" checked onchange="toggleTabVisibility('clients')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Pipeline & Sales</label>
+                            <input type="checkbox" checked onchange="toggleTabVisibility('pipeline')">
+                        </div>
+                        <div class="setting-item">
+                            <label>Team & Operations</label>
+                            <input type="checkbox" checked onchange="toggleTabVisibility('team')">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Performance Thresholds</div>
+                        <div class="setting-item">
+                            <label>Revenue Target ($K)</label>
+                            <input type="number" value="27" min="0" max="100" onchange="updateThreshold('revenue', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>Profit Margin Target (%)</label>
+                            <input type="number" value="25" min="0" max="100" onchange="updateThreshold('margin', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>Retention Target (%)</label>
+                            <input type="number" value="95" min="0" max="100" onchange="updateThreshold('retention', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>Utilization Target (%)</label>
+                            <input type="number" value="80" min="0" max="100" onchange="updateThreshold('utilization', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Display Options</div>
+                        <div class="setting-item">
+                            <label>Table Rows Per Page</label>
+                            <input type="number" value="10" min="5" max="50" onchange="updateOption('rows', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>Auto-Refresh (Minutes)</label>
+                            <input type="number" value="15" min="5" max="60" onchange="updateOption('refresh', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Integrations</div>
+                        <div class="setting-item">
+                            <label>QuickBooks Online</label>
+                            <input type="checkbox" onchange="toggleIntegration('qbo', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label>FinancialCents</label>
+                            <input type="checkbox" onchange="toggleIntegration('fc', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label>Liscio CRM</label>
+                            <input type="checkbox" onchange="toggleIntegration('liscio', this.checked)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HELP MODAL -->
+        <div class="help-modal" id="helpModal">
+            <div class="help-panel">
+                <div class="help-header">
+                    <h2>Help & Integration</h2>
+                    <button class="close-help" onclick="closeHelp()">✕</button>
+                </div>
+
+                <div class="help-content">
+                    <div class="help-section">
+                        <div class="help-section-title">QuickBooks Online</div>
+                        <p><strong>Sync P&L, Balance Sheet, and customer revenue data</strong> to your dashboard in real-time.</p>
+                        <div class="help-step">
+                            <div class="help-step-number">1. Create QB App</div>
+                            <div class="help-step-text">Go to <strong>developer.intuit.com</strong> and create a new app (select QuickBooks Online Accounting)</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">2. Get Credentials</div>
+                            <div class="help-step-text">Under <strong>Keys & credentials</strong>, copy your <strong>Client ID</strong> and <strong>Client Secret</strong></div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">3. Configure Redirect URI</div>
+                            <div class="help-step-text">Set your redirect URI: <strong>https://wealthspring-dashboard.vercel.app/auth/callback</strong></div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">4. Add to Settings</div>
+                            <div class="help-step-text">Paste credentials in Settings and click <strong>Connect QuickBooks</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-title">FinancialCents</div>
+                        <p><strong>Sync project data, billable hours, and time entries</strong> for accurate profitability analysis.</p>
+                        <div class="help-step">
+                            <div class="help-step-number">1. Get API Key</div>
+                            <div class="help-step-text">Log into FinancialCents → <strong>Settings → API Keys</strong> → Copy your API key</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">2. Paste in Settings</div>
+                            <div class="help-step-text">Paste your API key in Settings and click <strong>Connect FinancialCents</strong></div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">3. Enable Sync</div>
+                            <div class="help-step-text">Dashboard will automatically sync your work items and time data</div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-title">Liscio CRM</div>
+                        <p><strong>Sync client communications and opportunity tracking</strong> for complete business intelligence.</p>
+                        <div class="help-step">
+                            <div class="help-step-number">1. Get API Key</div>
+                            <div class="help-step-text">Log into Liscio → <strong>Settings → API Keys</strong> → Copy your API key</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">2. Paste in Settings</div>
+                            <div class="help-step-text">Paste your API key in Settings and click <strong>Connect Liscio</strong></div>
+                        </div>
+                        <div class="help-step">
+                            <div class="help-step-number">3. View Client Data</div>
+                            <div class="help-step-text">Your client interactions and pipeline will appear in the dashboard</div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-title">Need Support?</div>
+                        <p>Contact Wealthspring team for assistance with setup and integration questions.</p>
+                        <div class="help-contact-card">
+                            <div class="help-contact-item">
+                                <div class="help-contact-icon">📞</div>
+                                <div class="help-contact-info">
+                                    <div class="help-contact-label">Phone</div>
+                                    <div class="help-contact-value"><a href="tel:917-862-3085">917-862-3085</a></div>
+                                </div>
+                            </div>
+                            <div class="help-contact-item">
+                                <div class="help-contact-icon">📧</div>
+                                <div class="help-contact-info">
+                                    <div class="help-contact-label">Email</div>
+                                    <div class="help-contact-value"><a href="mailto:info@wealthspringfinserv.com">info@wealthspringfinserv.com</a></div>
+                                </div>
+                            </div>
+                            <div class="help-contact-item">
+                                <div class="help-contact-icon">📍</div>
+                                <div class="help-contact-info">
+                                    <div class="help-contact-label">Address</div>
+                                    <div class="help-contact-value">560 West 218 St., Suite 4C<br>New York, NY 10034</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let revenueChart;
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: [22, 24, 28, 30, 30, 33, 32, 32, 33, 34, 36, 30.8],
+                        borderColor: '#c9a961',
+                        backgroundColor: 'rgba(201, 169, 97, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#c9a961',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 40,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value + 'K';
+                                },
+                                color: '#a8a39f'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.05)',
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#a8a39f' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchTab(event, tabName) {
+            event.preventDefault();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+            closeSettings();
+            closeHelp();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.remove('light-theme');
+                document.querySelectorAll('.theme-icon').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.theme-icon')[0].classList.add('active');
+            } else {
+                document.body.classList.add('light-theme');
+                document.querySelectorAll('.theme-icon').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.theme-icon')[1].classList.add('active');
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function openHelp() {
+            document.getElementById('helpModal').classList.add('active');
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.remove('active');
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function toggleMetric(metric) {
+            console.log('Toggled metric:', metric);
+        }
+
+        function toggleTabVisibility(tab) {
+            console.log('Toggled tab visibility:', tab);
+        }
+
+        function updateThreshold(type, value) {
+            console.log('Updated threshold:', type, value);
+        }
+
+        function updateOption(option, value) {
+            console.log('Updated option:', option, value);
+        }
+
+        function toggleIntegration(system, enabled) {
+            console.log('Toggled integration:', system, enabled);
+        }
+
+        document.addEventListener('DOMContentLoaded', initChart);
+    </script>
+</body>
+</html>
