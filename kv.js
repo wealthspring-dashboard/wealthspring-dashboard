@@ -1,59 +1,39 @@
-import { createSessionToken, buildSessionCookie } from '../lib/session.js';
+// Thin wrapper around Upstash Redis (Vercel's current recommended storage
+// integration, replacing the discontinued "Vercel KV" product) for storing
+// QuickBooks tokens.
+//
+// This is a single-tenant tool (one shared team password, one connected
+// QuickBooks company), so we store tokens under one fixed key rather than
+// per-user -- there's only ever one QuickBooks connection for the whole team.
+//
+// Redis.fromEnv() auto-detects credentials from either KV_REST_API_URL /
+// KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN,
+// so this works regardless of which env var names Vercel's Upstash
+// Marketplace integration sets.
 
-export const config = { runtime: 'edge' };
+import { Redis } from '@upstash/redis';
 
-export default async function handler(request) {
-  if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+const kv = Redis.fromEnv();
 
-  const sessionSecret = process.env.SESSION_SECRET;
-  const dashboardPassword = process.env.DASHBOARD_PASSWORD;
+const QBO_TOKENS_KEY = 'wfs:qbo:tokens';
 
-  if (!sessionSecret || !dashboardPassword) {
-    return new Response(
-      JSON.stringify({ error: 'Server is not configured. Missing SESSION_SECRET or DASHBOARD_PASSWORD.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
+/**
+ * @returns {Promise<null | {
+ *   access_token: string,
+ *   refresh_token: string,
+ *   expires_at: number,   // ms epoch
+ *   realm_id: string
+ * }>}
+ */
+export async function getQboTokens() {
+  const data = await kv.get(QBO_TOKENS_KEY);
+  return data || null;
+}
 
-  let body;
-  try {
-    body = await request.json();
-  } catch (e) {
-    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+export async function setQboTokens(tokens) {
+  await kv.set(QBO_TOKENS_KEY, tokens);
+}
 
-  const { password } = body || {};
-
-  // Constant-time-ish comparison to reduce timing side-channel risk.
-  const match =
-    typeof password === 'string' &&
-    password.length === dashboardPassword.length &&
-    password
-      .split('')
-      .reduce((diff, ch, i) => diff | (ch.charCodeAt(0) ^ dashboardPassword.charCodeAt(i)), 0) === 0;
-
-  if (!match) {
-    return new Response(JSON.stringify({ error: 'Incorrect password' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const token = await createSessionToken(sessionSecret);
-
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Set-Cookie': buildSessionCookie(token),
-    },
-  });
+export async function clearQboTokens() {
+  await kv.del(QBO_TOKENS_KEY);
 }
