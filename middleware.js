@@ -1,39 +1,42 @@
-// Thin wrapper around Upstash Redis (Vercel's current recommended storage
-// integration, replacing the discontinued "Vercel KV" product) for storing
-// QuickBooks tokens.
-//
-// This is a single-tenant tool (one shared team password, one connected
-// QuickBooks company), so we store tokens under one fixed key rather than
-// per-user -- there's only ever one QuickBooks connection for the whole team.
-//
-// Redis.fromEnv() auto-detects credentials from either KV_REST_API_URL /
-// KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN,
-// so this works regardless of which env var names Vercel's Upstash
-// Marketplace integration sets.
+import { verifySessionToken, getCookie, COOKIE_NAME } from './lib/session.js';
 
-import { Redis } from '@upstash/redis';
+export const config = {
+  // Run on everything except static assets, which must always be loadable
+  // (the login page needs its logo/background even before you're authenticated).
+  matcher: ['/((?!assets/|favicon.ico).*)'],
+};
 
-const kv = Redis.fromEnv();
+// Paths that must always be reachable without a valid session, or nobody
+// could ever log in (and logout/session-check need to work regardless of
+// current auth state).
+const PUBLIC_PATHS = new Set(['/login.html', '/api/login', '/api/logout', '/api/session']);
 
-const QBO_TOKENS_KEY = 'wfs:qbo:tokens';
+export default async function middleware(request) {
+  const url = new URL(request.url);
 
-/**
- * @returns {Promise<null | {
- *   access_token: string,
- *   refresh_token: string,
- *   expires_at: number,   // ms epoch
- *   realm_id: string
- * }>}
- */
-export async function getQboTokens() {
-  const data = await kv.get(QBO_TOKENS_KEY);
-  return data || null;
-}
+  if (PUBLIC_PATHS.has(url.pathname)) {
+    return; // let it through unmodified
+  }
 
-export async function setQboTokens(tokens) {
-  await kv.set(QBO_TOKENS_KEY, tokens);
-}
+  const sessionSecret = process.env.SESSION_SECRET;
+  const token = getCookie(request, COOKIE_NAME);
+  const authenticated = sessionSecret ? await verifySessionToken(token, sessionSecret) : false;
 
-export async function clearQboTokens() {
-  await kv.del(QBO_TOKENS_KEY);
+  if (authenticated) {
+    return; // let it through unmodified
+  }
+
+  // API requests get a clean 401 rather than an HTML redirect.
+  if (url.pathname.startsWith('/api/')) {
+    return new Response(JSON.stringify({ error: 'Not authenticated' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Everything else (the dashboard page itself) redirects to the login screen,
+  // preserving where the user was headed so we can send them back after login.
+  const redirectUrl = new URL('/login.html', request.url);
+  redirectUrl.searchParams.set('next', url.pathname);
+  return Response.redirect(redirectUrl, 307);
 }
