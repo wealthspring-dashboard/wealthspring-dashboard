@@ -394,33 +394,36 @@
 
         .period-selector {
             display: inline-flex;
-            gap: 4px;
-            padding: 4px;
-            background: var(--primary-darker);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            margin-bottom: 16px;
+            gap: 6px;
+            align-items: center;
         }
 
-        .period-btn {
-            padding: 6px 16px;
+        .period-selector select {
+            padding: 6px 10px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-muted);
-            background: transparent;
-            border: none;
+            font-family: inherit;
+            color: var(--text-light);
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
             border-radius: 7px;
             cursor: pointer;
-            transition: background 0.15s ease, color 0.15s ease;
         }
 
-        .period-btn:hover {
-            color: var(--text-light);
+        .period-selector select:hover {
+            border-color: var(--accent-gold);
         }
 
-        .period-btn.active {
-            background: var(--accent-gold);
-            color: var(--primary-darker);
+        .period-selector select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        @media (max-width: 640px) {
+            .period-selector select {
+                padding: 5px 6px;
+                font-size: 12px;
+            }
         }
 
         .kpi-grid {
@@ -908,6 +911,17 @@
                     <h1 class="page-title" id="pageTitle" data-i18n="title_overview">Executive Dashboard</h1>
                 </div>
                 <div class="topbar-actions">
+                    <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
+                        <select id="periodTypeSelect" onchange="onPeriodControlChange()" aria-label="Period type">
+                            <option value="month">Month</option>
+                            <option value="quarter">Quarter</option>
+                            <option value="year">Year</option>
+                        </select>
+                        <select id="periodMonthSelect" onchange="onPeriodControlChange()" aria-label="Month"></select>
+                        <select id="periodQuarterSelect" onchange="onPeriodControlChange()" aria-label="Quarter" style="display:none;"></select>
+                        <select id="periodYearSelect" onchange="onPeriodControlChange()" aria-label="Year"></select>
+                    </div>
+
                     <span class="topbar-date" id="topbarDate"></span>
                     <span class="topbar-date" id="lastUpdated" style="opacity:0.7;"></span>
                     
@@ -923,11 +937,6 @@
             <div class="content-area">
                 <!-- OVERVIEW TAB -->
                 <div id="overview" class="tab-content active">
-                    <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
-                        <button type="button" class="period-btn active" data-period="month" onclick="setPeriod('month')">Month</button>
-                        <button type="button" class="period-btn" data-period="quarter" onclick="setPeriod('quarter')">Quarter</button>
-                        <button type="button" class="period-btn" data-period="year" onclick="setPeriod('year')">Year</button>
-                    </div>
                     <div class="kpi-grid">
                         <div class="kpi-card" id="kpi-metric1" data-value="30.8">
                             <div class="kpi-status-indicator green" id="kpi-metric1-status"></div>
@@ -2080,45 +2089,140 @@
 
         let qboLastFetchFailed = false;
 
-        const PERIOD_LABELS = {
-            month: { revenue: 'Monthly Revenue', change: 'Month to date' },
-            quarter: { revenue: 'Quarterly Revenue', change: 'Quarter to date' },
-            year: { revenue: 'Annual Revenue', change: 'Year to date' },
+        const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const NOW = new Date();
+        const CURRENT_YEAR = NOW.getFullYear();
+        const CURRENT_MONTH = NOW.getMonth() + 1; // 1-12
+        const CURRENT_QUARTER = Math.floor(NOW.getMonth() / 3) + 1;
+        const EARLIEST_YEAR = CURRENT_YEAR - 4; // 5 years of history in the picker
+
+        // Persisted selection: what period is currently shown across every
+        // tab on the dashboard (today this affects Revenue/Net Profit Margin
+        // on Overview; any future QuickBooks-backed metric on other tabs
+        // should read this same state rather than inventing its own).
+        let periodState = JSON.parse(localStorage.getItem('wsfDashboardPeriod') || 'null') || {
+            type: 'month',
+            year: CURRENT_YEAR,
+            month: CURRENT_MONTH,
+            quarter: CURRENT_QUARTER,
         };
 
-        let currentPeriod = localStorage.getItem('wsfDashboardPeriod') || 'month';
-        if (!PERIOD_LABELS[currentPeriod]) currentPeriod = 'month';
+        function populatePeriodDropdowns() {
+            const yearSelect = document.getElementById('periodYearSelect');
+            const monthSelect = document.getElementById('periodMonthSelect');
+            const quarterSelect = document.getElementById('periodQuarterSelect');
+            if (!yearSelect || !monthSelect || !quarterSelect) return;
+
+            yearSelect.innerHTML = '';
+            for (let y = CURRENT_YEAR; y >= EARLIEST_YEAR; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            }
+
+            // Months/quarters beyond "now" only make sense for the current
+            // year -- QuickBooks has no data for a future date, so we don't
+            // offer it as a choice at all rather than let it silently return
+            // nothing.
+            const maxMonth = periodState.year === CURRENT_YEAR ? CURRENT_MONTH : 12;
+            monthSelect.innerHTML = '';
+            for (let m = 1; m <= maxMonth; m++) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = MONTH_NAMES[m - 1];
+                monthSelect.appendChild(opt);
+            }
+
+            const maxQuarter = periodState.year === CURRENT_YEAR ? CURRENT_QUARTER : 4;
+            quarterSelect.innerHTML = '';
+            for (let q = 1; q <= maxQuarter; q++) {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = `Q${q}`;
+                quarterSelect.appendChild(opt);
+            }
+        }
 
         /**
-         * Switches the reporting period for Monthly/Quarterly/Annual Revenue
-         * and Net Profit Margin, persists the choice, and re-fetches live
-         * QuickBooks data for the new range. Cash Balance is a point-in-time
-         * snapshot and intentionally does not change with period.
+         * Reflects periodState into the dropdown controls and shows only the
+         * sub-picker relevant to the selected type (month name, or quarter,
+         * or neither for a full year).
          */
-        function setPeriod(period) {
-            if (!PERIOD_LABELS[period]) return;
-            currentPeriod = period;
-            localStorage.setItem('wsfDashboardPeriod', period);
+        function syncPeriodDropdownsToState() {
+            populatePeriodDropdowns();
 
-            document.querySelectorAll('.period-btn').forEach((btn) => {
-                btn.classList.toggle('active', btn.dataset.period === period);
-            });
+            const typeSelect = document.getElementById('periodTypeSelect');
+            const monthSelect = document.getElementById('periodMonthSelect');
+            const quarterSelect = document.getElementById('periodQuarterSelect');
+            const yearSelect = document.getElementById('periodYearSelect');
+            if (!typeSelect || !monthSelect || !quarterSelect || !yearSelect) return;
+
+            typeSelect.value = periodState.type;
+            yearSelect.value = periodState.year;
+            monthSelect.value = Math.min(periodState.month, monthSelect.options.length);
+            quarterSelect.value = Math.min(periodState.quarter, quarterSelect.options.length);
+
+            monthSelect.style.display = periodState.type === 'month' ? '' : 'none';
+            quarterSelect.style.display = periodState.type === 'quarter' ? '' : 'none';
+        }
+
+        /**
+         * Fired on any dropdown change. Reads all three controls, clamps
+         * month/quarter to whatever's valid for the selected year (in case
+         * the year changed to one where the previously-selected month/quarter
+         * would be in the future), persists the choice, and re-fetches data.
+         */
+        function onPeriodControlChange() {
+            const type = document.getElementById('periodTypeSelect').value;
+            const year = parseInt(document.getElementById('periodYearSelect').value, 10);
+
+            periodState = {
+                type,
+                year,
+                month: parseInt(document.getElementById('periodMonthSelect').value, 10) || CURRENT_MONTH,
+                quarter: parseInt(document.getElementById('periodQuarterSelect').value, 10) || CURRENT_QUARTER,
+            };
+
+            syncPeriodDropdownsToState();
+            localStorage.setItem('wsfDashboardPeriod', JSON.stringify(periodState));
 
             const revenueLabel = document.getElementById('kpi-metric1-label');
-            if (revenueLabel) revenueLabel.textContent = PERIOD_LABELS[period].revenue;
+            if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
 
             refreshQuickBooksData();
+        }
+
+        function formatPeriodRevenueLabel(p) {
+            if (p.type === 'month') return `${MONTH_NAMES[p.month - 1]} ${p.year} Revenue`;
+            if (p.type === 'quarter') return `Q${p.quarter} ${p.year} Revenue`;
+            return `${p.year} Revenue`;
+        }
+
+        function formatPeriodRangeLabel(periodStart, periodEnd) {
+            const fmt = (iso) => {
+                const [y, m, d] = iso.split('-').map(Number);
+                return `${MONTH_NAMES[m - 1].slice(0, 3)} ${d}, ${y}`;
+            };
+            return `${fmt(periodStart)} – ${fmt(periodEnd)}`;
         }
 
         /**
          * Checks QuickBooks connection status and, if connected, overwrites
          * the demo values on the Revenue / Net Profit Margin / Cash Balance
          * KPI cards with real numbers from QuickBooks for the currently
-         * selected reporting period.
+         * selected reporting period. Cash Balance is a point-in-time snapshot
+         * and intentionally does not change with period.
          */
         async function refreshQuickBooksData() {
             try {
-                const res = await fetch(`/api/quickbooks/summary?period=${currentPeriod}`);
+                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+                if (periodState.type === 'month') params.set('month', periodState.month);
+                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+
+                const res = await fetch(`/api/quickbooks/summary?${params.toString()}`);
                 const data = await res.json();
 
                 integrationState.qbo = !!data.connected;
@@ -2129,21 +2233,21 @@
                     applyRealKpiValue('kpi-metric3', data.netProfitMargin, (v) => `${v}%`);
                     applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
 
-                    // Quarter/Year targets aren't defined anywhere in this build yet,
-                    // so showing a "vs target" comparison for those periods would be
-                    // fabricated. Fall back to a plain period label instead; Month
-                    // keeps its real target comparison via recomputeThresholds().
-                    if (currentPeriod === 'month') {
+                    // A "vs target" comparison only makes sense for the actual
+                    // current period -- comparing March 2023 against this
+                    // quarter's target would be a fabricated, misleading number.
+                    if (data.isCurrentPeriod) {
                         recomputeThresholds();
                     } else {
+                        const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
                         const changeEl = document.getElementById('kpi-metric1-change');
                         if (changeEl) {
-                            changeEl.textContent = PERIOD_LABELS[currentPeriod].change;
+                            changeEl.textContent = rangeLabel;
                             changeEl.className = 'kpi-change';
                         }
                         const marginChangeEl = document.getElementById('kpi-metric3-change');
                         if (marginChangeEl) {
-                            marginChangeEl.textContent = PERIOD_LABELS[currentPeriod].change;
+                            marginChangeEl.textContent = rangeLabel;
                             marginChangeEl.className = 'kpi-change';
                         }
                     }
@@ -2246,11 +2350,9 @@
             safeInit('handleResponsiveState', handleResponsiveState);
             safeInit('handleQboRedirectParams', handleQboRedirectParams);
             safeInit('syncPeriodSelectorUI', () => {
-                document.querySelectorAll('.period-btn').forEach((btn) => {
-                    btn.classList.toggle('active', btn.dataset.period === currentPeriod);
-                });
+                syncPeriodDropdownsToState();
                 const revenueLabel = document.getElementById('kpi-metric1-label');
-                if (revenueLabel) revenueLabel.textContent = PERIOD_LABELS[currentPeriod].revenue;
+                if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
             });
             safeInit('refreshQuickBooksData', refreshQuickBooksData);
         });
