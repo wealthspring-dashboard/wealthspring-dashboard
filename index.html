@@ -392,6 +392,37 @@
             to { opacity: 1; }
         }
 
+        .period-selector {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .period-btn {
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .period-btn:hover {
+            color: var(--text-light);
+        }
+
+        .period-btn.active {
+            background: var(--accent-gold);
+            color: var(--primary-darker);
+        }
+
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -892,10 +923,15 @@
             <div class="content-area">
                 <!-- OVERVIEW TAB -->
                 <div id="overview" class="tab-content active">
+                    <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
+                        <button type="button" class="period-btn active" data-period="month" onclick="setPeriod('month')">Month</button>
+                        <button type="button" class="period-btn" data-period="quarter" onclick="setPeriod('quarter')">Quarter</button>
+                        <button type="button" class="period-btn" data-period="year" onclick="setPeriod('year')">Year</button>
+                    </div>
                     <div class="kpi-grid">
                         <div class="kpi-card" id="kpi-metric1" data-value="30.8">
                             <div class="kpi-status-indicator green" id="kpi-metric1-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_monthly_revenue">Monthly Revenue</div>
+                            <div class="kpi-label" id="kpi-metric1-label" data-i18n="kpi_monthly_revenue">Monthly Revenue</div>
                             <div class="kpi-value">$30.8K</div>
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                         </div>
@@ -907,7 +943,7 @@
                         </div>
                         <div class="kpi-card" id="kpi-metric3" data-value="22">
                             <div class="kpi-status-indicator yellow" id="kpi-metric3-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
+                            <div class="kpi-label" id="kpi-metric3-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
                             <div class="kpi-value">22%</div>
                             <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
                         </div>
@@ -2044,24 +2080,73 @@
 
         let qboLastFetchFailed = false;
 
+        const PERIOD_LABELS = {
+            month: { revenue: 'Monthly Revenue', change: 'Month to date' },
+            quarter: { revenue: 'Quarterly Revenue', change: 'Quarter to date' },
+            year: { revenue: 'Annual Revenue', change: 'Year to date' },
+        };
+
+        let currentPeriod = localStorage.getItem('wsfDashboardPeriod') || 'month';
+        if (!PERIOD_LABELS[currentPeriod]) currentPeriod = 'month';
+
+        /**
+         * Switches the reporting period for Monthly/Quarterly/Annual Revenue
+         * and Net Profit Margin, persists the choice, and re-fetches live
+         * QuickBooks data for the new range. Cash Balance is a point-in-time
+         * snapshot and intentionally does not change with period.
+         */
+        function setPeriod(period) {
+            if (!PERIOD_LABELS[period]) return;
+            currentPeriod = period;
+            localStorage.setItem('wsfDashboardPeriod', period);
+
+            document.querySelectorAll('.period-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.period === period);
+            });
+
+            const revenueLabel = document.getElementById('kpi-metric1-label');
+            if (revenueLabel) revenueLabel.textContent = PERIOD_LABELS[period].revenue;
+
+            refreshQuickBooksData();
+        }
+
         /**
          * Checks QuickBooks connection status and, if connected, overwrites
-         * the demo values on the Monthly Revenue / Net Profit Margin / Cash
-         * Balance KPI cards with real numbers from QuickBooks.
+         * the demo values on the Revenue / Net Profit Margin / Cash Balance
+         * KPI cards with real numbers from QuickBooks for the currently
+         * selected reporting period.
          */
         async function refreshQuickBooksData() {
             try {
-                const res = await fetch('/api/quickbooks/summary');
+                const res = await fetch(`/api/quickbooks/summary?period=${currentPeriod}`);
                 const data = await res.json();
 
                 integrationState.qbo = !!data.connected;
                 qboLastFetchFailed = !!data.error;
 
                 if (data.connected && !data.error) {
-                    applyRealKpiValue('kpi-metric1', data.monthlyRevenue, (v) => `$${(v / 1000).toFixed(1)}K`);
+                    applyRealKpiValue('kpi-metric1', data.periodRevenue, (v) => `$${(v / 1000).toFixed(1)}K`);
                     applyRealKpiValue('kpi-metric3', data.netProfitMargin, (v) => `${v}%`);
                     applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
-                    recomputeThresholds();
+
+                    // Quarter/Year targets aren't defined anywhere in this build yet,
+                    // so showing a "vs target" comparison for those periods would be
+                    // fabricated. Fall back to a plain period label instead; Month
+                    // keeps its real target comparison via recomputeThresholds().
+                    if (currentPeriod === 'month') {
+                        recomputeThresholds();
+                    } else {
+                        const changeEl = document.getElementById('kpi-metric1-change');
+                        if (changeEl) {
+                            changeEl.textContent = PERIOD_LABELS[currentPeriod].change;
+                            changeEl.className = 'kpi-change';
+                        }
+                        const marginChangeEl = document.getElementById('kpi-metric3-change');
+                        if (marginChangeEl) {
+                            marginChangeEl.textContent = PERIOD_LABELS[currentPeriod].change;
+                            marginChangeEl.className = 'kpi-change';
+                        }
+                    }
                 }
 
                 updateIntegrationBadges();
@@ -2160,6 +2245,13 @@
             safeInit('startAutoRefresh', startAutoRefresh);
             safeInit('handleResponsiveState', handleResponsiveState);
             safeInit('handleQboRedirectParams', handleQboRedirectParams);
+            safeInit('syncPeriodSelectorUI', () => {
+                document.querySelectorAll('.period-btn').forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.period === currentPeriod);
+                });
+                const revenueLabel = document.getElementById('kpi-metric1-label');
+                if (revenueLabel) revenueLabel.textContent = PERIOD_LABELS[currentPeriod].revenue;
+            });
             safeInit('refreshQuickBooksData', refreshQuickBooksData);
         });
 
