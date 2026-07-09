@@ -2255,8 +2255,27 @@
                 qboLastFetchFailed = !!data.error;
 
                 if (data.connected && !data.error) {
-                    applyRealKpiValue('kpi-metric1', data.periodRevenue, (v) => `$${(v / 1000).toFixed(1)}K`);
-                    applyRealKpiValue('kpi-metric3', data.netProfitMargin, (v) => `${v}%`);
+                    const hasRevenue = data.periodRevenue !== null && data.periodRevenue !== undefined;
+
+                    // QuickBooks correctly returns null when a period genuinely
+                    // has zero transactions (e.g. a past month before the
+                    // business existed, or an untouched sandbox month). Show
+                    // that plainly rather than silently leaving whatever
+                    // number was on screen from the previously-viewed period
+                    // -- that would look like real data for the new period
+                    // when it isn't.
+                    if (hasRevenue) {
+                        applyRealKpiValue('kpi-metric1', data.periodRevenue, (v) => `$${(v / 1000).toFixed(1)}K`);
+                    } else {
+                        setKpiNoData('kpi-metric1');
+                    }
+
+                    if (hasRevenue && data.netProfitMargin !== null && data.netProfitMargin !== undefined) {
+                        applyRealKpiValue('kpi-metric3', data.netProfitMargin, (v) => `${v}%`);
+                    } else {
+                        setKpiNoData('kpi-metric3');
+                    }
+
                     applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
 
                     // A "vs target" comparison only makes sense for the actual
@@ -2265,7 +2284,9 @@
                     if (data.isCurrentPeriod) {
                         recomputeThresholds();
                     } else {
-                        const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                        const rangeLabel = hasRevenue
+                            ? formatPeriodRangeLabel(data.periodStart, data.periodEnd)
+                            : `No transactions · ${formatPeriodRangeLabel(data.periodStart, data.periodEnd)}`;
                         const changeEl = document.getElementById('kpi-metric1-change');
                         if (changeEl) {
                             changeEl.textContent = rangeLabel;
@@ -2292,6 +2313,14 @@
             card.setAttribute('data-value', value);
             const valueEl = card.querySelector('.kpi-value');
             if (valueEl) valueEl.textContent = formatFn(value);
+        }
+
+        function setKpiNoData(cardId) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            card.removeAttribute('data-value');
+            const valueEl = card.querySelector('.kpi-value');
+            if (valueEl) valueEl.textContent = '—';
         }
 
         /**
