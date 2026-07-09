@@ -2102,12 +2102,38 @@
         // tab on the dashboard (today this affects Revenue/Net Profit Margin
         // on Overview; any future QuickBooks-backed metric on other tabs
         // should read this same state rather than inventing its own).
-        let periodState = JSON.parse(localStorage.getItem('wsfDashboardPeriod') || 'null') || {
-            type: 'month',
-            year: CURRENT_YEAR,
-            month: CURRENT_MONTH,
-            quarter: CURRENT_QUARTER,
-        };
+        //
+        // Defensive parsing: an earlier version of this feature stored a
+        // plain string here (e.g. "month") instead of a JSON object. A raw
+        // JSON.parse() on that leftover value throws and, since this runs at
+        // the top of the script, silently breaks the entire page for anyone
+        // who used the dashboard before this update. Never trust localStorage
+        // content blindly.
+        function loadStoredPeriodState() {
+            const fallback = { type: 'month', year: CURRENT_YEAR, month: CURRENT_MONTH, quarter: CURRENT_QUARTER };
+            const raw = localStorage.getItem('wsfDashboardPeriod');
+            if (!raw) return fallback;
+            try {
+                const parsed = JSON.parse(raw);
+                const validTypes = ['month', 'quarter', 'year'];
+                if (parsed && typeof parsed === 'object' && validTypes.includes(parsed.type) && Number.isInteger(parsed.year)) {
+                    return {
+                        type: parsed.type,
+                        year: parsed.year,
+                        month: Number.isInteger(parsed.month) ? parsed.month : CURRENT_MONTH,
+                        quarter: Number.isInteger(parsed.quarter) ? parsed.quarter : CURRENT_QUARTER,
+                    };
+                }
+            } catch (e) {
+                // Old/corrupt value (e.g. a bare string from a previous
+                // version) -- fall through to the default below rather than
+                // letting this take down the rest of the page.
+            }
+            localStorage.removeItem('wsfDashboardPeriod');
+            return fallback;
+        }
+
+        let periodState = loadStoredPeriodState();
 
         function populatePeriodDropdowns() {
             const yearSelect = document.getElementById('periodYearSelect');
