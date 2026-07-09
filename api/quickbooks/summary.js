@@ -3,7 +3,13 @@ import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance } from '
 
 export const config = { runtime: 'edge' };
 
+const VALID_PERIODS = new Set(['month', 'quarter', 'year']);
+
 export default async function handler(request) {
+  const url = new URL(request.url);
+  const requestedPeriod = url.searchParams.get('period');
+  const period = VALID_PERIODS.has(requestedPeriod) ? requestedPeriod : 'month';
+
   const tokens = await getQboTokens();
 
   if (!tokens) {
@@ -30,7 +36,7 @@ export default async function handler(request) {
     }
 
     const [pnl, cashBalance] = await Promise.all([
-      fetchProfitAndLossSummary(freshTokens),
+      fetchProfitAndLossSummary(freshTokens, period),
       fetchCashBalance(freshTokens),
     ]);
 
@@ -38,7 +44,10 @@ export default async function handler(request) {
       JSON.stringify({
         connected: true,
         asOf: new Date().toISOString(),
-        monthlyRevenue: pnl.totalRevenue,
+        period,
+        periodStart: pnl.startDate,
+        periodEnd: pnl.endDate,
+        periodRevenue: pnl.totalRevenue,
         netIncome: pnl.netIncome,
         netProfitMargin: pnl.netProfitMargin,
         cashBalance,
@@ -46,6 +55,10 @@ export default async function handler(request) {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
+    // QuickBooks connected but a live call failed (expired refresh token,
+    // Intuit outage, etc.) -- report this distinctly from "never connected"
+    // so the frontend can show a "reconnect needed" message instead of
+    // silently falling back to demo data forever.
     return new Response(
       JSON.stringify({ connected: true, error: 'fetch_failed', detail: e.message }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
