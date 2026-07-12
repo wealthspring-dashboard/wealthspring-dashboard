@@ -2072,7 +2072,6 @@
                 const connected = !!integrationState[system];
                 if (checkbox) {
                     checkbox.checked = connected;
-                    if (system === 'qbo') checkbox.disabled = connected; // no disconnect flow yet
                 }
                 if (badge) {
                     badge.textContent = connected ? t.integration_connected : t.integration_not_connected;
