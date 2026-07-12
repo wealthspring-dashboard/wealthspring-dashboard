@@ -541,6 +541,21 @@
             margin-bottom: 24px;
         }
 
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 24px;
+        }
+
+        .chart-grid .section {
+            margin-bottom: 0;
+        }
+
+        .chart-grid .chart-container {
+            height: 260px;
+            margin-bottom: 0;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -1000,8 +1015,46 @@
                 <div id="financial" class="tab-content">
                     <div class="section">
                         <h2 class="section-title" data-i18n="section_financial_perf">Financial Performance</h2>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;" data-i18n="financial_desc1">P&amp;L, margins, MRR, and expense analysis — YTD 2025 (sample data)</p>
-                        <p style="color: var(--text-muted); font-size: 13px;" id="financialQboNote" data-i18n="financial_desc2">📊 Detailed financial metrics dashboard. Once QB integration is live, this will show real data from your QuickBooks account.</p>
+                        <p style="color: var(--text-muted); font-size: 13px;" id="financialQboNote" data-i18n="financial_desc2">Connect QuickBooks in Settings to see live ratio charts here.</p>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="section">
+                            <h2 class="section-title">Margins</h2>
+                            <div class="chart-container">
+                                <canvas id="marginsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Revenue Growth Rate</h2>
+                            <div class="chart-container">
+                                <canvas id="revenueGrowthChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Operating Cash Flow Margin</h2>
+                            <div class="chart-container">
+                                <canvas id="cashFlowMarginChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Returns (ROA / ROE)</h2>
+                            <div class="chart-container">
+                                <canvas id="returnsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Current Ratio</h2>
+                            <div class="chart-container">
+                                <canvas id="currentRatioChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Debt-to-Equity</h2>
+                            <div class="chart-container">
+                                <canvas id="debtEquityChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1385,10 +1438,10 @@
                 section_revenue_trend: "Revenue Trend (Last 12 Months)",
 
                 section_financial_perf: "Financial Performance",
-                financial_desc1: "P&L, margins, MRR, and expense analysis — YTD 2025 (sample data)",
-                financial_desc2: "📊 Detailed financial metrics dashboard. Once QB integration is live, this will show real data from your QuickBooks account.",
-                financial_desc2_connected: "📊 QuickBooks Online is connected. Live P&L, Balance Sheet, and revenue data will sync here automatically.",
-                financial_desc2_sync_failed: "⚠️ QuickBooks is connected, but the last data sync failed. Numbers shown may be out of date.",
+                financial_desc1: "Margins, growth, and balance sheet ratios, pulled live from QuickBooks",
+                financial_desc2: "Connect QuickBooks in Settings to see live ratio charts here.",
+                financial_desc2_connected: "📊 QuickBooks Online is connected. Charts below reflect the reporting period selected in the topbar.",
+                financial_desc2_sync_failed: "⚠️ QuickBooks is connected, but the last data sync failed. Chart data shown may be out of date.",
 
                 kpi_active_clients: "Active Clients",
                 kpi_active_clients_change: "↑ +3 this month",
@@ -1517,10 +1570,10 @@
                 section_revenue_trend: "Tendencia de Ingresos (Últimos 12 Meses)",
 
                 section_financial_perf: "Desempeño Financiero",
-                financial_desc1: "Estado de resultados, márgenes, MRR y análisis de gastos — Año a la fecha 2025 (datos de muestra)",
-                financial_desc2: "📊 Panel detallado de métricas financieras. Una vez activa la integración con QB, mostrará datos reales de su cuenta de QuickBooks.",
-                financial_desc2_connected: "📊 QuickBooks Online está conectado. Los datos de Estado de Resultados, Balance General e ingresos se sincronizarán aquí automáticamente.",
-                financial_desc2_sync_failed: "⚠️ QuickBooks está conectado, pero la última sincronización falló. Los números mostrados podrían estar desactualizados.",
+                financial_desc1: "Márgenes, crecimiento y razones del balance general, en vivo desde QuickBooks",
+                financial_desc2: "Conecte QuickBooks en Configuración para ver las gráficas en vivo aquí.",
+                financial_desc2_connected: "📊 QuickBooks Online está conectado. Las gráficas reflejan el período seleccionado en la barra superior.",
+                financial_desc2_sync_failed: "⚠️ QuickBooks está conectado, pero la última sincronización falló. Los datos mostrados podrían estar desactualizados.",
 
                 kpi_active_clients: "Clientes Activos",
                 kpi_active_clients_change: "↑ +3 este mes",
@@ -1727,6 +1780,202 @@
         }
 
         /* ============================================================
+           FINANCIAL PERFORMANCE RATIO CHARTS
+           ============================================================ */
+        let marginsChart, revenueGrowthChart, cashFlowMarginChart, returnsChart, currentRatioChart, debtEquityChart;
+        let financialChartsCacheKey = null;
+
+        const RATIO_CHART_COLORS = {
+            gold: '#c9a961',
+            teal: '#4db8a8',
+            rust: '#c17a5a',
+        };
+
+        function periodCacheKey() {
+            return `${periodState.type}:${periodState.year}:${periodState.month}:${periodState.quarter}`;
+        }
+
+        function pctTick(value) {
+            return Math.round(value * 100) + '%';
+        }
+
+        function ratioLineDataset(label, data, color) {
+            return {
+                label,
+                data,
+                borderColor: color,
+                backgroundColor: color + '1a', // ~10% opacity fill
+                borderWidth: 2.5,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1.5,
+            };
+        }
+
+        function baseChartOptions(tickFormatter) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: { color: '#a8a39f', boxWidth: 12, font: { size: 11 } },
+                    },
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: tickFormatter || undefined,
+                            color: '#a8a39f',
+                        },
+                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#a8a39f' },
+                    },
+                },
+            };
+        }
+
+        function destroyIfExists(chart) {
+            if (chart) chart.destroy();
+        }
+
+        function showChartMessage(canvasId, message) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const container = canvas.closest('.chart-container');
+            if (container) {
+                container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;text-align:center;padding:20px;">${message}</div>`;
+            }
+        }
+
+        /**
+         * Loads the ratios trend for the currently selected period (topbar
+         * Month/Quarter/Year control) and renders all six Financial
+         * Performance charts. Cached per period so switching tabs back and
+         * forth doesn't re-fetch (each load makes several QuickBooks API
+         * calls and is deliberately paced to avoid throttling, so it's not
+         * instant -- no reason to repeat it if nothing's changed).
+         */
+        async function loadFinancialPerformanceCharts(force = false) {
+            const cacheKey = periodCacheKey();
+            if (!force && financialChartsCacheKey === cacheKey) return;
+
+            if (typeof Chart === 'undefined') {
+                ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                    .forEach((id) => showChartMessage(id, 'Chart library failed to load. Check your internet connection and refresh the page.'));
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+                if (periodState.type === 'month') params.set('month', periodState.month);
+                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+
+                const res = await fetch(`/api/quickbooks/ratios?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                        .forEach((id) => showChartMessage(id, 'Connect QuickBooks in Settings to see live ratios here.'));
+                    return;
+                }
+                if (data.error) {
+                    ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                        .forEach((id) => showChartMessage(id, 'Could not load QuickBooks data right now. Try again shortly.'));
+                    return;
+                }
+
+                financialChartsCacheKey = cacheKey;
+                const series = data.series || [];
+                const labels = series.map((p) => p.label);
+                const asChartGap = (v) => (v === null || v === undefined ? null : v); // Chart.js draws gaps for null, which is what we want for "no data"
+
+                destroyIfExists(marginsChart);
+                marginsChart = new Chart(document.getElementById('marginsChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            ratioLineDataset('Gross Margin', series.map((p) => asChartGap(p.grossMargin)), RATIO_CHART_COLORS.gold),
+                            ratioLineDataset('Operating Margin', series.map((p) => asChartGap(p.operatingMargin)), RATIO_CHART_COLORS.teal),
+                            ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust),
+                        ],
+                    },
+                    options: baseChartOptions(pctTick),
+                });
+
+                destroyIfExists(revenueGrowthChart);
+                revenueGrowthChart = new Chart(document.getElementById('revenueGrowthChart'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Revenue Growth',
+                            data: series.map((p) => asChartGap(p.revenueGrowthRate)),
+                            backgroundColor: series.map((p) => (p.revenueGrowthRate >= 0 ? RATIO_CHART_COLORS.teal : RATIO_CHART_COLORS.rust)),
+                            borderRadius: 4,
+                        }],
+                    },
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(cashFlowMarginChart);
+                cashFlowMarginChart = new Chart(document.getElementById('cashFlowMarginChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Operating Cash Flow Margin', series.map((p) => asChartGap(p.operatingCashFlowMargin)), RATIO_CHART_COLORS.gold)],
+                    },
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(returnsChart);
+                returnsChart = new Chart(document.getElementById('returnsChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold),
+                            ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal),
+                        ],
+                    },
+                    options: baseChartOptions(pctTick),
+                });
+
+                destroyIfExists(currentRatioChart);
+                currentRatioChart = new Chart(document.getElementById('currentRatioChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Current Ratio', series.map((p) => asChartGap(p.currentRatio)), RATIO_CHART_COLORS.gold)],
+                    },
+                    options: { ...baseChartOptions((v) => v.toFixed(1)), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(debtEquityChart);
+                debtEquityChart = new Chart(document.getElementById('debtEquityChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Debt-to-Equity', series.map((p) => asChartGap(p.debtToEquity)), RATIO_CHART_COLORS.rust)],
+                    },
+                    options: { ...baseChartOptions((v) => v.toFixed(1)), plugins: { legend: { display: false } } },
+                });
+            } catch (e) {
+                console.error('Financial Performance chart load failed:', e);
+                ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                    .forEach((id) => showChartMessage(id, 'Something went wrong loading this chart.'));
+            }
+        }
+
+        /* ============================================================
            TAB SWITCHING
            ============================================================ */
         function switchTab(event, tabName) {
@@ -1740,6 +1989,10 @@
             updatePageTitle(tabName);
             closeSettings();
             closeMobileSidebar();
+
+            if (tabName === 'financial') {
+                loadFinancialPerformanceCharts();
+            }
         }
 
         function updatePageTitle(tabName) {
@@ -2222,6 +2475,10 @@
             if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
 
             refreshQuickBooksData();
+
+            if (currentTab === 'financial') {
+                loadFinancialPerformanceCharts();
+            }
         }
 
         function formatPeriodRevenueLabel(p) {
@@ -2306,21 +2563,28 @@
                         }
                     }
                 } else if (!data.connected) {
-                    // Not connected (freshly disconnected, or never connected) --
-                    // clear to a plain "not connected" state rather than leaving
-                    // whatever numbers were last fetched while it WAS connected,
-                    // which would misleadingly look like current live data.
+                    // Not connected (freshly disconnected, never connected, OR the
+                    // refresh token died and the server already cleared it) -- clear
+                    // to a plain state rather than leaving whatever numbers were
+                    // last fetched while it WAS connected, which would misleadingly
+                    // look like current live data.
                     setKpiNoData('kpi-metric1');
                     setKpiNoData('kpi-metric3');
                     setKpiNoData('kpi-metric4');
+
+                    const message =
+                        data.error === 'reauth_required'
+                            ? 'QuickBooks connection expired — please reconnect in Settings'
+                            : 'QuickBooks not connected';
+
                     const changeEl = document.getElementById('kpi-metric1-change');
                     if (changeEl) {
-                        changeEl.textContent = 'QuickBooks not connected';
+                        changeEl.textContent = message;
                         changeEl.className = 'kpi-change';
                     }
                     const marginChangeEl = document.getElementById('kpi-metric3-change');
                     if (marginChangeEl) {
-                        marginChangeEl.textContent = 'QuickBooks not connected';
+                        marginChangeEl.textContent = message;
                         marginChangeEl.className = 'kpi-change';
                     }
                 }
