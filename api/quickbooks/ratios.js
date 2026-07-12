@@ -1,10 +1,11 @@
-import { getQboTokens, setQboTokens } from '../../lib/kv.js';
+import { getQboTokens, setQboTokens, clearQboTokens } from '../../lib/kv.js';
 import {
   ensureFreshTokens,
   fetchProfitAndLossSummary,
   fetchBalanceSheetSummary,
   fetchCashFlowSummary,
   mapWithConcurrency,
+  QboAuthError,
 } from '../../lib/qbo.js';
 
 export const config = { runtime: 'edge' };
@@ -153,6 +154,10 @@ export default async function handler(request) {
 
     return json({ connected: true, type, count, series });
   } catch (e) {
+    if (e instanceof QboAuthError) {
+      await clearQboTokens();
+      return json({ connected: false, error: 'reauth_required' });
+    }
     return json({ connected: true, error: 'fetch_failed', detail: e.message });
   }
 }
