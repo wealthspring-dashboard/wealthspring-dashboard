@@ -2050,12 +2050,16 @@
         function handleQboToggle(checked) {
             if (checked && !integrationState.qbo) {
                 window.location.href = '/api/auth/qbo/connect';
-            } else {
-                // Re-check the box; disconnecting isn't built yet, and we
-                // don't want the UI to silently claim "not connected" when
-                // QuickBooks is, in fact, still connected on the backend.
-                const checkbox = document.getElementById('integrationQbo');
-                if (checkbox) checkbox.checked = integrationState.qbo;
+            } else if (!checked && integrationState.qbo) {
+                const confirmed = confirm(
+                    'Disconnect QuickBooks? Revenue, Net Profit Margin, and Cash Balance will stop updating until you reconnect.'
+                );
+                if (confirmed) {
+                    window.location.href = '/api/auth/qbo/disconnect';
+                } else {
+                    const checkbox = document.getElementById('integrationQbo');
+                    if (checkbox) checkbox.checked = true;
+                }
             }
         }
 
@@ -2302,6 +2306,24 @@
                             marginChangeEl.className = 'kpi-change';
                         }
                     }
+                } else if (!data.connected) {
+                    // Not connected (freshly disconnected, or never connected) --
+                    // clear to a plain "not connected" state rather than leaving
+                    // whatever numbers were last fetched while it WAS connected,
+                    // which would misleadingly look like current live data.
+                    setKpiNoData('kpi-metric1');
+                    setKpiNoData('kpi-metric3');
+                    setKpiNoData('kpi-metric4');
+                    const changeEl = document.getElementById('kpi-metric1-change');
+                    if (changeEl) {
+                        changeEl.textContent = 'QuickBooks not connected';
+                        changeEl.className = 'kpi-change';
+                    }
+                    const marginChangeEl = document.getElementById('kpi-metric3-change');
+                    if (marginChangeEl) {
+                        marginChangeEl.textContent = 'QuickBooks not connected';
+                        marginChangeEl.className = 'kpi-change';
+                    }
                 }
 
                 updateIntegrationBadges();
@@ -2335,8 +2357,9 @@
         function handleQboRedirectParams() {
             const params = new URLSearchParams(window.location.search);
             const connected = params.get('qbo_connected');
+            const disconnected = params.get('qbo_disconnected');
             const error = params.get('qbo_error');
-            if (!connected && !error) return;
+            if (!connected && !disconnected && !error) return;
 
             const banner = document.createElement('div');
             banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:3000;padding:12px 20px;border-radius:8px;font-size:14px;font-family:Georgia,serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
@@ -2344,6 +2367,10 @@
                 banner.style.background = '#1b7c4f';
                 banner.style.color = '#fff';
                 banner.textContent = 'QuickBooks connected successfully.';
+            } else if (disconnected) {
+                banner.style.background = '#1a3a34';
+                banner.style.color = '#e8e6e1';
+                banner.textContent = 'QuickBooks disconnected.';
             } else {
                 banner.style.background = '#c0392b';
                 banner.style.color = '#fff';
@@ -2353,6 +2380,7 @@
             setTimeout(() => banner.remove(), 6000);
 
             params.delete('qbo_connected');
+            params.delete('qbo_disconnected');
             params.delete('qbo_error');
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
