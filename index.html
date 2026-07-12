@@ -2094,11 +2094,14 @@
             }
         }
 
+        let connectedCompanyName = null;
+
         function updatePageTitle(tabName) {
             const titleEl = document.getElementById('pageTitle');
             const key = pageTitleKeys[tabName];
             if (titleEl && key) {
-                titleEl.textContent = translations[currentLanguage][key];
+                const baseTitle = translations[currentLanguage][key];
+                titleEl.textContent = connectedCompanyName ? `${baseTitle} for ${connectedCompanyName}` : baseTitle;
             }
         }
 
@@ -2623,6 +2626,12 @@
 
                 integrationState.qbo = !!data.connected;
                 qboLastFetchFailed = !!data.error;
+
+                const newCompanyName = data.connected ? (data.companyName || null) : null;
+                if (newCompanyName !== connectedCompanyName) {
+                    connectedCompanyName = newCompanyName;
+                    updatePageTitle(currentTab);
+                }
 
                 if (data.connected && !data.error) {
                     const hasRevenue = data.periodRevenue !== null && data.periodRevenue !== undefined;
