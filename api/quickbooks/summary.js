@@ -89,6 +89,8 @@ export default async function handler(request) {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
+    console.error('QuickBooks summary fetch failed:', e.message);
+
     if (e instanceof QboAuthError) {
       // Refresh token is dead -- no amount of retrying fixes this. Clear it
       // so we don't keep trying with a token QuickBooks has already
