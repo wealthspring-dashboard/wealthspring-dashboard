@@ -1731,6 +1731,9 @@
                 return;
             }
 
+            const { tickColor, gridColor, cardBg } = getChartThemeColors();
+
+            destroyIfExists(revenueChart);
             revenueChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1745,7 +1748,7 @@
                         tension: 0.4,
                         pointRadius: 5,
                         pointBackgroundColor: '#c9a961',
-                        pointBorderColor: '#fff',
+                        pointBorderColor: cardBg,
                         pointBorderWidth: 2
                     }]
                 },
@@ -1763,16 +1766,16 @@
                                 callback: function(value) {
                                     return '$' + value + 'K';
                                 },
-                                color: '#a8a39f'
+                                color: tickColor
                             },
                             grid: {
-                                color: 'rgba(255,255,255,0.05)',
+                                color: gridColor,
                                 drawBorder: false
                             }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#a8a39f' }
+                            ticks: { color: tickColor }
                         }
                     }
                 }
@@ -1791,6 +1794,22 @@
             rust: '#c17a5a',
         };
 
+        /**
+         * Reads the *actual* current theme colors from CSS variables rather
+         * than hardcoding one theme's palette. Without this, charts rendered
+         * with dark-theme colors (very faint white-based gridlines) become
+         * nearly invisible when switched to light theme -- looking "empty"
+         * even when data is present.
+         */
+        function getChartThemeColors() {
+            const styles = getComputedStyle(document.body);
+            return {
+                tickColor: styles.getPropertyValue('--text-muted').trim() || '#a8a39f',
+                gridColor: styles.getPropertyValue('--border-subtle').trim() || '#2a4239',
+                cardBg: styles.getPropertyValue('--primary-forest').trim() || '#1a3a34',
+            };
+        }
+
         function periodCacheKey() {
             return `${periodState.type}:${periodState.year}:${periodState.month}:${periodState.quarter}`;
         }
@@ -1800,22 +1819,25 @@
         }
 
         function ratioLineDataset(label, data, color) {
+            const { cardBg } = getChartThemeColors();
             return {
                 label,
                 data,
                 borderColor: color,
                 backgroundColor: color + '1a', // ~10% opacity fill
-                borderWidth: 2.5,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.3,
-                pointRadius: 4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
                 pointBackgroundColor: color,
-                pointBorderColor: '#fff',
-                pointBorderWidth: 1.5,
+                pointBorderColor: cardBg,
+                pointBorderWidth: 2.5,
             };
         }
 
         function baseChartOptions(tickFormatter) {
+            const { tickColor, gridColor } = getChartThemeColors();
             return {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -1823,20 +1845,20 @@
                     legend: {
                         display: true,
                         position: 'bottom',
-                        labels: { color: '#a8a39f', boxWidth: 12, font: { size: 11 } },
+                        labels: { color: tickColor, boxWidth: 12, font: { size: 11 } },
                     },
                 },
                 scales: {
                     y: {
                         ticks: {
                             callback: tickFormatter || undefined,
-                            color: '#a8a39f',
+                            color: tickColor,
                         },
-                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                        grid: { color: gridColor, drawBorder: false },
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#a8a39f' },
+                        ticks: { color: tickColor },
                     },
                 },
             };
@@ -2065,6 +2087,17 @@
                 document.body.classList.add('light-theme');
                 document.querySelectorAll('.theme-icon').forEach(el => el.classList.remove('active'));
                 document.querySelectorAll('.theme-icon')[1].classList.add('active');
+            }
+
+            // Chart.js bakes colors into each chart instance at creation time
+            // and doesn't pick up CSS variable changes on its own -- re-init
+            // whatever's currently visible so gridlines/text stay legible
+            // instead of using the previous theme's (likely invisible) colors.
+            if (typeof Chart !== 'undefined') {
+                initChart();
+                if (currentTab === 'financial') {
+                    loadFinancialPerformanceCharts(true);
+                }
             }
         }
 
