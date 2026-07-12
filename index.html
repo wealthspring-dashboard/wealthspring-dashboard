@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wealthspring CEO Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1756,7 +1757,8 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        datalabels: { display: false }
                     },
                     scales: {
                         y: {
@@ -1818,7 +1820,17 @@
             return Math.round(value * 100) + '%';
         }
 
-        function ratioLineDataset(label, data, color) {
+        function formatPctLabel(value) {
+            if (value === null || value === undefined) return '';
+            return Math.round(value * 100) + '%';
+        }
+
+        function formatDecimalLabel(value) {
+            if (value === null || value === undefined) return '';
+            return value.toFixed(2);
+        }
+
+        function ratioLineDataset(label, data, color, labelFormatter) {
             const { cardBg } = getChartThemeColors();
             return {
                 label,
@@ -1833,6 +1845,18 @@
                 pointBackgroundColor: color,
                 pointBorderColor: cardBg,
                 pointBorderWidth: 2.5,
+                datalabels: {
+                    display: (ctx) => ctx.dataset.data[ctx.dataIndex] !== null,
+                    color,
+                    backgroundColor: cardBg,
+                    borderRadius: 4,
+                    padding: { top: 3, bottom: 3, left: 5, right: 5 },
+                    font: { weight: 'bold', size: 11 },
+                    align: 'top',
+                    anchor: 'end',
+                    offset: 6,
+                    formatter: labelFormatter || ((v) => v),
+                },
             };
         }
 
@@ -1841,6 +1865,7 @@
             return {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 24 } },
                 plugins: {
                     legend: {
                         display: true,
@@ -1925,9 +1950,9 @@
                     data: {
                         labels,
                         datasets: [
-                            ratioLineDataset('Gross Margin', series.map((p) => asChartGap(p.grossMargin)), RATIO_CHART_COLORS.gold),
-                            ratioLineDataset('Operating Margin', series.map((p) => asChartGap(p.operatingMargin)), RATIO_CHART_COLORS.teal),
-                            ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust),
+                            ratioLineDataset('Gross Margin', series.map((p) => asChartGap(p.grossMargin)), RATIO_CHART_COLORS.gold, formatPctLabel),
+                            ratioLineDataset('Operating Margin', series.map((p) => asChartGap(p.operatingMargin)), RATIO_CHART_COLORS.teal, formatPctLabel),
+                            ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust, formatPctLabel),
                         ],
                     },
                     options: baseChartOptions(pctTick),
@@ -1943,6 +1968,15 @@
                             data: series.map((p) => asChartGap(p.revenueGrowthRate)),
                             backgroundColor: series.map((p) => (p.revenueGrowthRate >= 0 ? RATIO_CHART_COLORS.teal : RATIO_CHART_COLORS.rust)),
                             borderRadius: 4,
+                            datalabels: {
+                                display: (ctx) => ctx.dataset.data[ctx.dataIndex] !== null,
+                                color: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? RATIO_CHART_COLORS.teal : RATIO_CHART_COLORS.rust),
+                                font: { weight: 'bold', size: 11 },
+                                anchor: 'end',
+                                align: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom'),
+                                offset: 4,
+                                formatter: formatPctLabel,
+                            },
                         }],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
@@ -1953,7 +1987,7 @@
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Operating Cash Flow Margin', series.map((p) => asChartGap(p.operatingCashFlowMargin)), RATIO_CHART_COLORS.gold)],
+                        datasets: [ratioLineDataset('Operating Cash Flow Margin', series.map((p) => asChartGap(p.operatingCashFlowMargin)), RATIO_CHART_COLORS.gold, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
@@ -1964,8 +1998,8 @@
                     data: {
                         labels,
                         datasets: [
-                            ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold),
-                            ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal),
+                            ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold, formatPctLabel),
+                            ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal, formatPctLabel),
                         ],
                     },
                     options: baseChartOptions(pctTick),
@@ -1976,7 +2010,7 @@
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Current Ratio', series.map((p) => asChartGap(p.currentRatio)), RATIO_CHART_COLORS.gold)],
+                        datasets: [ratioLineDataset('Current Ratio', series.map((p) => asChartGap(p.currentRatio)), RATIO_CHART_COLORS.gold, formatDecimalLabel)],
                     },
                     options: { ...baseChartOptions((v) => v.toFixed(1)), plugins: { legend: { display: false } } },
                 });
@@ -1986,7 +2020,7 @@
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Debt-to-Equity', series.map((p) => asChartGap(p.debtToEquity)), RATIO_CHART_COLORS.rust)],
+                        datasets: [ratioLineDataset('Debt-to-Equity', series.map((p) => asChartGap(p.debtToEquity)), RATIO_CHART_COLORS.rust, formatDecimalLabel)],
                     },
                     options: { ...baseChartOptions((v) => v.toFixed(1)), plugins: { legend: { display: false } } },
                 });
@@ -2718,6 +2752,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            safeInit('registerChartPlugins', () => {
+                if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+                    Chart.register(ChartDataLabels);
+                }
+            });
             safeInit('initChart', initChart);
             safeInit('setTheme', () => setTheme(localStorage.getItem('dashboardTheme') || 'dark'));
             safeInit('applyMetricState', applyMetricState);
