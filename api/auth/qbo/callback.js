@@ -1,4 +1,4 @@
-import { exchangeCodeForTokens } from '../../../lib/qbo.js';
+import { exchangeCodeForTokens, fetchCompanyInfo } from '../../../lib/qbo.js';
 import { setQboTokens } from '../../../lib/kv.js';
 import { getCookie } from '../../../lib/session.js';
 
@@ -40,7 +40,15 @@ export default async function handler(request) {
 
   try {
     const tokens = await exchangeCodeForTokens({ code, redirectUri, clientId, clientSecret, realmId });
-    await setQboTokens(tokens);
+
+    // Best-effort: if this specific call fails, still complete the
+    // connection rather than blocking on a display-only nicety. The
+    // dashboard just won't show a company name until the next successful
+    // fetch happens to also refresh it (it doesn't currently retry this on
+    // its own, so worth revisiting if this turns out to fail often).
+    const companyName = await fetchCompanyInfo(tokens).catch(() => null);
+
+    await setQboTokens({ ...tokens, company_name: companyName });
   } catch (e) {
     dashboardUrl.searchParams.set('qbo_error', 'token_exchange_failed');
     return Response.redirect(dashboardUrl, 302);
@@ -48,6 +56,7 @@ export default async function handler(request) {
 
   dashboardUrl.searchParams.set('qbo_connected', '1');
 
+  // Clear the short-lived CSRF state cookie now that the flow is complete.
   const clearStateCookie = 'qbo_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 
   return new Response(null, {
