@@ -1,5 +1,5 @@
-import { getQboTokens, setQboTokens } from '../../lib/kv.js';
-import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance } from '../../lib/qbo.js';
+import { getQboTokens, setQboTokens, clearQboTokens } from '../../lib/kv.js';
+import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance, QboAuthError } from '../../lib/qbo.js';
 
 export const config = { runtime: 'edge' };
 
@@ -89,10 +89,21 @@ export default async function handler(request) {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
-    // QuickBooks connected but a live call failed (expired refresh token,
-    // Intuit outage, etc.) -- report this distinctly from "never connected"
-    // so the frontend can show a "reconnect needed" message instead of
-    // silently falling back to demo data forever.
+    if (e instanceof QboAuthError) {
+      // Refresh token is dead -- no amount of retrying fixes this. Clear it
+      // so we don't keep trying with a token QuickBooks has already
+      // rejected, and tell the frontend to prompt a real reconnect.
+      await clearQboTokens();
+      return new Response(
+        JSON.stringify({ connected: false, error: 'reauth_required' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // QuickBooks connected but a live call failed for some other reason
+    // (Intuit outage, report parsing edge case, etc.) -- report this
+    // distinctly from "never connected" so the frontend can show a real
+    // error instead of silently falling back to demo data forever.
     return new Response(
       JSON.stringify({ connected: true, error: 'fetch_failed', detail: e.message }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
