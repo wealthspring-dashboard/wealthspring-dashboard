@@ -1021,9 +1021,21 @@
 
                     <div class="chart-grid">
                         <div class="section">
-                            <h2 class="section-title">Margins</h2>
+                            <h2 class="section-title">Gross Margin</h2>
                             <div class="chart-container">
-                                <canvas id="marginsChart"></canvas>
+                                <canvas id="grossMarginChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Operating Margin</h2>
+                            <div class="chart-container">
+                                <canvas id="operatingMarginChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Net Margin</h2>
+                            <div class="chart-container">
+                                <canvas id="netMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
@@ -1039,9 +1051,15 @@
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Returns (ROA / ROE)</h2>
+                            <h2 class="section-title">Return on Assets</h2>
                             <div class="chart-container">
-                                <canvas id="returnsChart"></canvas>
+                                <canvas id="roaChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <h2 class="section-title">Return on Equity</h2>
+                            <div class="chart-container">
+                                <canvas id="roeChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
@@ -1787,7 +1805,7 @@
         /* ============================================================
            FINANCIAL PERFORMANCE RATIO CHARTS
            ============================================================ */
-        let marginsChart, revenueGrowthChart, cashFlowMarginChart, returnsChart, currentRatioChart, debtEquityChart;
+        let grossMarginChart, operatingMarginChart, netMarginChart, revenueGrowthChart, cashFlowMarginChart, roaChart, roeChart, currentRatioChart, debtEquityChart;
         let financialChartsCacheKey = null;
 
         const RATIO_CHART_COLORS = {
@@ -1915,7 +1933,7 @@
             if (!force && financialChartsCacheKey === cacheKey) return;
 
             if (typeof Chart === 'undefined') {
-                ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                     .forEach((id) => showChartMessage(id, 'Chart library failed to load. Check your internet connection and refresh the page.'));
                 return;
             }
@@ -1929,12 +1947,12 @@
                 const data = await res.json();
 
                 if (!data.connected) {
-                    ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                    ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                         .forEach((id) => showChartMessage(id, 'Connect QuickBooks in Settings to see live ratios here.'));
                     return;
                 }
                 if (data.error) {
-                    ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                    ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                         .forEach((id) => showChartMessage(id, 'Could not load QuickBooks data right now. Try again shortly.'));
                     return;
                 }
@@ -1944,18 +1962,34 @@
                 const labels = series.map((p) => p.label);
                 const asChartGap = (v) => (v === null || v === undefined ? null : v); // Chart.js draws gaps for null, which is what we want for "no data"
 
-                destroyIfExists(marginsChart);
-                marginsChart = new Chart(document.getElementById('marginsChart'), {
+                destroyIfExists(grossMarginChart);
+                grossMarginChart = new Chart(document.getElementById('grossMarginChart'), {
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [
-                            ratioLineDataset('Gross Margin', series.map((p) => asChartGap(p.grossMargin)), RATIO_CHART_COLORS.gold, formatPctLabel),
-                            ratioLineDataset('Operating Margin', series.map((p) => asChartGap(p.operatingMargin)), RATIO_CHART_COLORS.teal, formatPctLabel),
-                            ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust, formatPctLabel),
-                        ],
+                        datasets: [ratioLineDataset('Gross Margin', series.map((p) => asChartGap(p.grossMargin)), RATIO_CHART_COLORS.gold, formatPctLabel)],
                     },
-                    options: baseChartOptions(pctTick),
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(operatingMarginChart);
+                operatingMarginChart = new Chart(document.getElementById('operatingMarginChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Operating Margin', series.map((p) => asChartGap(p.operatingMargin)), RATIO_CHART_COLORS.teal, formatPctLabel)],
+                    },
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(netMarginChart);
+                netMarginChart = new Chart(document.getElementById('netMarginChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust, formatPctLabel)],
+                    },
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
 
                 destroyIfExists(revenueGrowthChart);
@@ -1992,17 +2026,24 @@
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
 
-                destroyIfExists(returnsChart);
-                returnsChart = new Chart(document.getElementById('returnsChart'), {
+                destroyIfExists(roaChart);
+                roaChart = new Chart(document.getElementById('roaChart'), {
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [
-                            ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold, formatPctLabel),
-                            ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal, formatPctLabel),
-                        ],
+                        datasets: [ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold, formatPctLabel)],
                     },
-                    options: baseChartOptions(pctTick),
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
+                });
+
+                destroyIfExists(roeChart);
+                roeChart = new Chart(document.getElementById('roeChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal, formatPctLabel)],
+                    },
+                    options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
 
                 destroyIfExists(currentRatioChart);
@@ -2026,7 +2067,7 @@
                 });
             } catch (e) {
                 console.error('Financial Performance chart load failed:', e);
-                ['marginsChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'returnsChart', 'currentRatioChart', 'debtEquityChart']
+                ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                     .forEach((id) => showChartMessage(id, 'Something went wrong loading this chart.'));
             }
         }
