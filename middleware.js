@@ -9,7 +9,7 @@ export const config = {
 // Paths that must always be reachable without a valid session, or nobody
 // could ever log in (and logout/session-check need to work regardless of
 // current auth state).
-const PUBLIC_PATHS = new Set(['/login.html', '/api/login', '/api/logout', '/api/session']);
+const PUBLIC_PATHS = new Set(['/login.html', '/api/login', '/api/logout', '/api/session', '/eula.html']);
 
 export default async function middleware(request) {
   const url = new URL(request.url);
