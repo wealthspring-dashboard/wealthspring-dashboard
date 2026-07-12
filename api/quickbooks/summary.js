@@ -74,6 +74,7 @@ export default async function handler(request) {
       JSON.stringify({
         connected: true,
         asOf: new Date().toISOString(),
+        companyName: freshTokens.company_name || null,
         type: requestedPeriod.type,
         year: requestedPeriod.year,
         month: requestedPeriod.type === 'month' ? requestedPeriod.month : undefined,
