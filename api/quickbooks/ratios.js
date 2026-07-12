@@ -4,9 +4,14 @@ import {
   fetchProfitAndLossSummary,
   fetchBalanceSheetSummary,
   fetchCashFlowSummary,
+  mapWithConcurrency,
 } from '../../lib/qbo.js';
 
 export const config = { runtime: 'edge' };
+
+// Intuit throttles bursts of concurrent requests per company -- this keeps
+// us comfortably under that regardless of how many periods are requested.
+const QBO_CONCURRENCY = 3;
 
 const VALID_TYPES = new Set(['month', 'quarter', 'year']);
 const DEFAULT_COUNT = { month: 12, quarter: 6, year: 5 };
@@ -103,23 +108,21 @@ export default async function handler(request) {
     }
 
     // P&L needed for every period (growth rate needs the adjacent one).
-    const pnlResults = await Promise.all(
-      periods.map((p) =>
-        fetchProfitAndLossSummary(freshTokens, { type, year: p.year, month: p.month, quarter: p.quarter })
-      )
+    const pnlResults = await mapWithConcurrency(periods, QBO_CONCURRENCY, (p) =>
+      fetchProfitAndLossSummary(freshTokens, { type, year: p.year, month: p.month, quarter: p.quarter })
     );
 
     // Balance Sheet / Cash Flow only needed for the periods we actually
-    // display -- skip the extra prior one to save two report calls.
+    // display -- skip the extra prior one to save report calls. Run these
+    // two phases one after the other (not simultaneously) so we never have
+    // more than QBO_CONCURRENCY requests in flight against Intuit at once.
     const displayedPeriods = periods.slice(1);
-    const [balanceSheets, cashFlows] = await Promise.all([
-      Promise.all(displayedPeriods.map((p, i) => fetchBalanceSheetSummary(freshTokens, pnlResults[i + 1].endDate))),
-      Promise.all(
-        displayedPeriods.map((p, i) =>
-          fetchCashFlowSummary(freshTokens, { startDate: pnlResults[i + 1].startDate, endDate: pnlResults[i + 1].endDate })
-        )
-      ),
-    ]);
+    const balanceSheets = await mapWithConcurrency(displayedPeriods, QBO_CONCURRENCY, (p, i) =>
+      fetchBalanceSheetSummary(freshTokens, pnlResults[i + 1].endDate)
+    );
+    const cashFlows = await mapWithConcurrency(displayedPeriods, QBO_CONCURRENCY, (p, i) =>
+      fetchCashFlowSummary(freshTokens, { startDate: pnlResults[i + 1].startDate, endDate: pnlResults[i + 1].endDate })
+    );
 
     const series = displayedPeriods.map((p, i) => {
       const pnl = pnlResults[i + 1];
