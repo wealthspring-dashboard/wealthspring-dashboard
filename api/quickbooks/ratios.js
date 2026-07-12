@@ -154,6 +154,8 @@ export default async function handler(request) {
 
     return json({ connected: true, type, count, series });
   } catch (e) {
+    console.error('QuickBooks ratios fetch failed:', e.message);
+
     if (e instanceof QboAuthError) {
       await clearQboTokens();
       return json({ connected: false, error: 'reauth_required' });
