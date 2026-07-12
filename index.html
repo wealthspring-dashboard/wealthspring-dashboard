@@ -2279,9 +2279,13 @@
                     applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
 
                     // A "vs target" comparison only makes sense for the actual
-                    // current period -- comparing March 2023 against this
-                    // quarter's target would be a fabricated, misleading number.
-                    if (data.isCurrentPeriod) {
+                    // current MONTH -- the $27K target baked into this dashboard
+                    // was defined as a monthly figure. Comparing a full quarter's
+                    // or year's revenue against a monthly target produces
+                    // nonsense percentages (this previously showed "+39532.5%
+                    // vs target" when viewing the current year -- not a real
+                    // number, just a monthly target divided into an annual one).
+                    if (periodState.type === 'month' && data.isCurrentPeriod) {
                         recomputeThresholds();
                     } else {
                         const rangeLabel = hasRevenue
