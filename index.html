@@ -307,6 +307,17 @@
             min-width: 0;
         }
 
+        .page-subtitle {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
         .topbar-actions {
             display: flex;
             gap: 12px;
@@ -806,6 +817,11 @@
                 max-width: 42vw;
             }
 
+            .page-subtitle {
+                font-size: 12px;
+                max-width: 42vw;
+            }
+
             .topbar-date {
                 display: none;
             }
@@ -861,6 +877,10 @@
 
         @media (max-width: 400px) {
             .page-title {
+                max-width: 32vw;
+            }
+
+            .page-subtitle {
                 max-width: 32vw;
             }
         }
@@ -924,7 +944,10 @@
                             <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </button>
-                    <h1 class="page-title" id="pageTitle" data-i18n="title_overview">Executive Dashboard</h1>
+                    <div style="min-width: 0;">
+                        <h1 class="page-title" id="pageTitle" data-i18n="title_overview">Executive Dashboard</h1>
+                        <div class="page-subtitle" id="pageSubtitle"></div>
+                    </div>
                 </div>
                 <div class="topbar-actions">
                     <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
@@ -2098,10 +2121,13 @@
 
         function updatePageTitle(tabName) {
             const titleEl = document.getElementById('pageTitle');
+            const subtitleEl = document.getElementById('pageSubtitle');
             const key = pageTitleKeys[tabName];
             if (titleEl && key) {
-                const baseTitle = translations[currentLanguage][key];
-                titleEl.textContent = connectedCompanyName ? `${baseTitle} for ${connectedCompanyName}` : baseTitle;
+                titleEl.textContent = translations[currentLanguage][key];
+            }
+            if (subtitleEl) {
+                subtitleEl.textContent = connectedCompanyName ? `for ${connectedCompanyName}` : '';
             }
         }
 
