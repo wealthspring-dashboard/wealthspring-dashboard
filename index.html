@@ -1873,6 +1873,7 @@
                     align: 'top',
                     anchor: 'end',
                     offset: 6,
+                    clip: false,
                     formatter: labelFormatter || ((v) => v),
                 },
             };
@@ -1883,7 +1884,7 @@
             return {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: { padding: { top: 24 } },
+                layout: { padding: { top: 36 } },
                 plugins: {
                     legend: {
                         display: true,
@@ -2009,6 +2010,7 @@
                                 anchor: 'end',
                                 align: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom'),
                                 offset: 4,
+                                clip: false,
                                 formatter: formatPctLabel,
                             },
                         }],
