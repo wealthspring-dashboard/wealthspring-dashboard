@@ -1103,57 +1103,63 @@
                 <!-- CLIENTS TAB -->
                 <div id="clients" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
+                        <div class="kpi-card" id="ci-active-clients">
+                            <div class="kpi-status-indicator green" id="ci-active-clients-status"></div>
                             <div class="kpi-label" data-i18n="kpi_active_clients">Active Clients</div>
-                            <div class="kpi-value">47</div>
-                            <div class="kpi-change positive" data-i18n="kpi_active_clients_change">↑ +3 this month</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ci-active-clients-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_nps">Client NPS Score</div>
-                            <div class="kpi-value">62</div>
-                            <div class="kpi-change positive" data-i18n="kpi_nps_change">Good reputation</div>
+                        <div class="kpi-card" id="ci-avg-revenue">
+                            <div class="kpi-status-indicator green" id="ci-avg-revenue-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_avg_revenue_client">Avg. Revenue / Client</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ci-avg-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
-                            <div class="kpi-label" data-i18n="kpi_ltv">Avg. Client LTV</div>
-                            <div class="kpi-value">$18.5K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_ltv_change">Strong engagement</div>
+                        <div class="kpi-card" id="ci-concentration">
+                            <div class="kpi-status-indicator green" id="ci-concentration-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_concentration">Top-3 Client Concentration</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ci-concentration-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_upsell">Upsell Opportunities</div>
-                            <div class="kpi-value">8</div>
-                            <div class="kpi-change positive" data-i18n="kpi_upsell_change">$24K potential</div>
+                        <div class="kpi-card" id="ci-retention">
+                            <div class="kpi-status-indicator green" id="ci-retention-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_retention">Client Retention (YoY)</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ci-retention-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                     </div>
 
                     <div class="section">
-                        <h2 class="section-title" data-i18n="section_at_risk_clients">At-Risk Clients</h2>
+                        <h2 class="section-title" data-i18n="section_top_clients">Top Clients by Revenue</h2>
                         <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
                                     <th data-i18n="th_client_name">Client Name</th>
-                                    <th data-i18n="th_health_score">Health Score</th>
-                                    <th data-i18n="th_risk_level">Risk Level</th>
-                                    <th data-i18n="th_last_activity">Last Activity</th>
+                                    <th data-i18n="th_revenue">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topClientsTableBody">
+                                <tr><td colspan="2" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div id="topClientsTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="section_at_risk_clients">At-Risk Clients (Overdue Balances)</h2>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_client_name">Client Name</th>
+                                    <th data-i18n="th_amount_owed">Amount Owed</th>
+                                    <th data-i18n="th_status">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="atRiskTableBody">
-                                <tr>
-                                    <td><strong>TechStart Inc</strong></td>
-                                    <td style="color: var(--status-red);">42/100</td>
-                                    <td><span class="status-badge red" data-i18n="status_critical">🔴 Critical</span></td>
-                                    <td data-i18n="time_3_weeks_ago">3 weeks ago</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>GrowthLabs</strong></td>
-                                    <td style="color: var(--status-yellow);">58/100</td>
-                                    <td><span class="status-badge yellow" data-i18n="status_at_risk">🟡 At Risk</span></td>
-                                    <td data-i18n="time_1_week_ago">1 week ago</td>
-                                </tr>
+                                <tr><td colspan="3" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
                             </tbody>
                         </table>
                         </div>
@@ -1199,67 +1205,59 @@
                 <!-- TEAM TAB -->
                 <div id="team" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
+                        <div class="kpi-card" id="to-team-size">
+                            <div class="kpi-status-indicator green" id="to-team-size-status"></div>
                             <div class="kpi-label" data-i18n="kpi_team_size">Team Size</div>
-                            <div class="kpi-value">3</div>
-                            <div class="kpi-change positive" data-i18n="kpi_team_size_change">FTE</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-team-size-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
-                            <div class="kpi-label" data-i18n="kpi_rev_per_employee">Revenue/Employee</div>
-                            <div class="kpi-value">$102.6K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_rev_employee_change">Excellent productivity</div>
+                        <div class="kpi-card" id="to-revenue-per-member">
+                            <div class="kpi-status-indicator green" id="to-revenue-per-member-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_rev_per_employee">Revenue/Team Member</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-revenue-per-member-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_training_completion">Training Completion</div>
-                            <div class="kpi-value">78%</div>
-                            <div class="kpi-change negative" data-i18n="kpi_training_change">Target: 90%</div>
+                        <div class="kpi-card" id="to-contract-labor">
+                            <div class="kpi-status-indicator green" id="to-contract-labor-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_contract_labor">Contract Labor Spend</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-contract-labor-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_available_capacity">Available Capacity</div>
-                            <div class="kpi-value">13%</div>
-                            <div class="kpi-change positive" data-i18n="kpi_capacity_change">Room to grow</div>
+                        <div class="kpi-card" id="to-total-revenue">
+                            <div class="kpi-status-indicator green" id="to-total-revenue-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_period_revenue">Period Revenue</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-total-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                     </div>
 
                     <div class="section">
-                        <h2 class="section-title" data-i18n="section_team_utilization">Team Utilization</h2>
+                        <h2 class="section-title" data-i18n="section_team_roster">Team Roster</h2>
                         <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
                                     <th data-i18n="th_employee">Employee</th>
                                     <th data-i18n="th_role">Role</th>
-                                    <th data-i18n="th_utilization">Utilization</th>
-                                    <th data-i18n="th_status">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="teamTableBody">
                                 <tr>
                                     <td><strong>Ricardo</strong></td>
                                     <td data-i18n="role_tech_ops">Director of Tech Ops</td>
-                                    <td>90%</td>
-                                    <td><span class="status-badge green" data-i18n="status_on_track">🟢 On Track</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Claudia</strong></td>
                                     <td data-i18n="role_office_manager">Office Manager</td>
-                                    <td>85%</td>
-                                    <td><span class="status-badge green" data-i18n="status_on_track">🟢 On Track</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Wes</strong></td>
                                     <td data-i18n="role_senior_accountant">Senior Accountant</td>
-                                    <td>92%</td>
-                                    <td><span class="status-badge green" data-i18n="status_on_track">🟢 On Track</span></td>
                                 </tr>
                             </tbody>
                         </table>
                         </div>
-                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.</div>
                     </div>
                 </div>
             </div>
@@ -1487,13 +1485,14 @@
 
                 kpi_active_clients: "Active Clients",
                 kpi_active_clients_change: "↑ +3 this month",
-                kpi_nps: "Client NPS Score",
-                kpi_nps_change: "Good reputation",
-                kpi_ltv: "Avg. Client LTV",
-                kpi_ltv_change: "Strong engagement",
-                kpi_upsell: "Upsell Opportunities",
-                kpi_upsell_change: "$24K potential",
-                section_at_risk_clients: "At-Risk Clients",
+                kpi_connect_qbo: "Connect QuickBooks in Settings",
+                kpi_avg_revenue_client: "Avg. Revenue / Client",
+                kpi_concentration: "Top-3 Client Concentration",
+                kpi_retention: "Client Retention (YoY)",
+                section_top_clients: "Top Clients by Revenue",
+                th_revenue: "Revenue",
+                th_amount_owed: "Amount Owed",
+                section_at_risk_clients: "At-Risk Clients (Overdue Balances)",
                 th_client_name: "Client Name",
                 th_health_score: "Health Score",
                 th_risk_level: "Risk Level",
@@ -1516,12 +1515,12 @@
 
                 kpi_team_size: "Team Size",
                 kpi_team_size_change: "FTE",
-                kpi_rev_per_employee: "Revenue/Employee",
+                kpi_rev_per_employee: "Revenue/Team Member",
                 kpi_rev_employee_change: "Excellent productivity",
-                kpi_training_completion: "Training Completion",
-                kpi_training_change: "Target: 90%",
-                kpi_available_capacity: "Available Capacity",
-                kpi_capacity_change: "Room to grow",
+                kpi_contract_labor: "Contract Labor Spend",
+                kpi_period_revenue: "Period Revenue",
+                section_team_roster: "Team Roster",
+                team_utilization_note: "Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.",
                 section_team_utilization: "Team Utilization",
                 th_employee: "Employee",
                 th_role: "Role",
@@ -1619,13 +1618,14 @@
 
                 kpi_active_clients: "Clientes Activos",
                 kpi_active_clients_change: "↑ +3 este mes",
-                kpi_nps: "Puntaje NPS del Cliente",
-                kpi_nps_change: "Buena reputación",
-                kpi_ltv: "LTV Promedio del Cliente",
-                kpi_ltv_change: "Fuerte compromiso",
-                kpi_upsell: "Oportunidades de Venta Adicional",
-                kpi_upsell_change: "Potencial de $24K",
-                section_at_risk_clients: "Clientes en Riesgo",
+                kpi_connect_qbo: "Conecte QuickBooks en Configuración",
+                kpi_avg_revenue_client: "Ingresos Prom. / Cliente",
+                kpi_concentration: "Concentración de los 3 Principales Clientes",
+                kpi_retention: "Retención de Clientes (Interanual)",
+                section_top_clients: "Principales Clientes por Ingresos",
+                th_revenue: "Ingresos",
+                th_amount_owed: "Monto Adeudado",
+                section_at_risk_clients: "Clientes en Riesgo (Saldos Vencidos)",
                 th_client_name: "Nombre del Cliente",
                 th_health_score: "Puntaje de Salud",
                 th_risk_level: "Nivel de Riesgo",
@@ -1648,12 +1648,12 @@
 
                 kpi_team_size: "Tamaño del Equipo",
                 kpi_team_size_change: "Equivalente Tiempo Completo",
-                kpi_rev_per_employee: "Ingresos/Empleado",
+                kpi_rev_per_employee: "Ingresos/Miembro del Equipo",
                 kpi_rev_employee_change: "Excelente productividad",
-                kpi_training_completion: "Finalización de Capacitación",
-                kpi_training_change: "Meta: 90%",
-                kpi_available_capacity: "Capacidad Disponible",
-                kpi_capacity_change: "Espacio para crecer",
+                kpi_contract_labor: "Gasto en Mano de Obra Contratada",
+                kpi_period_revenue: "Ingresos del Período",
+                section_team_roster: "Plantilla del Equipo",
+                team_utilization_note: "Los datos de utilización y horas por persona requieren una integración con QuickBooks Time, planeada como un proyecto futuro — no se muestran aquí para evitar datos inventados.",
                 section_team_utilization: "Utilización del Equipo",
                 th_employee: "Empleado",
                 th_role: "Puesto",
@@ -2114,6 +2114,10 @@
 
             if (tabName === 'financial') {
                 loadFinancialPerformanceCharts();
+            } else if (tabName === 'clients') {
+                loadClientIntelligence();
+            } else if (tabName === 'team') {
+                loadTeamOperations();
             }
         }
 
@@ -2617,6 +2621,10 @@
 
             if (currentTab === 'financial') {
                 loadFinancialPerformanceCharts();
+            } else if (currentTab === 'clients') {
+                loadClientIntelligence();
+            } else if (currentTab === 'team') {
+                loadTeamOperations();
             }
         }
 
@@ -2755,6 +2763,217 @@
             card.removeAttribute('data-value');
             const valueEl = card.querySelector('.kpi-value');
             if (valueEl) valueEl.textContent = '—';
+        }
+
+        /* ============================================================
+           SHARED HELPERS -- Client Intelligence & Team & Operations tabs
+           ============================================================ */
+        function escapeHtml(str) {
+            return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+            }[c]));
+        }
+
+        function setKpiMessage(cardId, message) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            card.removeAttribute('data-value');
+            const valueEl = card.querySelector('.kpi-value');
+            if (valueEl) valueEl.textContent = '—';
+            const changeEl = card.querySelector('.kpi-change');
+            if (changeEl) {
+                changeEl.textContent = message;
+                changeEl.className = 'kpi-change';
+            }
+        }
+
+        function setKpiValueAndNote(cardId, value, formatFn, noteText, colorClass) {
+            if (value === null || value === undefined || isNaN(value)) {
+                setKpiMessage(cardId, noteText || '—');
+                return;
+            }
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            card.setAttribute('data-value', value);
+            const valueEl = card.querySelector('.kpi-value');
+            if (valueEl) valueEl.textContent = formatFn(value);
+            const changeEl = card.querySelector('.kpi-change');
+            if (changeEl && noteText) {
+                changeEl.textContent = noteText;
+                changeEl.className = 'kpi-change';
+            }
+            if (colorClass) {
+                const statusEl = document.getElementById(cardId + '-status');
+                if (statusEl) {
+                    statusEl.classList.remove('green', 'yellow', 'red');
+                    statusEl.classList.add(colorClass);
+                }
+            }
+        }
+
+        function setTableMessage(tbodyId, noteId, colSpan, message) {
+            const tbody = document.getElementById(tbodyId);
+            if (tbody) tbody.innerHTML = `<tr><td colspan="${colSpan}" style="color:var(--text-muted);text-align:center;padding:20px;">${escapeHtml(message)}</td></tr>`;
+            const note = document.getElementById(noteId);
+            if (note) note.textContent = '';
+        }
+
+        /**
+         * Loads Client Intelligence tab data for the currently selected
+         * topbar period. Cached per period, same pattern as Financial
+         * Performance. Pulls real Customer Sales + AR Aging from
+         * QuickBooks -- no NPS or "upsell opportunity" figures are shown
+         * since QuickBooks has no data source for either of those.
+         */
+        let clientsCacheKey = null;
+
+        async function loadClientIntelligence(force = false) {
+            const cacheKey = periodCacheKey();
+            if (!force && clientsCacheKey === cacheKey) return;
+
+            const kpiIds = ['ci-active-clients', 'ci-avg-revenue', 'ci-concentration', 'ci-retention'];
+
+            try {
+                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+                if (periodState.type === 'month') params.set('month', periodState.month);
+                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+
+                const res = await fetch(`/api/quickbooks/clients?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings to see client data here.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
+                    setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
+                    return;
+                }
+                if (data.error) {
+                    const msg = 'Could not load client data right now. Try again shortly.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
+                    setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
+                    return;
+                }
+
+                clientsCacheKey = cacheKey;
+                const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+
+                setKpiValueAndNote('ci-active-clients', data.activeClientCount, (v) => `${v}`, rangeLabel, 'green');
+                setKpiValueAndNote('ci-avg-revenue', data.avgRevenuePerClient, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+
+                if (data.topClientConcentration !== null && data.topClientConcentration !== undefined) {
+                    const concColor = data.topClientConcentration > 60 ? 'red' : (data.topClientConcentration > 40 ? 'yellow' : 'green');
+                    setKpiValueAndNote('ci-concentration', data.topClientConcentration, (v) => `${v}%`, "Top 3 clients' share of revenue", concColor);
+                } else {
+                    setKpiMessage('ci-concentration', 'No revenue this period');
+                }
+
+                if (data.retentionRate !== null && data.retentionRate !== undefined) {
+                    const target = thresholdState.retention || 95;
+                    const retColor = data.retentionRate >= target ? 'green' : (data.retentionRate >= target - 15 ? 'yellow' : 'red');
+                    setKpiValueAndNote('ci-retention', data.retentionRate, (v) => `${v}%`, `vs. same period last year (target ${target}%)`, retColor);
+                } else {
+                    setKpiMessage('ci-retention', 'No prior-year data to compare');
+                }
+
+                const topBody = document.getElementById('topClientsTableBody');
+                if (topBody) {
+                    if (data.topClients && data.topClients.length > 0) {
+                        topBody.innerHTML = data.topClients.map((c) => `
+                            <tr>
+                                <td><strong>${escapeHtml(c.name)}</strong></td>
+                                <td>$${Math.round(c.amount).toLocaleString()}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        topBody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No client revenue recorded for ${escapeHtml(rangeLabel)}.</td></tr>`;
+                    }
+                }
+                const topNote = document.getElementById('topClientsTableNote');
+                if (topNote) topNote.textContent = rangeLabel;
+
+                const atRiskBody = document.getElementById('atRiskTableBody');
+                if (atRiskBody) {
+                    if (data.atRiskClients && data.atRiskClients.length > 0) {
+                        atRiskBody.innerHTML = data.atRiskClients.map((c) => {
+                            const badge = c.hasRecentActivity
+                                ? `<span class="status-badge yellow">🟡 Owes balance</span>`
+                                : `<span class="status-badge red">🔴 Owes balance, no recent activity</span>`;
+                            return `
+                                <tr>
+                                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                                    <td>$${Math.round(c.amountOwed).toLocaleString()}</td>
+                                    <td>${badge}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        atRiskBody.innerHTML = `<tr><td colspan="3" style="color:var(--text-muted);text-align:center;padding:20px;">No overdue balances right now.</td></tr>`;
+                    }
+                }
+                const atRiskNote = document.getElementById('atRiskTableNote');
+                if (atRiskNote) atRiskNote.textContent = `As of ${new Date(data.asOf).toLocaleDateString()}`;
+            } catch (e) {
+                console.error('Client Intelligence fetch failed:', e);
+            }
+        }
+
+        /**
+         * Loads Team & Operations tab data for the currently selected
+         * topbar period. Team size is a hardcoded constant server-side
+         * (contractors paid by bank transfer aren't a countable QBO
+         * entity). No per-employee utilization % is shown -- there is no
+         * real data source for it until QuickBooks Time is integrated
+         * (tracked separately as a future project).
+         */
+        let teamOpsCacheKey = null;
+
+        async function loadTeamOperations(force = false) {
+            const cacheKey = periodCacheKey();
+            if (!force && teamOpsCacheKey === cacheKey) return;
+
+            const kpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
+
+            try {
+                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+                if (periodState.type === 'month') params.set('month', periodState.month);
+                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+
+                const res = await fetch(`/api/quickbooks/team?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings to see team data here.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    return;
+                }
+                if (data.error) {
+                    const msg = 'Could not load team data right now. Try again shortly.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    return;
+                }
+
+                teamOpsCacheKey = cacheKey;
+                const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+
+                setKpiValueAndNote('to-team-size', data.teamSize, (v) => `${v}`, 'Contractors, paid via bank transfer', 'green');
+                setKpiValueAndNote('to-revenue-per-member', data.revenuePerTeamMember, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+
+                if (data.contractLaborSpend !== null && data.contractLaborSpend !== undefined) {
+                    setKpiValueAndNote('to-contract-labor', data.contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                } else {
+                    setKpiMessage('to-contract-labor', 'Not broken out in QuickBooks for this period');
+                }
+
+                setKpiValueAndNote('to-total-revenue', data.totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+            } catch (e) {
+                console.error('Team & Operations fetch failed:', e);
+            }
         }
 
         /**
