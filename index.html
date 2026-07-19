@@ -1170,35 +1170,49 @@
                 <!-- PIPELINE TAB -->
                 <div id="pipeline" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_open_pipeline">Open Pipeline</div>
-                            <div class="kpi-value">$36K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_open_pipeline_change">6 active deals</div>
+                        <div class="kpi-card" id="ps-new-clients">
+                            <div class="kpi-status-indicator green" id="ps-new-clients-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_new_clients">New Clients Won</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ps-new-clients-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
-                            <div class="kpi-label" data-i18n="kpi_won_ytd">Won YTD</div>
-                            <div class="kpi-value">$505K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_won_change">↑ +9.4% vs last month</div>
+                        <div class="kpi-card" id="ps-new-client-revenue">
+                            <div class="kpi-status-indicator green" id="ps-new-client-revenue-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_new_client_revenue">Revenue from New Clients</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ps-new-client-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator green"></div>
-                            <div class="kpi-label" data-i18n="kpi_conversion_rate">Conversion Rate</div>
-                            <div class="kpi-value">76%</div>
-                            <div class="kpi-change positive" data-i18n="kpi_conversion_change">↑ +2.1% vs last month</div>
+                        <div class="kpi-card" id="ps-yoy-change">
+                            <div class="kpi-status-indicator green" id="ps-yoy-change-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_yoy_change">New Clients vs. Last Year</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ps-yoy-change-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card">
-                            <div class="kpi-status-indicator red"></div>
-                            <div class="kpi-label" data-i18n="kpi_sales_cycle">Sales Cycle</div>
-                            <div class="kpi-value">14d</div>
-                            <div class="kpi-change negative" data-i18n="kpi_cycle_change">↑ -3.4% vs last month</div>
+                        <div class="kpi-card" id="ps-ytd">
+                            <div class="kpi-status-indicator green" id="ps-ytd-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_new_clients_ytd">New Clients YTD</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="ps-ytd-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                     </div>
 
                     <div class="section">
-                        <h2 class="section-title" data-i18n="section_sales_pipeline">Sales Pipeline</h2>
-                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="pipeline_desc">📊 Active deals by stage, conversion rates, and revenue forecasting. Coming soon with full integration.</p>
+                        <h2 class="section-title" data-i18n="section_new_clients">New Clients This Period</h2>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_client_name">Client Name</th>
+                                    <th data-i18n="th_date_added">Date Added</th>
+                                </tr>
+                            </thead>
+                            <tbody id="newClientsTableBody">
+                                <tr><td colspan="2" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div id="newClientsTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 16px;" data-i18n="pipeline_desc">📊 This is based on when a client's QuickBooks record was created — a "won" signal after the fact, not a true pipeline. Wealthspring doesn't currently use a CRM, so deals still in progress (leads, proposals sent, negotiations) aren't tracked anywhere yet.</p>
                     </div>
                 </div>
 
@@ -1502,16 +1516,13 @@
                 time_3_weeks_ago: "3 weeks ago",
                 time_1_week_ago: "1 week ago",
 
-                kpi_open_pipeline: "Open Pipeline",
-                kpi_open_pipeline_change: "6 active deals",
-                kpi_won_ytd: "Won YTD",
-                kpi_won_change: "↑ +9.4% vs last month",
-                kpi_conversion_rate: "Conversion Rate",
-                kpi_conversion_change: "↑ +2.1% vs last month",
-                kpi_sales_cycle: "Sales Cycle",
-                kpi_cycle_change: "↑ -3.4% vs last month",
-                section_sales_pipeline: "Sales Pipeline",
-                pipeline_desc: "📊 Active deals by stage, conversion rates, and revenue forecasting. Coming soon with full integration.",
+                kpi_new_clients: "New Clients Won",
+                kpi_new_client_revenue: "Revenue from New Clients",
+                kpi_yoy_change: "New Clients vs. Last Year",
+                kpi_new_clients_ytd: "New Clients YTD",
+                section_new_clients: "New Clients This Period",
+                th_date_added: "Date Added",
+                pipeline_desc: "📊 This is based on when a client's QuickBooks record was created — a \"won\" signal after the fact, not a true pipeline. Wealthspring doesn't currently use a CRM, so deals still in progress (leads, proposals sent, negotiations) aren't tracked anywhere yet.",
 
                 kpi_team_size: "Team Size",
                 kpi_team_size_change: "FTE",
@@ -1635,16 +1646,14 @@
                 time_3_weeks_ago: "Hace 3 semanas",
                 time_1_week_ago: "Hace 1 semana",
 
-                kpi_open_pipeline: "Canal Abierto",
-                kpi_open_pipeline_change: "6 negociaciones activas",
-                kpi_won_ytd: "Ganado en el Año",
-                kpi_won_change: "↑ +9.4% vs. el mes pasado",
-                kpi_conversion_rate: "Tasa de Conversión",
-                kpi_conversion_change: "↑ +2.1% vs. el mes pasado",
-                kpi_sales_cycle: "Ciclo de Ventas",
-                kpi_cycle_change: "↑ -3.4% vs. el mes pasado",
-                section_sales_pipeline: "Canal de Ventas",
-                pipeline_desc: "📊 Negociaciones activas por etapa, tasas de conversión y pronóstico de ingresos. Próximamente con integración completa.",
+                kpi_new_clients: "Nuevos Clientes Ganados",
+                kpi_new_client_revenue: "Ingresos de Nuevos Clientes",
+                kpi_yoy_change: "Nuevos Clientes vs. Año Anterior",
+                kpi_new_clients_ytd: "Nuevos Clientes en el Año",
+                section_new_clients: "Nuevos Clientes de Este Período",
+                th_date_added: "Fecha de Alta",
+                pipeline_desc: "📊 Esto se basa en cuándo se creó el registro del cliente en QuickBooks — una señal de \"ganado\" después del hecho, no un canal de ventas real. Wealthspring actualmente no usa un CRM, por lo que las negociaciones en curso (prospectos, propuestas enviadas, negociaciones) aún no se registran en ningún lugar.",
+
 
                 kpi_team_size: "Tamaño del Equipo",
                 kpi_team_size_change: "Equivalente Tiempo Completo",
@@ -2116,6 +2125,8 @@
                 loadFinancialPerformanceCharts();
             } else if (tabName === 'clients') {
                 loadClientIntelligence();
+            } else if (tabName === 'pipeline') {
+                loadPipelineSales();
             } else if (tabName === 'team') {
                 loadTeamOperations();
             }
@@ -2623,6 +2634,8 @@
                 loadFinancialPerformanceCharts();
             } else if (currentTab === 'clients') {
                 loadClientIntelligence();
+            } else if (currentTab === 'pipeline') {
+                loadPipelineSales();
             } else if (currentTab === 'team') {
                 loadTeamOperations();
             }
@@ -2816,6 +2829,80 @@
             if (tbody) tbody.innerHTML = `<tr><td colspan="${colSpan}" style="color:var(--text-muted);text-align:center;padding:20px;">${escapeHtml(message)}</td></tr>`;
             const note = document.getElementById(noteId);
             if (note) note.textContent = '';
+        }
+
+        /**
+         * Loads Pipeline & Sales tab data for the currently selected
+         * topbar period. Backed by real QuickBooks Customer creation
+         * dates as a proxy "new client won" signal -- there is no CRM,
+         * so true pipeline stages (leads, proposals, negotiations) have
+         * no data source yet and are not shown as if they did.
+         */
+        let pipelineCacheKey = null;
+
+        async function loadPipelineSales(force = false) {
+            const cacheKey = periodCacheKey();
+            if (!force && pipelineCacheKey === cacheKey) return;
+
+            const kpiIds = ['ps-new-clients', 'ps-new-client-revenue', 'ps-yoy-change', 'ps-ytd'];
+
+            try {
+                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+                if (periodState.type === 'month') params.set('month', periodState.month);
+                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+
+                const res = await fetch(`/api/quickbooks/pipeline?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings to see this data here.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    setTableMessage('newClientsTableBody', 'newClientsTableNote', 2, msg);
+                    return;
+                }
+                if (data.error) {
+                    const msg = 'Could not load pipeline data right now. Try again shortly.';
+                    kpiIds.forEach((id) => setKpiMessage(id, msg));
+                    setTableMessage('newClientsTableBody', 'newClientsTableNote', 2, msg);
+                    return;
+                }
+
+                pipelineCacheKey = cacheKey;
+                const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+
+                setKpiValueAndNote('ps-new-clients', data.newClientCount, (v) => `${v}`, rangeLabel, 'green');
+                setKpiValueAndNote('ps-new-client-revenue', data.newClientRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+
+                if (data.yoyChangePct !== null && data.yoyChangePct !== undefined) {
+                    const yoyColor = data.yoyChangePct >= 0 ? 'green' : 'red';
+                    const arrow = data.yoyChangePct >= 0 ? '↑' : '↓';
+                    setKpiValueAndNote('ps-yoy-change', data.yoyChangePct, (v) => `${arrow} ${Math.abs(v)}%`, `vs. ${data.newClientCountPriorYear} same period last year`, yoyColor);
+                } else {
+                    setKpiMessage('ps-yoy-change', 'No clients added in this period last year to compare');
+                }
+
+                setKpiValueAndNote('ps-ytd', data.newClientsYtd, (v) => `${v}`, `Jan 1 – ${new Date().toLocaleDateString()}`, 'green');
+
+                const tbody = document.getElementById('newClientsTableBody');
+                if (tbody) {
+                    if (data.newClients && data.newClients.length > 0) {
+                        tbody.innerHTML = data.newClients.map((c) => `
+                            <tr>
+                                <td><strong>${escapeHtml(c.name)}</strong></td>
+                                <td>${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No new clients added in QuickBooks for ${escapeHtml(rangeLabel)}.</td></tr>`;
+                    }
+                }
+                const note = document.getElementById('newClientsTableNote');
+                if (note) note.textContent = rangeLabel;
+            } catch (e) {
+                console.error('Pipeline & Sales fetch failed:', e);
+            }
         }
 
         /**
