@@ -135,6 +135,10 @@ export default async function handler(request) {
       atRiskClientCount,
       atRiskClients,
       topClients: currentSales.slice(0, 5),
+      // Full (untruncated) list -- used by Team & Operations to attribute
+      // revenue to whoever logged hours against each client in QuickBooks
+      // Time. topClients above stays capped at 5 for display purposes.
+      allClientRevenue: currentSales,
     });
   } catch (e) {
     console.error('QuickBooks client intelligence fetch failed:', e.message);
