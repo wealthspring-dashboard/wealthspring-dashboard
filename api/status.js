@@ -14,11 +14,13 @@ export const config = { runtime: 'edge' };
  * refresh token turns out to be dead -- this endpoint doesn't duplicate
  * that live check, it just reports whether a connection is stored at all.
  *
- * QuickBooks Time's token doesn't carry its own expiration date within
- * the token itself (the "Add Token" web-UI shortcut doesn't expose that
- * via the API), so tokenExpiresAt is sourced from QBTIME_TOKEN_EXPIRES_AT,
- * an env var set manually whenever the token is generated or renewed on
- * the QuickBooks Time API Add-On page.
+ * QuickBooks Time's manually-seeded "Add Token" shortcut has no
+ * refresh_token and a fixed expiration date tracked only via the
+ * QBTIME_TOKEN_EXPIRES_AT env var (set whenever that token is generated
+ * or renewed). Once connected via the real OAuth flow instead (see
+ * api/auth/qbtime/connect.js), the stored token has a refresh_token and
+ * renews itself automatically -- no manual-expiration warning applies to
+ * that case, so tokenExpiresAt is only surfaced for the legacy path.
  */
 export default async function handler(request) {
   const [qboTokens, qbTimeTokens] = await Promise.all([
@@ -26,7 +28,8 @@ export default async function handler(request) {
     getQbTimeTokens(),
   ]);
 
-  const qbTimeExpiresAt = process.env.QBTIME_TOKEN_EXPIRES_AT || null;
+  const hasAutoRefresh = Boolean(qbTimeTokens?.refresh_token);
+  const qbTimeExpiresAt = !hasAutoRefresh ? (process.env.QBTIME_TOKEN_EXPIRES_AT || null) : null;
 
   return new Response(
     JSON.stringify({
@@ -35,6 +38,7 @@ export default async function handler(request) {
       },
       qbtime: {
         connected: Boolean(qbTimeTokens),
+        autoRefreshing: hasAutoRefresh,
         tokenExpiresAt: qbTimeTokens ? qbTimeExpiresAt : null,
       },
     }),
