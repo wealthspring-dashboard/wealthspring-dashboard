@@ -68,7 +68,7 @@ export default async function handler(request) {
     if (refreshed) await setQbTimeTokens(freshTokens);
 
     const current = getDateRangeFor({ type, year, month, quarter });
-    const hoursByUser = await fetchHoursByUser(freshTokens, current);
+    const { hoursByUser, hoursByUserAndClient } = await fetchHoursByUser(freshTokens, current);
 
     const totalHours = hoursByUser.reduce((sum, u) => sum + u.hours, 0);
 
@@ -88,6 +88,7 @@ export default async function handler(request) {
       totalHours: Math.round(totalHours * 100) / 100,
       teamSize,
       hoursByUser,
+      hoursByUserAndClient,
     });
   } catch (e) {
     console.error('QuickBooks Time hours fetch failed:', e.message);
