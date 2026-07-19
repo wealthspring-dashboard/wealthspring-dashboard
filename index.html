@@ -631,6 +631,87 @@
             color: var(--status-red);
         }
 
+        .issue-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 24px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .issue-banner.severity-warning {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--status-yellow);
+        }
+
+        .issue-banner.severity-critical {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--status-red);
+        }
+
+        .issue-banner-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .issue-banner-caret {
+            transition: transform 0.15s ease;
+        }
+
+        .issue-banner-caret.open {
+            transform: rotate(180deg);
+        }
+
+        .issue-details-panel {
+            padding: 4px 24px 14px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--primary-darker);
+        }
+
+        .issue-details-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 13px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .issue-details-row:first-child {
+            border-top: none;
+        }
+
+        .issue-details-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .issue-details-dot.severity-warning {
+            background: var(--status-yellow);
+        }
+
+        .issue-details-dot.severity-critical {
+            background: var(--status-red);
+        }
+
+        .issue-details-text {
+            color: var(--text-light);
+        }
+
+        .issue-details-meta {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
         .integration-status.connected {
             background: rgba(39, 174, 96, 0.2);
             color: var(--status-green);
@@ -973,6 +1054,14 @@
                 </div>
             </div>
 
+            <div id="dashboardIssueBanner" class="issue-banner" style="display:none;" onclick="toggleIssueDetails()">
+                <div class="issue-banner-summary">
+                    <span id="dashboardIssueSummary"></span>
+                </div>
+                <span class="issue-banner-caret" id="dashboardIssueCaret">▾</span>
+            </div>
+            <div id="dashboardIssueDetails" class="issue-details-panel" style="display:none;"></div>
+
             <div class="content-area">
                 <!-- OVERVIEW TAB -->
                 <div id="overview" class="tab-content active">
@@ -1245,6 +1334,21 @@
                         </div>
                     </div>
 
+                    <div class="kpi-grid" style="margin-top: 16px;">
+                        <div class="kpi-card" id="to-total-hours">
+                            <div class="kpi-status-indicator green" id="to-total-hours-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_total_hours">Total Team Hours</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-total-hours-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
+                        </div>
+                        <div class="kpi-card" id="to-cost-per-hour">
+                            <div class="kpi-status-indicator green" id="to-cost-per-hour-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_cost_per_hour">Effective Cost/Hour</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-cost-per-hour-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
+                        </div>
+                    </div>
+
                     <div class="section">
                         <h2 class="section-title" data-i18n="section_team_roster">Team Roster</h2>
                         <div class="table-responsive">
@@ -1252,7 +1356,7 @@
                             <thead>
                                 <tr>
                                     <th data-i18n="th_employee">Employee</th>
-                                    <th data-i18n="th_role">Role</th>
+                                    <th id="teamHoursColumnHeader" data-i18n="th_role">Role</th>
                                 </tr>
                             </thead>
                             <tbody id="teamTableBody">
@@ -1271,7 +1375,7 @@
                             </tbody>
                         </table>
                         </div>
-                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.</div>
+                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">This roster is manually maintained and may be out of date — once QuickBooks Time is connected, this list and each person's hours will be pulled live instead.</div>
                     </div>
                 </div>
             </div>
@@ -1530,6 +1634,10 @@
                 kpi_rev_employee_change: "Excellent productivity",
                 kpi_contract_labor: "Contract Labor Spend",
                 kpi_period_revenue: "Period Revenue",
+                kpi_total_hours: "Total Team Hours",
+                kpi_cost_per_hour: "Effective Cost/Hour",
+                kpi_connect_qbtime: "Connect QuickBooks Time in Settings",
+                th_hours_this_period: "Hours This Period",
                 section_team_roster: "Team Roster",
                 team_utilization_note: "Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.",
                 section_team_utilization: "Team Utilization",
@@ -1661,6 +1769,10 @@
                 kpi_rev_employee_change: "Excelente productividad",
                 kpi_contract_labor: "Gasto en Mano de Obra Contratada",
                 kpi_period_revenue: "Ingresos del Período",
+                kpi_total_hours: "Horas Totales del Equipo",
+                kpi_cost_per_hour: "Costo Efectivo por Hora",
+                kpi_connect_qbtime: "Conecte QuickBooks Time en Configuración",
+                th_hours_this_period: "Horas Este Período",
                 section_team_roster: "Plantilla del Equipo",
                 team_utilization_note: "Los datos de utilización y horas por persona requieren una integración con QuickBooks Time, planeada como un proyecto futuro — no se muestran aquí para evitar datos inventados.",
                 section_team_utilization: "Utilización del Equipo",
@@ -1982,13 +2094,16 @@
                 if (!data.connected) {
                     ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                         .forEach((id) => showChartMessage(id, 'Connect QuickBooks in Settings to see live ratios here.'));
+                    flagDashboardIssue('qbo-disconnected', 'QuickBooks is not connected — data across the dashboard is out of date. Reconnect in Settings.', 'critical');
                     return;
                 }
                 if (data.error) {
                     ['grossMarginChart', 'operatingMarginChart', 'netMarginChart', 'revenueGrowthChart', 'cashFlowMarginChart', 'roaChart', 'roeChart', 'currentRatioChart', 'debtEquityChart']
                         .forEach((id) => showChartMessage(id, 'Could not load QuickBooks data right now. Try again shortly.'));
+                    flagDashboardIssue('ratios-fetch-failed', 'Financial Performance charts failed to load. Will retry automatically.', 'warning');
                     return;
                 }
+                clearDashboardIssue('ratios-fetch-failed');
 
                 financialChartsCacheKey = cacheKey;
                 const series = data.series || [];
@@ -2431,6 +2546,7 @@
 
         function refreshDashboard() {
             refreshQuickBooksData();
+            checkDashboardStatus();
             updateLastUpdatedStamp();
         }
 
@@ -2728,6 +2844,8 @@
                             marginChangeEl.className = 'kpi-change';
                         }
                     }
+                    clearDashboardIssue('qbo-disconnected');
+                    clearDashboardIssue('qbo-fetch-failed');
                 } else if (!data.connected) {
                     // Not connected (freshly disconnected, never connected, OR the
                     // refresh token died and the server already cleared it) -- clear
@@ -2753,6 +2871,9 @@
                         marginChangeEl.textContent = message;
                         marginChangeEl.className = 'kpi-change';
                     }
+                    flagDashboardIssue('qbo-disconnected', message, 'critical');
+                } else if (data.connected && data.error) {
+                    flagDashboardIssue('qbo-fetch-failed', 'QuickBooks data failed to load on the Overview tab — numbers there may be stale. Will retry automatically.', 'warning');
                 }
 
                 updateIntegrationBadges();
@@ -2831,6 +2952,124 @@
             if (note) note.textContent = '';
         }
 
+        /* ============================================================
+           DASHBOARD ISSUE TRACKING
+           A persistent banner (independent of whichever tab is currently
+           open) that surfaces two kinds of problems:
+           1. Live errors any tab's loader function actually hit this
+              session (connection lost, a fetch failed, etc) -- these are
+              flagged from within loadClientIntelligence, loadTeamOperations,
+              etc, not just shown as inline "no data" text on that one tab.
+           2. Proactive account-health checks that run on load and on the
+              normal refresh timer via /api/status, independent of which
+              tab is open -- catches things like "QuickBooks Time token is
+              about to expire" even if you never click into Team & Ops
+              today.
+           Issues are keyed by id so re-flagging the same problem just
+           updates it in place, and clearing is explicit (a tab's loader
+           clears its own id on a successful fetch).
+           ============================================================ */
+        const dashboardIssues = new Map();
+
+        function flagDashboardIssue(id, message, severity = 'warning') {
+            dashboardIssues.set(id, { message, severity, detectedAt: Date.now() });
+            renderIssueBanner();
+        }
+
+        function clearDashboardIssue(id) {
+            if (dashboardIssues.delete(id)) renderIssueBanner();
+        }
+
+        function renderIssueBanner() {
+            const banner = document.getElementById('dashboardIssueBanner');
+            const summaryEl = document.getElementById('dashboardIssueSummary');
+            const detailsEl = document.getElementById('dashboardIssueDetails');
+            if (!banner || !summaryEl || !detailsEl) return;
+
+            const issues = Array.from(dashboardIssues.values());
+            if (issues.length === 0) {
+                banner.style.display = 'none';
+                detailsEl.style.display = 'none';
+                return;
+            }
+
+            const worstSeverity = issues.some((i) => i.severity === 'critical') ? 'critical' : 'warning';
+            banner.classList.remove('severity-warning', 'severity-critical');
+            banner.classList.add(`severity-${worstSeverity}`);
+            banner.style.display = 'flex';
+
+            const icon = worstSeverity === 'critical' ? '🔴' : '⚠️';
+            summaryEl.textContent = issues.length === 1
+                ? `${icon} ${issues[0].message}`
+                : `${icon} ${issues.length} things need attention — click for details`;
+
+            detailsEl.innerHTML = issues.map((issue) => `
+                <div class="issue-details-row">
+                    <div class="issue-details-dot severity-${issue.severity}"></div>
+                    <div>
+                        <div class="issue-details-text">${escapeHtml(issue.message)}</div>
+                        <div class="issue-details-meta">Detected ${new Date(issue.detectedAt).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleIssueDetails() {
+            const detailsEl = document.getElementById('dashboardIssueDetails');
+            const caret = document.getElementById('dashboardIssueCaret');
+            if (!detailsEl) return;
+            const isOpen = detailsEl.style.display !== 'none';
+            detailsEl.style.display = isOpen ? 'none' : 'block';
+            if (caret) caret.classList.toggle('open', !isOpen);
+        }
+
+        /**
+         * Lightweight, no-external-API-call health check -- just confirms
+         * whether tokens are stored for each integration and, for
+         * QuickBooks Time, how close its token is to its known expiration
+         * date. Runs on page load and on the normal refresh timer, so
+         * problems surface even on a tab you haven't clicked into today.
+         * Does NOT call QuickBooks or QuickBooks Time itself, so it never
+         * counts against their rate limits.
+         */
+        async function checkDashboardStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                if (data.qbo && !data.qbo.connected) {
+                    flagDashboardIssue('qbo-disconnected', 'QuickBooks is not connected — data across the dashboard is out of date. Reconnect in Settings.', 'critical');
+                } else {
+                    clearDashboardIssue('qbo-disconnected');
+                }
+
+                if (data.qbtime) {
+                    if (!data.qbtime.connected) {
+                        clearDashboardIssue('qbtime-expiring');
+                        clearDashboardIssue('qbtime-expired');
+                        // Not connected at all is expected until you finish setup --
+                        // not flagged as an issue on its own.
+                    } else if (data.qbtime.tokenExpiresAt) {
+                        const expiresAt = new Date(data.qbtime.tokenExpiresAt);
+                        const daysLeft = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24));
+
+                        if (daysLeft < 0) {
+                            clearDashboardIssue('qbtime-expiring');
+                            flagDashboardIssue('qbtime-expired', `QuickBooks Time's token expired on ${expiresAt.toLocaleDateString()} — Team hours have stopped updating. Generate a new token and reseed.`, 'critical');
+                        } else if (daysLeft <= 14) {
+                            clearDashboardIssue('qbtime-expired');
+                            flagDashboardIssue('qbtime-expiring', `QuickBooks Time's token expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} (${expiresAt.toLocaleDateString()}) — renew it soon so Team hours don't stop updating.`, 'warning');
+                        } else {
+                            clearDashboardIssue('qbtime-expiring');
+                            clearDashboardIssue('qbtime-expired');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Dashboard status check failed:', e);
+            }
+        }
+
         /**
          * Loads Pipeline & Sales tab data for the currently selected
          * topbar period. Backed by real QuickBooks Customer creation
@@ -2860,14 +3099,17 @@
                         : 'Connect QuickBooks in Settings to see this data here.';
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
                     setTableMessage('newClientsTableBody', 'newClientsTableNote', 2, msg);
+                    flagDashboardIssue('qbo-disconnected', msg, 'critical');
                     return;
                 }
                 if (data.error) {
                     const msg = 'Could not load pipeline data right now. Try again shortly.';
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
                     setTableMessage('newClientsTableBody', 'newClientsTableNote', 2, msg);
+                    flagDashboardIssue('pipeline-fetch-failed', 'Pipeline & Sales data failed to load. Will retry automatically.', 'warning');
                     return;
                 }
+                clearDashboardIssue('pipeline-fetch-failed');
 
                 pipelineCacheKey = cacheKey;
                 const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
@@ -2935,6 +3177,7 @@
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
                     setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
                     setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
+                    flagDashboardIssue('qbo-disconnected', msg, 'critical');
                     return;
                 }
                 if (data.error) {
@@ -2942,8 +3185,10 @@
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
                     setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
                     setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
+                    flagDashboardIssue('clients-fetch-failed', 'Client Intelligence data failed to load. Will retry automatically.', 'warning');
                     return;
                 }
+                clearDashboardIssue('clients-fetch-failed');
 
                 clientsCacheKey = cacheKey;
                 const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
@@ -3022,45 +3267,109 @@
             const cacheKey = periodCacheKey();
             if (!force && teamOpsCacheKey === cacheKey) return;
 
-            const kpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
+            const qboKpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
+            const qbTimeKpiIds = ['to-total-hours', 'to-cost-per-hour'];
+
+            const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+            if (periodState.type === 'month') params.set('month', periodState.month);
+            if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+            const qs = params.toString();
+
+            let contractLaborSpend = null;
+            let rangeLabel = '';
 
             try {
-                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-                if (periodState.type === 'month') params.set('month', periodState.month);
-                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
-
-                const res = await fetch(`/api/quickbooks/team?${params.toString()}`);
+                const res = await fetch(`/api/quickbooks/team?${qs}`);
                 const data = await res.json();
 
                 if (!data.connected) {
                     const msg = data.error === 'reauth_required'
                         ? 'QuickBooks connection expired — please reconnect in Settings'
                         : 'Connect QuickBooks in Settings to see team data here.';
-                    kpiIds.forEach((id) => setKpiMessage(id, msg));
-                    return;
-                }
-                if (data.error) {
-                    const msg = 'Could not load team data right now. Try again shortly.';
-                    kpiIds.forEach((id) => setKpiMessage(id, msg));
-                    return;
-                }
-
-                teamOpsCacheKey = cacheKey;
-                const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
-
-                setKpiValueAndNote('to-team-size', data.teamSize, (v) => `${v}`, 'Contractors, paid via bank transfer', 'green');
-                setKpiValueAndNote('to-revenue-per-member', data.revenuePerTeamMember, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
-
-                if (data.contractLaborSpend !== null && data.contractLaborSpend !== undefined) {
-                    setKpiValueAndNote('to-contract-labor', data.contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                    qboKpiIds.forEach((id) => setKpiMessage(id, msg));
+                    flagDashboardIssue('qbo-disconnected', msg, 'critical');
+                } else if (data.error) {
+                    qboKpiIds.forEach((id) => setKpiMessage(id, 'Could not load team data right now. Try again shortly.'));
+                    flagDashboardIssue('team-fetch-failed', 'Team & Operations data failed to load. Will retry automatically.', 'warning');
                 } else {
-                    setKpiMessage('to-contract-labor', 'Not broken out in QuickBooks for this period');
-                }
+                    clearDashboardIssue('team-fetch-failed');
+                    rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                    contractLaborSpend = data.contractLaborSpend ?? null;
 
-                setKpiValueAndNote('to-total-revenue', data.totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                    setKpiValueAndNote('to-team-size', data.teamSize, (v) => `${v}`, 'Contractors, paid via bank transfer', 'green');
+                    setKpiValueAndNote('to-revenue-per-member', data.revenuePerTeamMember, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+
+                    if (contractLaborSpend !== null) {
+                        setKpiValueAndNote('to-contract-labor', contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                    } else {
+                        setKpiMessage('to-contract-labor', 'Not broken out in QuickBooks for this period');
+                    }
+
+                    setKpiValueAndNote('to-total-revenue', data.totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                }
             } catch (e) {
                 console.error('Team & Operations fetch failed:', e);
+                qboKpiIds.forEach((id) => setKpiMessage(id, 'Could not load team data right now. Try again shortly.'));
             }
+
+            const roleHeader = document.getElementById('teamHoursColumnHeader');
+            const tbody = document.getElementById('teamTableBody');
+
+            try {
+                const res = await fetch(`/api/quickbooks/team-hours?${qs}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks Time connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks Time in Settings';
+                    qbTimeKpiIds.forEach((id) => setKpiMessage(id, msg));
+                    if (roleHeader) roleHeader.textContent = 'Role';
+                    // Leave the manually-maintained roster fallback in place untouched.
+                    if (data.error === 'reauth_required') {
+                        flagDashboardIssue('qbtime-expired', 'QuickBooks Time\'s token has stopped working — Team hours have stopped updating. Generate a new token and reseed.', 'critical');
+                    }
+                } else if (data.error) {
+                    qbTimeKpiIds.forEach((id) => setKpiMessage(id, 'Could not load hours right now. Try again shortly.'));
+                    flagDashboardIssue('qbtime-fetch-failed', 'QuickBooks Time hours failed to load. Will retry automatically.', 'warning');
+                } else {
+                    clearDashboardIssue('qbtime-fetch-failed');
+                    clearDashboardIssue('qbtime-expired');
+                    const timeRangeLabel = rangeLabel || formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                    setKpiValueAndNote('to-total-hours', data.totalHours, (v) => `${v.toLocaleString()} hrs`, timeRangeLabel, 'green');
+
+                    if (contractLaborSpend !== null && data.totalHours > 0) {
+                        const costPerHour = contractLaborSpend / data.totalHours;
+                        setKpiValueAndNote('to-cost-per-hour', costPerHour, (v) => `$${v.toFixed(2)}`, 'Contract Labor spend ÷ total hours', 'green');
+                    } else {
+                        setKpiMessage('to-cost-per-hour', contractLaborSpend === null ? 'Waiting on Contract Labor account fix' : 'No hours logged this period');
+                    }
+
+                    // Real QB Time users replace the manually-typed roster
+                    // entirely -- this is now an accurate, live source
+                    // instead of hand-maintained text that goes stale.
+                    if (roleHeader) roleHeader.textContent = translations[currentLanguage]?.th_hours_this_period || 'Hours This Period';
+                    if (tbody) {
+                        if (data.hoursByUser && data.hoursByUser.length > 0) {
+                            tbody.innerHTML = data.hoursByUser.map((u) => `
+                                <tr>
+                                    <td><strong>${escapeHtml(u.name)}</strong></td>
+                                    <td>${u.hours.toLocaleString()} hrs</td>
+                                </tr>
+                            `).join('');
+                        } else {
+                            tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No timesheets logged in QuickBooks Time for ${escapeHtml(timeRangeLabel)}.</td></tr>`;
+                        }
+                    }
+                    const note = document.getElementById('teamTableNote');
+                    if (note) note.textContent = `Live from QuickBooks Time, as of ${new Date(data.asOf).toLocaleString()}`;
+                }
+            } catch (e) {
+                console.error('QuickBooks Time hours fetch failed:', e);
+                qbTimeKpiIds.forEach((id) => setKpiMessage(id, 'Could not load hours right now. Try again shortly.'));
+            }
+
+            teamOpsCacheKey = cacheKey;
         }
 
         /**
@@ -3161,6 +3470,7 @@
                 if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
             });
             safeInit('refreshQuickBooksData', refreshQuickBooksData);
+            safeInit('checkDashboardStatus', checkDashboardStatus);
         });
 
         let resizeDebounceTimer = null;
