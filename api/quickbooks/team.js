@@ -44,10 +44,10 @@ export default async function handler(request) {
     if (refreshed) await setQboTokens(freshTokens);
 
     const pnl = await fetchProfitAndLossSummary(freshTokens, { type, year, month, quarter });
-    const contractLaborSpend = await fetchContractLaborSpend(freshTokens, {
+    const contractLabor = await fetchContractLaborSpend(freshTokens, {
       startDate: pnl.startDate,
       endDate: pnl.endDate,
-    }).catch(() => null);
+    }).catch(() => ({ value: null, source: null }));
 
     return json({
       connected: true,
@@ -55,7 +55,8 @@ export default async function handler(request) {
       periodStart: pnl.startDate,
       periodEnd: pnl.endDate,
       totalRevenue: pnl.totalRevenue,
-      contractLaborSpend,
+      contractLaborSpend: contractLabor.value,
+      contractLaborSource: contractLabor.source,
     });
   } catch (e) {
     console.error('QuickBooks team metrics fetch failed:', e.message);
