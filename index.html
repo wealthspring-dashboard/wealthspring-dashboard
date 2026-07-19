@@ -1104,15 +1104,15 @@
                         </div>
                         <div class="kpi-card" id="kpi-metric7">
                             <div class="kpi-status-indicator green" id="kpi-metric7-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_total_team_hours">Total Team Hours</div>
+                            <div class="kpi-label" data-i18n="kpi_revenue_per_hour">Revenue per Hour</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric7-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric8">
-                            <div class="kpi-status-indicator yellow"></div>
-                            <div class="kpi-label" data-i18n="kpi_quarterly_rocks">Quarterly Rocks</div>
+                            <div class="kpi-status-indicator green" id="kpi-metric8-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_new_clients">New Clients Won</div>
                             <div class="kpi-value">—</div>
-                            <div class="kpi-change" data-i18n="kpi_rocks_change">No live data source — tracked manually outside this dashboard</div>
+                            <div class="kpi-change" id="kpi-metric8-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                     </div>
 
@@ -1418,11 +1418,11 @@
                             <input type="checkbox" checked data-metric="metric6" onchange="toggleMetric('metric6', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="kpi_total_team_hours">Total Team Hours</label>
+                            <label data-i18n="kpi_revenue_per_hour">Revenue per Hour</label>
                             <input type="checkbox" checked data-metric="metric7" onchange="toggleMetric('metric7', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="kpi_quarterly_rocks">Quarterly Rocks</label>
+                            <label data-i18n="kpi_new_clients">New Clients Won</label>
                             <input type="checkbox" checked data-metric="metric8" onchange="toggleMetric('metric8', this.checked)">
                         </div>
                     </div>
@@ -1574,9 +1574,7 @@
                 kpi_cash_change: "Runway: 8.2 months",
                 kpi_client_retention: "Client Retention",
                 kpi_at_risk_clients: "At-Risk Clients",
-                kpi_total_team_hours: "Total Team Hours",
-                kpi_quarterly_rocks: "Quarterly Rocks",
-                kpi_rocks_change: "No live data source — tracked manually outside this dashboard",
+                kpi_revenue_per_hour: "Revenue per Hour",
                 label_vs_target: "vs target",
 
                 section_revenue_trend: "Revenue Trend (Last 12 Months)",
@@ -1702,9 +1700,7 @@
                 kpi_cash_change: "Autonomía: 8.2 meses",
                 kpi_client_retention: "Retención de Clientes",
                 kpi_at_risk_clients: "Clientes en Riesgo",
-                kpi_total_team_hours: "Horas Totales del Equipo",
-                kpi_quarterly_rocks: "Metas Trimestrales",
-                kpi_rocks_change: "Sin fuente de datos en vivo — se rastrea manualmente fuera de este panel",
+                kpi_revenue_per_hour: "Ingresos por Hora",
                 label_vs_target: "vs. meta",
 
                 section_revenue_trend: "Tendencia de Ingresos (Últimos 12 Meses)",
@@ -2941,6 +2937,17 @@
                 console.error('Overview client metrics fetch failed:', e);
             }
 
+            let periodTotalRevenue = null;
+            try {
+                const res = await fetch(`/api/quickbooks/team?${qs}`);
+                const data = await res.json();
+                if (data.connected && !data.error) {
+                    periodTotalRevenue = data.totalRevenue ?? null;
+                }
+            } catch (e) {
+                console.error('Overview revenue-per-hour fetch failed:', e);
+            }
+
             try {
                 const res = await fetch(`/api/quickbooks/team-hours?${qs}`);
                 const data = await res.json();
@@ -2956,12 +2963,40 @@
                 } else {
                     clearDashboardIssue('qbtime-fetch-failed');
                     const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
-                    applyRealKpiValue('kpi-metric7', data.totalHours, (v) => `${v.toLocaleString()} hrs`);
-                    const el = document.getElementById('kpi-metric7-change');
-                    if (el) { el.textContent = rangeLabel; el.className = 'kpi-change'; }
+
+                    if (periodTotalRevenue !== null && data.totalHours > 0) {
+                        applyRealKpiValue('kpi-metric7', periodTotalRevenue / data.totalHours, (v) => `$${v.toFixed(0)}/hr`);
+                        const el = document.getElementById('kpi-metric7-change');
+                        if (el) { el.textContent = `${data.totalHours.toLocaleString()} hrs, ${rangeLabel}`; el.className = 'kpi-change'; }
+                    } else {
+                        setKpiMessage('kpi-metric7', periodTotalRevenue === null ? 'Connect QuickBooks in Settings' : 'No hours logged this period');
+                    }
                 }
             } catch (e) {
                 console.error('Overview team hours fetch failed:', e);
+            }
+
+            try {
+                const res = await fetch(`/api/quickbooks/pipeline?${qs}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings';
+                    setKpiMessage('kpi-metric8', msg);
+                } else if (data.error) {
+                    setKpiMessage('kpi-metric8', 'Could not load right now. Will retry automatically.');
+                    flagDashboardIssue('pipeline-fetch-failed', 'Pipeline data failed to load on the Overview tab. Will retry automatically.', 'warning');
+                } else {
+                    clearDashboardIssue('pipeline-fetch-failed');
+                    const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                    applyRealKpiValue('kpi-metric8', data.newClientCount, (v) => `${v}`);
+                    const el = document.getElementById('kpi-metric8-change');
+                    if (el) { el.textContent = rangeLabel; el.className = 'kpi-change'; }
+                }
+            } catch (e) {
+                console.error('Overview pipeline fetch failed:', e);
             }
         }
 
@@ -3391,9 +3426,10 @@
                     totalRevenue = data.totalRevenue ?? null;
 
                     if (contractLaborSpend !== null) {
-                        setKpiValueAndNote('to-contract-labor', contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                        const sourceNote = data.contractLaborSource ? `${rangeLabel} · from "${data.contractLaborSource}"` : rangeLabel;
+                        setKpiValueAndNote('to-contract-labor', contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, sourceNote, 'green');
                     } else {
-                        setKpiMessage('to-contract-labor', 'Not broken out in QuickBooks for this period');
+                        setKpiMessage('to-contract-labor', 'Not found under Contract Labor or Cost of Labor in QuickBooks');
                     }
 
                     setKpiValueAndNote('to-total-revenue', totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
