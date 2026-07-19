@@ -1073,10 +1073,10 @@
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric2">
-                            <div class="kpi-status-indicator green"></div>
-                            <div class="kpi-label" data-i18n="kpi_mrr">Monthly Recurring Revenue</div>
-                            <div class="kpi-value">$18.5K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_mrr_change">↑ +8% vs last month</div>
+                            <div class="kpi-status-indicator green" id="kpi-metric2-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_mrr">Recurring Revenue</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric2-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric3" data-value="22">
                             <div class="kpi-status-indicator yellow" id="kpi-metric3-status"></div>
@@ -1090,29 +1090,29 @@
                             <div class="kpi-value">$125K</div>
                             <div class="kpi-change positive" data-i18n="kpi_cash_change">Runway: 8.2 months</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric5" data-value="94">
+                        <div class="kpi-card" id="kpi-metric5">
                             <div class="kpi-status-indicator green" id="kpi-metric5-status"></div>
                             <div class="kpi-label" data-i18n="kpi_client_retention">Client Retention</div>
-                            <div class="kpi-value">94%</div>
-                            <div class="kpi-change positive" id="kpi-metric5-change">↑ Strong retention</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric5-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric6">
-                            <div class="kpi-status-indicator red"></div>
+                            <div class="kpi-status-indicator green" id="kpi-metric6-status"></div>
                             <div class="kpi-label" data-i18n="kpi_at_risk_clients">At-Risk Clients</div>
-                            <div class="kpi-value">2</div>
-                            <div class="kpi-change negative" data-i18n="kpi_at_risk_change">↑ Needs attention</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric6-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric7" data-value="87">
+                        <div class="kpi-card" id="kpi-metric7">
                             <div class="kpi-status-indicator green" id="kpi-metric7-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_team_utilization">Team Utilization</div>
-                            <div class="kpi-value">87%</div>
-                            <div class="kpi-change positive" id="kpi-metric7-change">↑ Excellent capacity</div>
+                            <div class="kpi-label" data-i18n="kpi_total_team_hours">Total Team Hours</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric7-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric8">
                             <div class="kpi-status-indicator yellow"></div>
                             <div class="kpi-label" data-i18n="kpi_quarterly_rocks">Quarterly Rocks</div>
-                            <div class="kpi-value">8/10</div>
-                            <div class="kpi-change positive" data-i18n="kpi_rocks_change">80% progress</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" data-i18n="kpi_rocks_change">No live data source — tracked manually outside this dashboard</div>
                         </div>
                     </div>
 
@@ -1418,7 +1418,7 @@
                             <input type="checkbox" checked data-metric="metric6" onchange="toggleMetric('metric6', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="kpi_team_utilization">Team Utilization</label>
+                            <label data-i18n="kpi_total_team_hours">Total Team Hours</label>
                             <input type="checkbox" checked data-metric="metric7" onchange="toggleMetric('metric7', this.checked)">
                         </div>
                         <div class="setting-item">
@@ -1501,12 +1501,8 @@
                             <input type="checkbox" id="integrationQbo" onchange="handleQboToggle(this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label>FinancialCents <span class="integration-status" id="fcStatus" style="font-size:11px;margin-left:6px;padding:2px 8px;border-radius:10px;"></span></label>
-                            <input type="checkbox" id="integrationFc" onchange="toggleIntegration('fc', this.checked)">
-                        </div>
-                        <div class="setting-item">
-                            <label>Liscio CRM <span class="integration-status" id="liscioStatus" style="font-size:11px;margin-left:6px;padding:2px 8px;border-radius:10px;"></span></label>
-                            <input type="checkbox" id="integrationLiscio" onchange="toggleIntegration('liscio', this.checked)">
+                            <label>QuickBooks Time <span class="integration-status" id="qbtimeStatus" style="font-size:11px;margin-left:6px;padding:2px 8px;border-radius:10px;"></span></label>
+                            <input type="checkbox" id="integrationQbtime" onchange="handleQbTimeToggle(this.checked)">
                         </div>
                     </div>
 
@@ -1524,19 +1520,11 @@
                         </div>
 
                         <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
-                            <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">FinancialCents</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_fc_desc">Sync project data and billable hours for profitability analysis.</p>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_fc_step1">Log into FinancialCents → Settings → API Keys</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_fc_step2">Copy your API key</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_fc_step3">Enable sync in Integrations section above</span></div>
-                        </div>
-
-                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
-                            <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">Liscio CRM</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_liscio_desc">Sync client communications and opportunity tracking.</p>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_liscio_step1">Log into Liscio → Settings → API Keys</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_liscio_step2">Copy your API key</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_liscio_step3">Enable sync in Integrations section above</span></div>
+                            <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">QuickBooks Time</div>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for real utilization and effective cost-per-hour data.</p>
+                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
+                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to the value configured on the server</span></div>
+                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
                         </div>
 
                         <div style="background: var(--primary-darker); padding: 12px; border-radius: 6px;">
@@ -1578,19 +1566,17 @@
                 title_team: "Team & Operations",
 
                 kpi_monthly_revenue: "Monthly Revenue",
-                kpi_mrr: "Monthly Recurring Revenue",
+                kpi_mrr: "Recurring Revenue",
                 kpi_mrr_short: "MRR",
-                kpi_mrr_change: "↑ +8% vs last month",
                 kpi_profit_margin: "Net Profit Margin",
                 kpi_profit_margin_short: "Profit Margin",
                 kpi_cash_balance: "Cash Balance",
                 kpi_cash_change: "Runway: 8.2 months",
                 kpi_client_retention: "Client Retention",
                 kpi_at_risk_clients: "At-Risk Clients",
-                kpi_at_risk_change: "↑ Needs attention",
-                kpi_team_utilization: "Team Utilization",
+                kpi_total_team_hours: "Total Team Hours",
                 kpi_quarterly_rocks: "Quarterly Rocks",
-                kpi_rocks_change: "80% progress",
+                kpi_rocks_change: "No live data source — tracked manually outside this dashboard",
                 label_vs_target: "vs target",
 
                 section_revenue_trend: "Revenue Trend (Last 12 Months)",
@@ -1673,14 +1659,10 @@
                 help_qbo_step2: "Copy your Client ID and Client Secret",
                 help_qbo_step3: "Set redirect URI: https://wealthspring-dashboard.vercel.app/auth/callback",
                 help_qbo_step4: "Paste credentials in Integrations section above",
-                help_fc_desc: "Sync project data and billable hours for profitability analysis.",
-                help_fc_step1: "Log into FinancialCents → Settings → API Keys",
-                help_fc_step2: "Copy your API key",
-                help_fc_step3: "Enable sync in Integrations section above",
-                help_liscio_desc: "Sync client communications and opportunity tracking.",
-                help_liscio_step1: "Log into Liscio → Settings → API Keys",
-                help_liscio_step2: "Copy your API key",
-                help_liscio_step3: "Enable sync in Integrations section above",
+                help_qbtime_desc: "Sync team hours for real utilization and effective cost-per-hour data.",
+                help_qbtime_step1: "Go to the QuickBooks Time API Add-On page and create an application",
+                help_qbtime_step2: "Set the OAuth Redirect URI to the value configured on the server",
+                help_qbtime_step3: "Toggle QuickBooks Time on above and sign in when prompted",
                 help_support_title: "Support Contact",
 
                 integration_connected: "Connected",
@@ -1712,19 +1694,17 @@
                 title_team: "Equipo y Operaciones",
 
                 kpi_monthly_revenue: "Ingresos Mensuales",
-                kpi_mrr: "Ingresos Recurrentes Mensuales",
+                kpi_mrr: "Ingresos Recurrentes",
                 kpi_mrr_short: "MRR",
-                kpi_mrr_change: "↑ +8% vs. el mes pasado",
                 kpi_profit_margin: "Margen de Utilidad Neta",
                 kpi_profit_margin_short: "Margen de Utilidad",
                 kpi_cash_balance: "Saldo de Caja",
                 kpi_cash_change: "Autonomía: 8.2 meses",
                 kpi_client_retention: "Retención de Clientes",
                 kpi_at_risk_clients: "Clientes en Riesgo",
-                kpi_at_risk_change: "↑ Requiere atención",
-                kpi_team_utilization: "Utilización del Equipo",
+                kpi_total_team_hours: "Horas Totales del Equipo",
                 kpi_quarterly_rocks: "Metas Trimestrales",
-                kpi_rocks_change: "80% de progreso",
+                kpi_rocks_change: "Sin fuente de datos en vivo — se rastrea manualmente fuera de este panel",
                 label_vs_target: "vs. meta",
 
                 section_revenue_trend: "Tendencia de Ingresos (Últimos 12 Meses)",
@@ -1808,14 +1788,10 @@
                 help_qbo_step2: "Copie su Client ID y Client Secret",
                 help_qbo_step3: "Configure el URI de redirección: https://wealthspring-dashboard.vercel.app/auth/callback",
                 help_qbo_step4: "Pegue las credenciales en la sección de Integraciones arriba",
-                help_fc_desc: "Sincronice datos de proyectos y horas facturables para el análisis de rentabilidad.",
-                help_fc_step1: "Inicie sesión en FinancialCents → Configuración → Claves API",
-                help_fc_step2: "Copie su clave API",
-                help_fc_step3: "Active la sincronización en la sección de Integraciones arriba",
-                help_liscio_desc: "Sincronice comunicaciones con clientes y seguimiento de oportunidades.",
-                help_liscio_step1: "Inicie sesión en Liscio → Configuración → Claves API",
-                help_liscio_step2: "Copie su clave API",
-                help_liscio_step3: "Active la sincronización en la sección de Integraciones arriba",
+                help_qbtime_desc: "Sincronice las horas del equipo para obtener datos reales de utilización y costo efectivo por hora.",
+                help_qbtime_step1: "Vaya a la página del Add-On de API de QuickBooks Time y cree una aplicación",
+                help_qbtime_step2: "Configure el URI de Redirección OAuth con el valor configurado en el servidor",
+                help_qbtime_step3: "Active QuickBooks Time arriba e inicie sesión cuando se le solicite",
                 help_support_title: "Contacto de Soporte",
 
                 integration_connected: "Conectado",
@@ -1870,7 +1846,7 @@
         });
 
         let integrationState = loadJSON('dashboardIntegrations', {
-            qbo: false, fc: false, liscio: false
+            qbo: false, qbtime: false
         });
 
         let refreshTimer = null;
@@ -2236,7 +2212,9 @@
             closeSettings();
             closeMobileSidebar();
 
-            if (tabName === 'financial') {
+            if (tabName === 'overview') {
+                loadOverviewExtras();
+            } else if (tabName === 'financial') {
                 loadFinancialPerformanceCharts();
             } else if (tabName === 'clients') {
                 loadClientIntelligence();
@@ -2451,8 +2429,7 @@
             const configs = [
                 { cardId: 'kpi-metric1', statusId: 'kpi-metric1-status', changeId: 'kpi-metric1-change', target: thresholdState.revenue, prefix: '$', suffix: 'K' },
                 { cardId: 'kpi-metric3', statusId: 'kpi-metric3-status', changeId: 'kpi-metric3-change', target: thresholdState.margin, prefix: '', suffix: '%' },
-                { cardId: 'kpi-metric5', statusId: 'kpi-metric5-status', changeId: 'kpi-metric5-change', target: thresholdState.retention, prefix: '', suffix: '%' },
-                { cardId: 'kpi-metric7', statusId: 'kpi-metric7-status', changeId: 'kpi-metric7-change', target: thresholdState.utilization, prefix: '', suffix: '%' }
+                { cardId: 'kpi-metric5', statusId: 'kpi-metric5-status', changeId: 'kpi-metric5-change', target: thresholdState.retention, prefix: '', suffix: '%' }
             ];
 
             configs.forEach(cfg => {
@@ -2546,6 +2523,7 @@
 
         function refreshDashboard() {
             refreshQuickBooksData();
+            loadOverviewExtras();
             checkDashboardStatus();
             updateLastUpdatedStamp();
         }
@@ -2561,15 +2539,6 @@
         /* ============================================================
            INTEGRATIONS
            ============================================================ */
-        function toggleIntegration(system, enabled) {
-            // FinancialCents and Liscio aren't connected to real data yet
-            // (that's a later phase) -- this remains a local preview toggle
-            // for those two until their own backend integrations exist.
-            integrationState[system] = enabled;
-            localStorage.setItem('dashboardIntegrations', JSON.stringify(integrationState));
-            updateIntegrationBadges();
-        }
-
         function handleQboToggle(checked) {
             if (checked && !integrationState.qbo) {
                 window.location.href = '/api/auth/qbo/connect';
@@ -2586,9 +2555,25 @@
             }
         }
 
+        function handleQbTimeToggle(checked) {
+            if (checked && !integrationState.qbtime) {
+                window.location.href = '/api/auth/qbtime/connect';
+            } else if (!checked && integrationState.qbtime) {
+                const confirmed = confirm(
+                    'Disconnect QuickBooks Time? Team hours and effective cost/hour will stop updating until you reconnect.'
+                );
+                if (confirmed) {
+                    window.location.href = '/api/auth/qbtime/disconnect';
+                } else {
+                    const checkbox = document.getElementById('integrationQbtime');
+                    if (checkbox) checkbox.checked = true;
+                }
+            }
+        }
+
         function updateIntegrationBadges() {
             const t = translations[currentLanguage];
-            const map = { qbo: 'qboStatus', fc: 'fcStatus', liscio: 'liscioStatus' };
+            const map = { qbo: 'qboStatus', qbtime: 'qbtimeStatus' };
             Object.keys(map).forEach(system => {
                 const badge = document.getElementById(map[system]);
                 const checkbox = document.getElementById('integration' + system.charAt(0).toUpperCase() + system.slice(1));
@@ -2745,6 +2730,9 @@
             if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
 
             refreshQuickBooksData();
+            if (currentTab === 'overview') {
+                loadOverviewExtras();
+            }
 
             if (currentTab === 'financial') {
                 loadFinancialPerformanceCharts();
@@ -2879,6 +2867,101 @@
                 updateIntegrationBadges();
             } catch (e) {
                 console.error('QuickBooks status check failed:', e);
+            }
+        }
+
+        /**
+         * Fills in the Overview tab's remaining KPI cards with real data --
+         * Recurring Revenue, Client Retention, and At-Risk Clients from
+         * QuickBooks (same /api/quickbooks/clients endpoint Client
+         * Intelligence uses), and Total Team Hours from QuickBooks Time.
+         * Runs alongside refreshQuickBooksData on the same schedule, since
+         * Overview is the landing tab and shouldn't need a tab switch to
+         * show current numbers. Quarterly Rocks has no live data source
+         * anywhere in the connected systems (it's an EOS planning concept,
+         * not something QuickBooks or QuickBooks Time tracks) -- that card
+         * intentionally stays static and clearly labeled as such rather
+         * than showing a fabricated number.
+         */
+        async function loadOverviewExtras() {
+            const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+            if (periodState.type === 'month') params.set('month', periodState.month);
+            if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+            const qs = params.toString();
+
+            try {
+                const res = await fetch(`/api/quickbooks/clients?${qs}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings';
+                    setKpiMessage('kpi-metric2', msg);
+                    setKpiMessage('kpi-metric5', msg);
+                    setKpiMessage('kpi-metric6', msg);
+                    flagDashboardIssue('qbo-disconnected', msg, 'critical');
+                } else if (data.error) {
+                    const msg = 'Could not load right now. Will retry automatically.';
+                    setKpiMessage('kpi-metric2', msg);
+                    setKpiMessage('kpi-metric5', msg);
+                    setKpiMessage('kpi-metric6', msg);
+                    flagDashboardIssue('clients-fetch-failed', 'Client data failed to load on the Overview tab. Will retry automatically.', 'warning');
+                } else {
+                    clearDashboardIssue('clients-fetch-failed');
+                    const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+
+                    if (data.recurringRevenue !== null && data.recurringRevenue !== undefined) {
+                        applyRealKpiValue('kpi-metric2', data.recurringRevenue, (v) => `$${(v / 1000).toFixed(1)}K`);
+                        const el = document.getElementById('kpi-metric2-change');
+                        if (el) { el.textContent = 'Billed to clients active a year ago too, ' + rangeLabel; el.className = 'kpi-change'; }
+                    } else {
+                        setKpiMessage('kpi-metric2', 'No prior-year data to compare');
+                    }
+
+                    if (data.retentionRate !== null && data.retentionRate !== undefined) {
+                        applyRealKpiValue('kpi-metric5', data.retentionRate, (v) => `${v}%`);
+                        recomputeThresholds();
+                    } else {
+                        setKpiMessage('kpi-metric5', 'No prior-year data to compare');
+                    }
+
+                    if (data.atRiskClientCount !== null && data.atRiskClientCount !== undefined) {
+                        applyRealKpiValue('kpi-metric6', data.atRiskClientCount, (v) => `${v}`);
+                        const el = document.getElementById('kpi-metric6-change');
+                        const statusEl = document.getElementById('kpi-metric6-status');
+                        if (el) { el.textContent = data.atRiskClientCount > 0 ? 'Have an overdue balance' : 'None right now'; el.className = 'kpi-change'; }
+                        if (statusEl) {
+                            statusEl.classList.remove('green', 'yellow', 'red');
+                            statusEl.classList.add(data.atRiskClientCount > 0 ? 'red' : 'green');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Overview client metrics fetch failed:', e);
+            }
+
+            try {
+                const res = await fetch(`/api/quickbooks/team-hours?${qs}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks Time connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks Time in Settings';
+                    setKpiMessage('kpi-metric7', msg);
+                } else if (data.error) {
+                    setKpiMessage('kpi-metric7', 'Could not load right now. Will retry automatically.');
+                    flagDashboardIssue('qbtime-fetch-failed', 'QuickBooks Time hours failed to load. Will retry automatically.', 'warning');
+                } else {
+                    clearDashboardIssue('qbtime-fetch-failed');
+                    const rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                    applyRealKpiValue('kpi-metric7', data.totalHours, (v) => `${v.toLocaleString()} hrs`);
+                    const el = document.getElementById('kpi-metric7-change');
+                    if (el) { el.textContent = rangeLabel; el.className = 'kpi-change'; }
+                }
+            } catch (e) {
+                console.error('Overview team hours fetch failed:', e);
             }
         }
 
@@ -3037,6 +3120,10 @@
                 const res = await fetch('/api/status');
                 const data = await res.json();
 
+                integrationState.qbo = !!(data.qbo && data.qbo.connected);
+                integrationState.qbtime = !!(data.qbtime && data.qbtime.connected);
+                updateIntegrationBadges();
+
                 if (data.qbo && !data.qbo.connected) {
                     flagDashboardIssue('qbo-disconnected', 'QuickBooks is not connected — data across the dashboard is out of date. Reconnect in Settings.', 'critical');
                 } else {
@@ -3055,14 +3142,17 @@
 
                         if (daysLeft < 0) {
                             clearDashboardIssue('qbtime-expiring');
-                            flagDashboardIssue('qbtime-expired', `QuickBooks Time's token expired on ${expiresAt.toLocaleDateString()} — Team hours have stopped updating. Generate a new token and reseed.`, 'critical');
+                            flagDashboardIssue('qbtime-expired', `QuickBooks Time's token expired on ${expiresAt.toLocaleDateString()} — Team hours have stopped updating. Reconnect in Settings.`, 'critical');
                         } else if (daysLeft <= 14) {
                             clearDashboardIssue('qbtime-expired');
-                            flagDashboardIssue('qbtime-expiring', `QuickBooks Time's token expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} (${expiresAt.toLocaleDateString()}) — renew it soon so Team hours don't stop updating.`, 'warning');
+                            flagDashboardIssue('qbtime-expiring', `QuickBooks Time's token expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} (${expiresAt.toLocaleDateString()}) — renew it soon, or switch to the auto-renewing connection in Settings.`, 'warning');
                         } else {
                             clearDashboardIssue('qbtime-expiring');
                             clearDashboardIssue('qbtime-expired');
                         }
+                    } else {
+                        clearDashboardIssue('qbtime-expiring');
+                        clearDashboardIssue('qbtime-expired');
                     }
                 }
             } catch (e) {
@@ -3268,7 +3358,7 @@
             if (!force && teamOpsCacheKey === cacheKey) return;
 
             const qboKpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
-            const qbTimeKpiIds = ['to-total-hours', 'to-cost-per-hour'];
+            const qbTimeKpiIds = ['to-team-size', 'to-total-hours', 'to-cost-per-hour'];
 
             const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
             if (periodState.type === 'month') params.set('month', periodState.month);
@@ -3276,6 +3366,7 @@
             const qs = params.toString();
 
             let contractLaborSpend = null;
+            let totalRevenue = null;
             let rangeLabel = '';
 
             try {
@@ -3286,18 +3377,18 @@
                     const msg = data.error === 'reauth_required'
                         ? 'QuickBooks connection expired — please reconnect in Settings'
                         : 'Connect QuickBooks in Settings to see team data here.';
-                    qboKpiIds.forEach((id) => setKpiMessage(id, msg));
+                    setKpiMessage('to-contract-labor', msg);
+                    setKpiMessage('to-total-revenue', msg);
                     flagDashboardIssue('qbo-disconnected', msg, 'critical');
                 } else if (data.error) {
-                    qboKpiIds.forEach((id) => setKpiMessage(id, 'Could not load team data right now. Try again shortly.'));
+                    setKpiMessage('to-contract-labor', 'Could not load team data right now. Try again shortly.');
+                    setKpiMessage('to-total-revenue', 'Could not load team data right now. Try again shortly.');
                     flagDashboardIssue('team-fetch-failed', 'Team & Operations data failed to load. Will retry automatically.', 'warning');
                 } else {
                     clearDashboardIssue('team-fetch-failed');
                     rangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
                     contractLaborSpend = data.contractLaborSpend ?? null;
-
-                    setKpiValueAndNote('to-team-size', data.teamSize, (v) => `${v}`, 'Contractors, paid via bank transfer', 'green');
-                    setKpiValueAndNote('to-revenue-per-member', data.revenuePerTeamMember, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                    totalRevenue = data.totalRevenue ?? null;
 
                     if (contractLaborSpend !== null) {
                         setKpiValueAndNote('to-contract-labor', contractLaborSpend, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
@@ -3305,11 +3396,12 @@
                         setKpiMessage('to-contract-labor', 'Not broken out in QuickBooks for this period');
                     }
 
-                    setKpiValueAndNote('to-total-revenue', data.totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
+                    setKpiValueAndNote('to-total-revenue', totalRevenue, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
                 }
             } catch (e) {
                 console.error('Team & Operations fetch failed:', e);
-                qboKpiIds.forEach((id) => setKpiMessage(id, 'Could not load team data right now. Try again shortly.'));
+                setKpiMessage('to-contract-labor', 'Could not load team data right now. Try again shortly.');
+                setKpiMessage('to-total-revenue', 'Could not load team data right now. Try again shortly.');
             }
 
             const roleHeader = document.getElementById('teamHoursColumnHeader');
@@ -3337,6 +3429,18 @@
                     clearDashboardIssue('qbtime-expired');
                     const timeRangeLabel = rangeLabel || formatPeriodRangeLabel(data.periodStart, data.periodEnd);
                     setKpiValueAndNote('to-total-hours', data.totalHours, (v) => `${v.toLocaleString()} hrs`, timeRangeLabel, 'green');
+
+                    if (data.teamSize !== null && data.teamSize !== undefined) {
+                        setKpiValueAndNote('to-team-size', data.teamSize, (v) => `${v}`, 'Active in QuickBooks Time', 'green');
+                    } else {
+                        setKpiMessage('to-team-size', 'Could not count active users');
+                    }
+
+                    if (totalRevenue !== null && data.teamSize) {
+                        setKpiValueAndNote('to-revenue-per-member', totalRevenue / data.teamSize, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel || timeRangeLabel, 'green');
+                    } else {
+                        setKpiMessage('to-revenue-per-member', totalRevenue === null ? 'Connect QuickBooks in Settings' : 'Waiting on active user count');
+                    }
 
                     if (contractLaborSpend !== null && data.totalHours > 0) {
                         const costPerHour = contractLaborSpend / data.totalHours;
@@ -3377,34 +3481,45 @@
          * OAuth callback redirect), shows a one-time banner, then cleans the
          * URL so refreshing the page doesn't re-show it.
          */
-        function handleQboRedirectParams() {
-            const params = new URLSearchParams(window.location.search);
-            const connected = params.get('qbo_connected');
-            const disconnected = params.get('qbo_disconnected');
-            const error = params.get('qbo_error');
-            if (!connected && !disconnected && !error) return;
-
+        function showToastBanner(message, kind) {
             const banner = document.createElement('div');
             banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:3000;padding:12px 20px;border-radius:8px;font-size:14px;font-family:Georgia,serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
-            if (connected) {
+            if (kind === 'success') {
                 banner.style.background = '#1b7c4f';
                 banner.style.color = '#fff';
-                banner.textContent = 'QuickBooks connected successfully.';
-            } else if (disconnected) {
+            } else if (kind === 'neutral') {
                 banner.style.background = '#1a3a34';
                 banner.style.color = '#e8e6e1';
-                banner.textContent = 'QuickBooks disconnected.';
             } else {
                 banner.style.background = '#c0392b';
                 banner.style.color = '#fff';
-                banner.textContent = 'QuickBooks connection failed (' + error + '). Please try again.';
             }
+            banner.textContent = message;
             document.body.appendChild(banner);
             setTimeout(() => banner.remove(), 6000);
+        }
 
-            params.delete('qbo_connected');
-            params.delete('qbo_disconnected');
-            params.delete('qbo_error');
+        function handleQboRedirectParams() {
+            const params = new URLSearchParams(window.location.search);
+            const qboConnected = params.get('qbo_connected');
+            const qboDisconnected = params.get('qbo_disconnected');
+            const qboError = params.get('qbo_error');
+            const qbtimeConnected = params.get('qbtime_connected');
+            const qbtimeDisconnected = params.get('qbtime_disconnected');
+            const qbtimeError = params.get('qbtime_error');
+
+            if (qboConnected) showToastBanner('QuickBooks connected successfully.', 'success');
+            else if (qboDisconnected) showToastBanner('QuickBooks disconnected.', 'neutral');
+            else if (qboError) showToastBanner('QuickBooks connection failed (' + qboError + '). Please try again.', 'error');
+
+            if (qbtimeConnected) showToastBanner('QuickBooks Time connected successfully.', 'success');
+            else if (qbtimeDisconnected) showToastBanner('QuickBooks Time disconnected.', 'neutral');
+            else if (qbtimeError) showToastBanner('QuickBooks Time connection failed (' + qbtimeError + '). Please try again.', 'error');
+
+            if (!qboConnected && !qboDisconnected && !qboError && !qbtimeConnected && !qbtimeDisconnected && !qbtimeError) return;
+
+            ['qbo_connected', 'qbo_disconnected', 'qbo_error', 'qbtime_connected', 'qbtime_disconnected', 'qbtime_error']
+                .forEach((key) => params.delete(key));
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
@@ -3470,6 +3585,7 @@
                 if (revenueLabel) revenueLabel.textContent = formatPeriodRevenueLabel(periodState);
             });
             safeInit('refreshQuickBooksData', refreshQuickBooksData);
+            safeInit('loadOverviewExtras', loadOverviewExtras);
             safeInit('checkDashboardStatus', checkDashboardStatus);
         });
 
