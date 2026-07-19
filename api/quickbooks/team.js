@@ -8,13 +8,6 @@ import {
 
 export const config = { runtime: 'edge' };
 
-// Wealthspring's own team size -- kept as a simple constant rather than
-// derived from QuickBooks, since contractors paid via bank transfer aren't
-// reliably represented as a countable QBO entity, and this number changes
-// rarely enough that hardcoding it here is more honest than guessing at it
-// from transaction data.
-const TEAM_SIZE = 3;
-
 const VALID_TYPES = new Set(['month', 'quarter', 'year']);
 
 function json(obj) {
@@ -61,9 +54,7 @@ export default async function handler(request) {
       asOf: new Date().toISOString(),
       periodStart: pnl.startDate,
       periodEnd: pnl.endDate,
-      teamSize: TEAM_SIZE,
       totalRevenue: pnl.totalRevenue,
-      revenuePerTeamMember: pnl.totalRevenue !== null ? pnl.totalRevenue / TEAM_SIZE : null,
       contractLaborSpend,
     });
   } catch (e) {
