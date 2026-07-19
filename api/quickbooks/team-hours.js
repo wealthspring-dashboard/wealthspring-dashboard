@@ -1,5 +1,5 @@
 import { getQbTimeTokens, setQbTimeTokens, clearQbTimeTokens } from '../../lib/kv.js';
-import { ensureFreshQbTimeTokens, fetchHoursByUser, fetchActiveUserCount, QbTimeAuthError } from '../../lib/qbotime.js';
+import { ensureFreshQbTimeTokens, fetchHoursByUser, QbTimeAuthError } from '../../lib/qbotime.js';
 
 export const config = { runtime: 'edge' };
 
@@ -68,12 +68,17 @@ export default async function handler(request) {
     if (refreshed) await setQbTimeTokens(freshTokens);
 
     const current = getDateRangeFor({ type, year, month, quarter });
-    const [hoursByUser, teamSize] = await Promise.all([
-      fetchHoursByUser(freshTokens, current),
-      fetchActiveUserCount(freshTokens).catch(() => null),
-    ]);
+    const hoursByUser = await fetchHoursByUser(freshTokens, current);
 
     const totalHours = hoursByUser.reduce((sum, u) => sum + u.hours, 0);
+
+    // Team Size = number of distinct people who actually logged hours this
+    // period, i.e. exactly the rows shown in the roster table below it.
+    // Deliberately NOT "everyone marked active in QuickBooks Time" -- that
+    // count included stale/legacy seats nobody had gotten around to
+    // deactivating, which is why it was showing 17 against a roster of a
+    // handful of real people.
+    const teamSize = hoursByUser.length;
 
     return json({
       connected: true,
