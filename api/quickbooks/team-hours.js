@@ -1,5 +1,5 @@
-import { getQbTimeTokens, clearQbTimeTokens } from '../../lib/kv.js';
-import { fetchHoursByUser, QbTimeAuthError } from '../../lib/qbotime.js';
+import { getQbTimeTokens, setQbTimeTokens, clearQbTimeTokens } from '../../lib/kv.js';
+import { ensureFreshQbTimeTokens, fetchHoursByUser, fetchActiveUserCount, QbTimeAuthError } from '../../lib/qbotime.js';
 
 export const config = { runtime: 'edge' };
 
@@ -60,9 +60,18 @@ export default async function handler(request) {
   const tokens = await getQbTimeTokens();
   if (!tokens) return json({ connected: false });
 
+  const clientId = process.env.QBTIME_CLIENT_ID;
+  const clientSecret = process.env.QBTIME_CLIENT_SECRET;
+
   try {
+    const { tokens: freshTokens, refreshed } = await ensureFreshQbTimeTokens(tokens, clientId, clientSecret);
+    if (refreshed) await setQbTimeTokens(freshTokens);
+
     const current = getDateRangeFor({ type, year, month, quarter });
-    const hoursByUser = await fetchHoursByUser(tokens, current);
+    const [hoursByUser, teamSize] = await Promise.all([
+      fetchHoursByUser(freshTokens, current),
+      fetchActiveUserCount(freshTokens).catch(() => null),
+    ]);
 
     const totalHours = hoursByUser.reduce((sum, u) => sum + u.hours, 0);
 
@@ -72,6 +81,7 @@ export default async function handler(request) {
       periodStart: current.startDate,
       periodEnd: current.endDate,
       totalHours: Math.round(totalHours * 100) / 100,
+      teamSize,
       hoursByUser,
     });
   } catch (e) {
