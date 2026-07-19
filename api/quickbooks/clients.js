@@ -94,15 +94,28 @@ export default async function handler(request) {
     const topClientConcentration = totalRevenue > 0 ? Math.round((top3Total / totalRevenue) * 1000) / 10 : null;
 
     let retentionRate = null;
+    let recurringRevenue = null;
     if (priorSales.length > 0) {
+      const priorNames = new Set(priorSales.map((c) => c.name.toLowerCase()));
       const currentNames = new Set(currentSales.map((c) => c.name.toLowerCase()));
       const retained = priorSales.filter((c) => currentNames.has(c.name.toLowerCase())).length;
       retentionRate = Math.round((retained / priorSales.length) * 1000) / 10;
+
+      // Proxy for "recurring revenue": this period's billings from clients
+      // who were also billed in the same period last year. QuickBooks has
+      // no concept of a subscription/recurring line item to read directly,
+      // so "still paying a year later" is the most defensible stand-in --
+      // real revenue, just filtered down to clients showing a repeat
+      // pattern rather than a one-off engagement.
+      recurringRevenue = currentSales
+        .filter((c) => priorNames.has(c.name.toLowerCase()))
+        .reduce((sum, c) => sum + c.amount, 0);
     }
 
     // At-risk: real outstanding balances over $0, flagged distinctly if the
     // client also isn't showing up in this period's active sales (i.e. they
     // owe money AND haven't had new billable activity recently).
+    const atRiskClientCount = agedReceivables.length;
     const atRiskClients = agedReceivables.slice(0, 10).map((c) => ({
       name: c.name,
       amountOwed: c.amount,
@@ -118,6 +131,8 @@ export default async function handler(request) {
       avgRevenuePerClient,
       topClientConcentration,
       retentionRate,
+      recurringRevenue,
+      atRiskClientCount,
       atRiskClients,
       topClients: currentSales.slice(0, 5),
     });
