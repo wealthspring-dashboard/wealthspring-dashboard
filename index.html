@@ -1357,6 +1357,7 @@
                                 <tr>
                                     <th data-i18n="th_employee">Employee</th>
                                     <th id="teamHoursColumnHeader" data-i18n="th_role">Role</th>
+                                    <th id="teamRevenueColumnHeader" data-i18n="th_revenue_attributed" style="display:none;">Revenue Attributed (Est.)</th>
                                 </tr>
                             </thead>
                             <tbody id="teamTableBody">
@@ -1376,6 +1377,7 @@
                         </table>
                         </div>
                         <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">This roster is manually maintained and may be out of date — once QuickBooks Time is connected, this list and each person's hours will be pulled live instead.</div>
+                        <div id="teamRevenueAttributionNote" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
                     </div>
                 </div>
             </div>
@@ -1622,6 +1624,7 @@
                 kpi_cost_per_hour: "Effective Cost/Hour",
                 kpi_connect_qbtime: "Connect QuickBooks Time in Settings",
                 th_hours_this_period: "Hours This Period",
+                th_revenue_attributed: "Revenue Attributed (Est.)",
                 section_team_roster: "Team Roster",
                 team_utilization_note: "Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.",
                 section_team_utilization: "Team Utilization",
@@ -1749,6 +1752,7 @@
                 kpi_cost_per_hour: "Costo Efectivo por Hora",
                 kpi_connect_qbtime: "Conecte QuickBooks Time en Configuración",
                 th_hours_this_period: "Horas Este Período",
+                th_revenue_attributed: "Ingresos Atribuidos (Est.)",
                 section_team_roster: "Plantilla del Equipo",
                 team_utilization_note: "Los datos de utilización y horas por persona requieren una integración con QuickBooks Time, planeada como un proyecto futuro — no se muestran aquí para evitar datos inventados.",
                 section_team_utilization: "Utilización del Equipo",
@@ -3388,6 +3392,48 @@
          */
         let teamOpsCacheKey = null;
 
+        /**
+         * Splits each client's revenue across whoever logged QuickBooks
+         * Time hours against them that period, proportional to hours
+         * worked. This is an allocation, not a direct measurement -- it
+         * assumes every hour is worth the same regardless of who logged
+         * it, which won't be literally true if people bill at different
+         * effective rates. Clients logged in QB Time whose name doesn't
+         * match any QuickBooks customer are skipped and reported back
+         * separately so a naming mismatch is visible rather than silently
+         * dropped.
+         */
+        function computeRevenueAttribution(hoursByUserAndClient, allClientRevenue) {
+            const revenueByClientKey = new Map();
+            (allClientRevenue || []).forEach((c) => {
+                revenueByClientKey.set(c.name.trim().toLowerCase(), c.amount);
+            });
+
+            const totalHoursByClientKey = new Map();
+            (hoursByUserAndClient || []).forEach((e) => {
+                const key = e.clientName.trim().toLowerCase();
+                totalHoursByClientKey.set(key, (totalHoursByClientKey.get(key) || 0) + e.hours);
+            });
+
+            const revenueByUserName = new Map();
+            const unmatchedClientNames = new Set();
+
+            (hoursByUserAndClient || []).forEach((e) => {
+                const key = e.clientName.trim().toLowerCase();
+                const clientRevenue = revenueByClientKey.get(key);
+                if (clientRevenue === undefined) {
+                    unmatchedClientNames.add(e.clientName);
+                    return;
+                }
+                const totalHoursForClient = totalHoursByClientKey.get(key);
+                const share = totalHoursForClient > 0 ? (e.hours / totalHoursForClient) * clientRevenue : 0;
+                const userKey = e.userName.trim().toLowerCase();
+                revenueByUserName.set(userKey, (revenueByUserName.get(userKey) || 0) + share);
+            });
+
+            return { revenueByUserName, unmatchedClientNames: Array.from(unmatchedClientNames) };
+        }
+
         async function loadTeamOperations(force = false) {
             const cacheKey = periodCacheKey();
             if (!force && teamOpsCacheKey === cacheKey) return;
@@ -3440,7 +3486,19 @@
                 setKpiMessage('to-total-revenue', 'Could not load team data right now. Try again shortly.');
             }
 
+            let allClientRevenue = null;
+            try {
+                const res = await fetch(`/api/quickbooks/clients?${qs}`);
+                const data = await res.json();
+                if (data.connected && !data.error) {
+                    allClientRevenue = data.allClientRevenue || [];
+                }
+            } catch (e) {
+                console.error('Team & Operations client revenue fetch failed:', e);
+            }
+
             const roleHeader = document.getElementById('teamHoursColumnHeader');
+            const revenueHeader = document.getElementById('teamRevenueColumnHeader');
             const tbody = document.getElementById('teamTableBody');
 
             try {
@@ -3453,6 +3511,7 @@
                         : 'Connect QuickBooks Time in Settings';
                     qbTimeKpiIds.forEach((id) => setKpiMessage(id, msg));
                     if (roleHeader) roleHeader.textContent = 'Role';
+                    if (revenueHeader) revenueHeader.style.display = 'none';
                     // Leave the manually-maintained roster fallback in place untouched.
                     if (data.error === 'reauth_required') {
                         flagDashboardIssue('qbtime-expired', 'QuickBooks Time\'s token has stopped working — Team hours have stopped updating. Generate a new token and reseed.', 'critical');
@@ -3489,20 +3548,44 @@
                     // entirely -- this is now an accurate, live source
                     // instead of hand-maintained text that goes stale.
                     if (roleHeader) roleHeader.textContent = translations[currentLanguage]?.th_hours_this_period || 'Hours This Period';
+
+                    const attribution = computeRevenueAttribution(data.hoursByUserAndClient, allClientRevenue);
+                    const hasAttribution = allClientRevenue !== null;
+                    if (revenueHeader) revenueHeader.style.display = hasAttribution ? '' : 'none';
+
                     if (tbody) {
                         if (data.hoursByUser && data.hoursByUser.length > 0) {
-                            tbody.innerHTML = data.hoursByUser.map((u) => `
+                            tbody.innerHTML = data.hoursByUser.map((u) => {
+                                const revenue = attribution.revenueByUserName.get(u.name.trim().toLowerCase());
+                                const revenueCell = hasAttribution
+                                    ? `<td>${revenue !== undefined ? '$' + Math.round(revenue).toLocaleString() : '<span style="color:var(--text-muted);">No client-tagged hours</span>'}</td>`
+                                    : '';
+                                return `
                                 <tr>
                                     <td><strong>${escapeHtml(u.name)}</strong></td>
                                     <td>${u.hours.toLocaleString()} hrs</td>
+                                    ${revenueCell}
                                 </tr>
-                            `).join('');
+                            `;
+                            }).join('');
                         } else {
-                            tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No timesheets logged in QuickBooks Time for ${escapeHtml(timeRangeLabel)}.</td></tr>`;
+                            const colspan = hasAttribution ? 3 : 2;
+                            tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--text-muted);text-align:center;padding:20px;">No timesheets logged in QuickBooks Time for ${escapeHtml(timeRangeLabel)}.</td></tr>`;
                         }
                     }
                     const note = document.getElementById('teamTableNote');
                     if (note) note.textContent = `Live from QuickBooks Time, as of ${new Date(data.asOf).toLocaleString()}`;
+
+                    const attrNote = document.getElementById('teamRevenueAttributionNote');
+                    if (attrNote) {
+                        if (!hasAttribution) {
+                            attrNote.textContent = '';
+                        } else if (attribution.unmatchedClientNames.length > 0) {
+                            attrNote.textContent = `Revenue Attributed is an estimate (hours-weighted split of each client's billing). Couldn't match these QuickBooks Time job codes to a QuickBooks customer name: ${attribution.unmatchedClientNames.join(', ')}.`;
+                        } else {
+                            attrNote.textContent = `Revenue Attributed is an estimate: each client's billing this period, split across whoever logged hours against them, proportional to hours worked.`;
+                        }
+                    }
                 }
             } catch (e) {
                 console.error('QuickBooks Time hours fetch failed:', e);
