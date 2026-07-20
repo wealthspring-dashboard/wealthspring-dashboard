@@ -3,6 +3,7 @@ import {
   ensureFreshTokens,
   fetchProfitAndLossSummary,
   fetchContractLaborSpend,
+  fetchLaborRelatedAccounts,
   QboAuthError,
 } from '../../lib/qbo.js';
 
@@ -48,6 +49,20 @@ export default async function handler(request) {
       startDate: pnl.startDate,
       endDate: pnl.endDate,
     }).catch(() => ({ value: null, source: null }));
+
+    // Temporary diagnostic: log every Chart of Accounts entry that looks
+    // labor/contractor-related, with its current balance, so the Contract
+    // Labor calculation can be refined against Wealthspring's real chart
+    // of accounts instead of guessing at account names again. Safe to
+    // remove once that refinement ships. Awaited (not fire-and-forget) --
+    // an Edge function isn't guaranteed to finish background work after
+    // the response is returned.
+    try {
+      const laborAccounts = await fetchLaborRelatedAccounts(freshTokens);
+      console.error('Labor-related Chart of Accounts:', JSON.stringify(laborAccounts));
+    } catch (e) {
+      console.error('Labor-related Chart of Accounts lookup failed:', e.message);
+    }
 
     return json({
       connected: true,
