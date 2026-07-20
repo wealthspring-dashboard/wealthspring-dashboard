@@ -3,6 +3,7 @@ import {
   ensureFreshTokens,
   fetchCustomerSales,
   fetchAgedReceivables,
+  fetchAllCustomers,
   QboAuthError,
 } from '../../lib/qbo.js';
 
@@ -80,10 +81,11 @@ export default async function handler(request) {
     // retention (were last year's customers still active this period).
     const prior = getDateRangeFor({ type, year: year - 1, month, quarter });
 
-    const [currentSales, priorSales, agedReceivables] = await Promise.all([
+    const [currentSales, priorSales, agedReceivables, allCustomers] = await Promise.all([
       fetchCustomerSales(freshTokens, current),
       fetchCustomerSales(freshTokens, prior),
       fetchAgedReceivables(freshTokens),
+      fetchAllCustomers(freshTokens).catch(() => []),
     ]);
 
     const totalRevenue = currentSales.reduce((sum, c) => sum + c.amount, 0);
@@ -139,6 +141,12 @@ export default async function handler(request) {
       // revenue to whoever logged hours against each client in QuickBooks
       // Time. topClients above stays capped at 5 for display purposes.
       allClientRevenue: currentSales,
+      // Full active customer list (name, company name, sub-customer
+      // parent) regardless of whether they billed this period -- used by
+      // Team & Operations to check whether a QuickBooks Time job code
+      // that didn't match a billing customer is still a real QuickBooks
+      // customer versus genuinely not in QuickBooks at all.
+      allCustomers,
     });
   } catch (e) {
     console.error('QuickBooks client intelligence fetch failed:', e.message);
