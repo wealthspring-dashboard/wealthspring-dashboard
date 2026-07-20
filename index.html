@@ -3343,7 +3343,7 @@
                 if (data.retentionRate !== null && data.retentionRate !== undefined) {
                     const target = thresholdState.retention || 95;
                     const retColor = data.retentionRate >= target ? 'green' : (data.retentionRate >= target - 15 ? 'yellow' : 'red');
-                    setKpiValueAndNote('ci-retention', data.retentionRate, (v) => `${v}%`, `vs. same period last year (target ${target}%)`, retColor);
+                    setKpiValueAndNote('ci-retention', data.retentionRate, (v) => `${v}%`, `trailing 12 months (target ${target}%)`, retColor);
                 } else {
                     setKpiMessage('ci-retention', 'No prior-year data to compare');
                 }
