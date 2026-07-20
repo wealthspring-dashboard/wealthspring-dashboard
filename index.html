@@ -3467,6 +3467,16 @@
             const rawNames = new Set((hoursByUserAndClient || []).map((e) => e.clientName));
 
             rawNames.forEach((rawName) => {
+                // QuickBooks Time appends "(deleted)" to a job code's name
+                // once it's archived -- the client relationship it once
+                // represented no longer exists in any current form, so
+                // there's nothing meaningful to match it against. These
+                // hours were real work, just not attributable to a live
+                // client anymore.
+                if (/\(deleted\)/i.test(rawName)) {
+                    resolutionByRawName.set(rawName, { type: 'archived' });
+                    return;
+                }
                 if (isInternalJobName(rawName)) {
                     resolutionByRawName.set(rawName, { type: 'internal' });
                     return;
@@ -3526,6 +3536,12 @@
                 const res = resolutions.get(e.clientName);
                 const userKey = e.userName.trim().toLowerCase();
 
+                if (res.type === 'archived') {
+                    // Real hours, but no live client to attribute them to --
+                    // deliberately not counted as billable, internal, or a
+                    // mismatch worth flagging.
+                    return;
+                }
                 if (res.type === 'internal') {
                     internalHoursByUserName.set(userKey, (internalHoursByUserName.get(userKey) || 0) + e.hours);
                     return;
