@@ -4,6 +4,7 @@ import {
   fetchCustomerSales,
   fetchAgedReceivables,
   fetchAllCustomers,
+  mapWithConcurrency,
   QboAuthError,
 } from '../../lib/qbo.js';
 
@@ -17,6 +18,12 @@ function pad(n) {
 
 function lastDayOfMonth(year, month) {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function shiftDateByYears(dateStr, years) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCFullYear(d.getUTCFullYear() + years);
+  return d.toISOString().slice(0, 10);
 }
 
 /** Same date-range logic used elsewhere: full period, capped at today if current. */
@@ -77,16 +84,36 @@ export default async function handler(request) {
     if (refreshed) await setQboTokens(freshTokens);
 
     const current = getDateRangeFor({ type, year, month, quarter });
-    // Same calendar window, one year earlier -- used only to compute
-    // retention (were last year's customers still active this period).
+    // Same calendar window, one year earlier -- used only for the
+    // Recurring Revenue proxy (billed this period AND same period last
+    // year), which is intentionally period-specific.
     const prior = getDateRangeFor({ type, year: year - 1, month, quarter });
 
-    const [currentSales, priorSales, agedReceivables, allCustomers] = await Promise.all([
-      fetchCustomerSales(freshTokens, current),
-      fetchCustomerSales(freshTokens, prior),
-      fetchAgedReceivables(freshTokens),
-      fetchAllCustomers(freshTokens).catch(() => []),
-    ]);
+    // Retention uses a full trailing-12-month window instead, ending at
+    // the selected period -- a client who paused for a few months and
+    // came back (maybe even for a different service) still counts as
+    // retained as long as they billed something somewhere in each
+    // 12-month window. Comparing one narrow period to the same narrow
+    // period a year ago would incorrectly show them as churned if their
+    // pause happened to land on that specific window.
+    const trailingEnd = current.endDate;
+    const trailingStart = shiftDateByYears(trailingEnd, -1);
+    const priorTrailingEnd = trailingStart;
+    const priorTrailingStart = shiftDateByYears(priorTrailingEnd, -1);
+
+    const [currentSales, priorSales, agedReceivables, allCustomers, trailingSales, priorTrailingSales] =
+      await mapWithConcurrency(
+        [
+          () => fetchCustomerSales(freshTokens, current),
+          () => fetchCustomerSales(freshTokens, prior),
+          () => fetchAgedReceivables(freshTokens),
+          () => fetchAllCustomers(freshTokens).catch(() => []),
+          () => fetchCustomerSales(freshTokens, { startDate: trailingStart, endDate: trailingEnd }),
+          () => fetchCustomerSales(freshTokens, { startDate: priorTrailingStart, endDate: priorTrailingEnd }),
+        ],
+        3,
+        (task) => task()
+      );
 
     const totalRevenue = currentSales.reduce((sum, c) => sum + c.amount, 0);
     const activeClientCount = currentSales.length;
@@ -96,12 +123,15 @@ export default async function handler(request) {
     const topClientConcentration = totalRevenue > 0 ? Math.round((top3Total / totalRevenue) * 1000) / 10 : null;
 
     let retentionRate = null;
+    if (priorTrailingSales.length > 0) {
+      const trailingNames = new Set(trailingSales.map((c) => c.name.toLowerCase()));
+      const retained = priorTrailingSales.filter((c) => trailingNames.has(c.name.toLowerCase())).length;
+      retentionRate = Math.round((retained / priorTrailingSales.length) * 1000) / 10;
+    }
+
     let recurringRevenue = null;
     if (priorSales.length > 0) {
       const priorNames = new Set(priorSales.map((c) => c.name.toLowerCase()));
-      const currentNames = new Set(currentSales.map((c) => c.name.toLowerCase()));
-      const retained = priorSales.filter((c) => currentNames.has(c.name.toLowerCase())).length;
-      retentionRate = Math.round((retained / priorSales.length) * 1000) / 10;
 
       // Proxy for "recurring revenue": this period's billings from clients
       // who were also billed in the same period last year. QuickBooks has
@@ -133,6 +163,9 @@ export default async function handler(request) {
       avgRevenuePerClient,
       topClientConcentration,
       retentionRate,
+      retentionBasis: 'trailing_12_months',
+      retentionWindowStart: priorTrailingStart,
+      retentionWindowEnd: trailingEnd,
       recurringRevenue,
       atRiskClientCount,
       atRiskClients,
