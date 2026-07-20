@@ -891,20 +891,43 @@
 
             .topbar {
                 padding: 12px;
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+
+            .topbar-left {
+                width: 100%;
             }
 
             .page-title {
                 font-size: 18px;
-                max-width: 42vw;
+                max-width: 70vw;
             }
 
             .page-subtitle {
                 font-size: 12px;
-                max-width: 42vw;
+                max-width: 70vw;
             }
 
             .topbar-date {
                 display: none;
+            }
+
+            .topbar-actions {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .period-selector {
+                flex-wrap: wrap;
+                flex: 1 1 auto;
+            }
+
+            .period-selector select {
+                flex: 1 1 auto;
+                min-width: 68px;
             }
 
             .theme-toggle {
@@ -921,6 +944,24 @@
 
             .chart-container {
                 height: 240px;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .chart-grid .chart-container {
+                height: 220px;
+            }
+
+            .issue-banner {
+                padding: 10px 16px;
+                flex-wrap: wrap;
+            }
+
+            .issue-details-panel {
+                padding: 4px 16px 14px 16px;
             }
 
             .settings-panel {
@@ -958,11 +999,17 @@
 
         @media (max-width: 400px) {
             .page-title {
-                max-width: 32vw;
+                max-width: 82vw;
             }
 
             .page-subtitle {
-                max-width: 32vw;
+                max-width: 82vw;
+            }
+
+            .period-selector select {
+                min-width: 60px;
+                font-size: 11px;
+                padding: 5px 4px;
             }
         }
     </style>
