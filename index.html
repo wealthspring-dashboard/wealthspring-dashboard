@@ -1347,6 +1347,12 @@
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-cost-per-hour-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
+                        <div class="kpi-card" id="to-billable-pct">
+                            <div class="kpi-status-indicator green" id="to-billable-pct-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_billable_pct">Billable Hours %</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="to-billable-pct-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
+                        </div>
                     </div>
 
                     <div class="section">
@@ -1622,6 +1628,7 @@
                 kpi_period_revenue: "Period Revenue",
                 kpi_total_hours: "Total Team Hours",
                 kpi_cost_per_hour: "Effective Cost/Hour",
+                kpi_billable_pct: "Billable Hours %",
                 kpi_connect_qbtime: "Connect QuickBooks Time in Settings",
                 th_hours_this_period: "Hours This Period",
                 th_revenue_attributed: "Revenue Attributed (Est.)",
@@ -1750,6 +1757,7 @@
                 kpi_period_revenue: "Ingresos del Período",
                 kpi_total_hours: "Horas Totales del Equipo",
                 kpi_cost_per_hour: "Costo Efectivo por Hora",
+                kpi_billable_pct: "% de Horas Facturables",
                 kpi_connect_qbtime: "Conecte QuickBooks Time en Configuración",
                 th_hours_this_period: "Horas Este Período",
                 th_revenue_attributed: "Ingresos Atribuidos (Est.)",
@@ -3393,45 +3401,157 @@
         let teamOpsCacheKey = null;
 
         /**
+         * Strips the kind of noise that makes the same client show up as
+         * multiple different QuickBooks Time job code names: a unique-ID
+         * suffix QuickBooks Time appends to disambiguate ("_1761927145955"),
+         * parenthetical notes ("(deleted)", "(Prentiempo)"), and stray
+         * punctuation.
+         */
+        function normalizeClientKey(name) {
+            return name
+                .trim()
+                .toLowerCase()
+                .replace(/_\d+$/, '')
+                .replace(/\s*\([^)]*\)\s*/g, ' ')
+                .replace(/[.,]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        /** A looser pass on top of normalizeClientKey -- also drops common entity suffixes. */
+        function looseClientKey(name) {
+            return normalizeClientKey(name)
+                .replace(/\b(llc|inc|incorporated|corp|corporation|co|company|dba)\b/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        const INTERNAL_JOB_KEYWORDS = ['wfs', 'wealthspring'];
+        const INTERNAL_JOB_PHRASES = [
+            'daily meeting', 'approval & budgets', 'approval and budgets', 'processes recording',
+            'projects & tasks', 'projects and tasks', 'miscellaneous', 'cleaning', 'time reports',
+        ];
+
+        /** Job codes for work done for Wealthspring itself, not a client -- no revenue to attribute to these. */
+        function isInternalJobName(name) {
+            const norm = normalizeClientKey(name);
+            if (INTERNAL_JOB_KEYWORDS.some((kw) => norm.includes(kw))) return true;
+            if (INTERNAL_JOB_PHRASES.some((phrase) => norm.includes(phrase))) return true;
+            return false;
+        }
+
+        /**
+         * Resolves every distinct QuickBooks Time job code name seen this
+         * period to one of: internal work, a real billing customer (merging
+         * near-duplicate name variants of the same client together), a real
+         * QuickBooks customer with no revenue this period, or genuinely
+         * unmatched. Runs once per distinct raw name so near-duplicates like
+         * "Dutch Baby Bakery" and "Dutch Baby Bakery_1761927145955" both
+         * resolve to the same canonical client and get merged for the
+         * proportional-split math, instead of being treated as two
+         * different, smaller clients.
+         */
+        function resolveClientNames(hoursByUserAndClient, allClientRevenue, allCustomers) {
+            const revenueByExactKey = new Map();
+            const revenueByLooseKey = new Map();
+            (allClientRevenue || []).forEach((c) => {
+                const exact = normalizeClientKey(c.name);
+                if (!revenueByExactKey.has(exact)) revenueByExactKey.set(exact, { name: c.name, amount: c.amount });
+                const loose = looseClientKey(c.name);
+                if (!revenueByLooseKey.has(loose)) revenueByLooseKey.set(loose, { name: c.name, amount: c.amount });
+            });
+
+            const knownCustomerLooseKeys = new Set((allCustomers || []).map((c) => looseClientKey(c.name)));
+
+            const resolutionByRawName = new Map();
+            const rawNames = new Set((hoursByUserAndClient || []).map((e) => e.clientName));
+
+            rawNames.forEach((rawName) => {
+                if (isInternalJobName(rawName)) {
+                    resolutionByRawName.set(rawName, { type: 'internal' });
+                    return;
+                }
+                const exactKey = normalizeClientKey(rawName);
+                if (revenueByExactKey.has(exactKey)) {
+                    const match = revenueByExactKey.get(exactKey);
+                    resolutionByRawName.set(rawName, { type: 'matched', canonicalKey: exactKey, canonicalName: match.name, amount: match.amount });
+                    return;
+                }
+                const looseKey = looseClientKey(rawName);
+                if (revenueByLooseKey.has(looseKey)) {
+                    const match = revenueByLooseKey.get(looseKey);
+                    resolutionByRawName.set(rawName, { type: 'matched', canonicalKey: looseKey, canonicalName: match.name, amount: match.amount });
+                    return;
+                }
+                if (knownCustomerLooseKeys.has(looseKey)) {
+                    resolutionByRawName.set(rawName, { type: 'known-no-revenue' });
+                    return;
+                }
+                resolutionByRawName.set(rawName, { type: 'unmatched' });
+            });
+
+            return resolutionByRawName;
+        }
+
+        /**
          * Splits each client's revenue across whoever logged QuickBooks
          * Time hours against them that period, proportional to hours
          * worked. This is an allocation, not a direct measurement -- it
          * assumes every hour is worth the same regardless of who logged
          * it, which won't be literally true if people bill at different
-         * effective rates. Clients logged in QB Time whose name doesn't
-         * match any QuickBooks customer are skipped and reported back
-         * separately so a naming mismatch is visible rather than silently
-         * dropped.
+         * effective rates. Internal/non-billable work (Wealthspring's own
+         * admin, meetings, etc) is tracked separately, not forced into a
+         * client match. Job codes that don't match a billing client but do
+         * match a known QuickBooks customer (just $0 this period) are
+         * tracked separately too, so only genuinely-unrecognized names show
+         * up as a real mismatch worth investigating.
          */
-        function computeRevenueAttribution(hoursByUserAndClient, allClientRevenue) {
-            const revenueByClientKey = new Map();
-            (allClientRevenue || []).forEach((c) => {
-                revenueByClientKey.set(c.name.trim().toLowerCase(), c.amount);
-            });
+        function computeRevenueAttribution(hoursByUserAndClient, allClientRevenue, allCustomers) {
+            const resolutions = resolveClientNames(hoursByUserAndClient, allClientRevenue, allCustomers);
 
-            const totalHoursByClientKey = new Map();
+            const totalHoursByCanonicalKey = new Map();
             (hoursByUserAndClient || []).forEach((e) => {
-                const key = e.clientName.trim().toLowerCase();
-                totalHoursByClientKey.set(key, (totalHoursByClientKey.get(key) || 0) + e.hours);
+                const res = resolutions.get(e.clientName);
+                if (res.type !== 'matched') return;
+                totalHoursByCanonicalKey.set(res.canonicalKey, (totalHoursByCanonicalKey.get(res.canonicalKey) || 0) + e.hours);
             });
 
             const revenueByUserName = new Map();
+            const internalHoursByUserName = new Map();
+            const billableHoursByUserName = new Map();
             const unmatchedClientNames = new Set();
+            const knownNoRevenueClientNames = new Set();
 
             (hoursByUserAndClient || []).forEach((e) => {
-                const key = e.clientName.trim().toLowerCase();
-                const clientRevenue = revenueByClientKey.get(key);
-                if (clientRevenue === undefined) {
+                const res = resolutions.get(e.clientName);
+                const userKey = e.userName.trim().toLowerCase();
+
+                if (res.type === 'internal') {
+                    internalHoursByUserName.set(userKey, (internalHoursByUserName.get(userKey) || 0) + e.hours);
+                    return;
+                }
+                if (res.type === 'unmatched') {
                     unmatchedClientNames.add(e.clientName);
                     return;
                 }
-                const totalHoursForClient = totalHoursByClientKey.get(key);
-                const share = totalHoursForClient > 0 ? (e.hours / totalHoursForClient) * clientRevenue : 0;
-                const userKey = e.userName.trim().toLowerCase();
+                if (res.type === 'known-no-revenue') {
+                    knownNoRevenueClientNames.add(e.clientName);
+                    return;
+                }
+                // matched
+                billableHoursByUserName.set(userKey, (billableHoursByUserName.get(userKey) || 0) + e.hours);
+                const totalHoursForClient = totalHoursByCanonicalKey.get(res.canonicalKey);
+                const share = totalHoursForClient > 0 ? (e.hours / totalHoursForClient) * res.amount : 0;
                 revenueByUserName.set(userKey, (revenueByUserName.get(userKey) || 0) + share);
             });
 
-            return { revenueByUserName, unmatchedClientNames: Array.from(unmatchedClientNames) };
+            return {
+                revenueByUserName,
+                internalHoursByUserName,
+                billableHoursByUserName,
+                unmatchedClientNames: Array.from(unmatchedClientNames),
+                knownNoRevenueClientNames: Array.from(knownNoRevenueClientNames),
+            };
         }
 
         async function loadTeamOperations(force = false) {
@@ -3439,7 +3559,7 @@
             if (!force && teamOpsCacheKey === cacheKey) return;
 
             const qboKpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
-            const qbTimeKpiIds = ['to-team-size', 'to-total-hours', 'to-cost-per-hour'];
+            const qbTimeKpiIds = ['to-team-size', 'to-total-hours', 'to-cost-per-hour', 'to-billable-pct'];
 
             const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
             if (periodState.type === 'month') params.set('month', periodState.month);
@@ -3487,11 +3607,13 @@
             }
 
             let allClientRevenue = null;
+            let allCustomers = null;
             try {
                 const res = await fetch(`/api/quickbooks/clients?${qs}`);
                 const data = await res.json();
                 if (data.connected && !data.error) {
                     allClientRevenue = data.allClientRevenue || [];
+                    allCustomers = data.allCustomers || [];
                 }
             } catch (e) {
                 console.error('Team & Operations client revenue fetch failed:', e);
@@ -3549,21 +3671,26 @@
                     // instead of hand-maintained text that goes stale.
                     if (roleHeader) roleHeader.textContent = translations[currentLanguage]?.th_hours_this_period || 'Hours This Period';
 
-                    const attribution = computeRevenueAttribution(data.hoursByUserAndClient, allClientRevenue);
+                    const attribution = computeRevenueAttribution(data.hoursByUserAndClient, allClientRevenue, allCustomers);
                     const hasAttribution = allClientRevenue !== null;
                     if (revenueHeader) revenueHeader.style.display = hasAttribution ? '' : 'none';
 
                     if (tbody) {
                         if (data.hoursByUser && data.hoursByUser.length > 0) {
                             tbody.innerHTML = data.hoursByUser.map((u) => {
-                                const revenue = attribution.revenueByUserName.get(u.name.trim().toLowerCase());
+                                const key = u.name.trim().toLowerCase();
+                                const revenue = attribution.revenueByUserName.get(key);
+                                const internalHours = attribution.internalHoursByUserName.get(key) || 0;
+                                const internalNote = internalHours > 0
+                                    ? `<div style="font-size:11px;color:var(--text-muted);">${internalHours.toLocaleString()} hrs internal/non-billable</div>`
+                                    : '';
                                 const revenueCell = hasAttribution
-                                    ? `<td>${revenue !== undefined ? '$' + Math.round(revenue).toLocaleString() : '<span style="color:var(--text-muted);">No client-tagged hours</span>'}</td>`
+                                    ? `<td>${revenue !== undefined ? '$' + Math.round(revenue).toLocaleString() : '<span style="color:var(--text-muted);">No billable client hours</span>'}</td>`
                                     : '';
                                 return `
                                 <tr>
                                     <td><strong>${escapeHtml(u.name)}</strong></td>
-                                    <td>${u.hours.toLocaleString()} hrs</td>
+                                    <td>${u.hours.toLocaleString()} hrs${internalNote}</td>
                                     ${revenueCell}
                                 </tr>
                             `;
@@ -3580,11 +3707,26 @@
                     if (attrNote) {
                         if (!hasAttribution) {
                             attrNote.textContent = '';
-                        } else if (attribution.unmatchedClientNames.length > 0) {
-                            attrNote.textContent = `Revenue Attributed is an estimate (hours-weighted split of each client's billing). Couldn't match these QuickBooks Time job codes to a QuickBooks customer name: ${attribution.unmatchedClientNames.join(', ')}.`;
                         } else {
-                            attrNote.textContent = `Revenue Attributed is an estimate: each client's billing this period, split across whoever logged hours against them, proportional to hours worked.`;
+                            let text = `Revenue Attributed is an estimate: each client's billing this period, split across whoever logged hours against them, proportional to hours worked. Job codes matching "WFS"/"Wealthspring" or internal admin work are tracked as non-billable, not attributed to a client.`;
+                            if (attribution.unmatchedClientNames.length > 0) {
+                                text += ` Couldn't find these QuickBooks Time job codes anywhere in your QuickBooks customer list -- worth checking if they're a contact name rather than the actual customer name, or a typo: ${attribution.unmatchedClientNames.join(', ')}.`;
+                            }
+                            attrNote.textContent = text;
                         }
+                    }
+
+                    // Billable Hours % -- total hours matched to a real client
+                    // divided by total hours logged, company-wide. A standard
+                    // practice-management ratio: how much of the team's time
+                    // is actually billable versus internal/admin overhead.
+                    let totalBillableHours = 0;
+                    attribution.billableHoursByUserName.forEach((h) => { totalBillableHours += h; });
+                    if (data.totalHours > 0) {
+                        const billablePct = Math.round((totalBillableHours / data.totalHours) * 1000) / 10;
+                        setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs`, billablePct >= 70 ? 'green' : (billablePct >= 50 ? 'yellow' : 'red'));
+                    } else {
+                        setKpiMessage('to-billable-pct', 'No hours logged this period');
                     }
                 }
             } catch (e) {
