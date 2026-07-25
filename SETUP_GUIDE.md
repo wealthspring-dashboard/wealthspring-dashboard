@@ -1,115 +1,40 @@
-// Shared session-token helpers.
-//
-// Uses only standard Web APIs (crypto.subtle, TextEncoder/Decoder, atob/btoa)
-// so this exact same code runs unmodified in both:
-//   - Edge Middleware (middleware.js)
-//   - Edge Functions   (api/*.js)
-//
-// Token format: `<base64url(payload json)>.<base64url(hmac-sha256 signature)>`
-// Payload only ever contains an expiry timestamp -- there is no per-user data
-// to leak since this project uses a single shared team password.
+# Setup Guide -- Wealthspring Dashboard
 
-const COOKIE_NAME = 'wfs_session';
-const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+Practical reference for getting this dashboard running or reconfigured from scratch (e.g. after a credential rotation, or setting up a new environment). For architecture, design decisions, and every bug we've hit and fixed along the way, see the project history -- this file is just the "how," not the "why."
 
-function bytesToBase64url(bytes) {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
+## 1. What This Is
 
-function base64urlToBytes(str) {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  const binary = atob(str);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
+Wealthspring Financial Services' internal CEO executive dashboard. Pulls live data from QuickBooks Online and QuickBooks Time. Single shared team password, no individual logins. Deployed on Vercel, auto-deploying from this repo's `main` branch.
 
-async function importHmacKey(secret) {
-  return crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign', 'verify']
-  );
-}
+## 2. Environment Variables
 
-async function sign(payloadB64, secret) {
-  const key = await importHmacKey(secret);
-  const sigBuf = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payloadB64));
-  return bytesToBase64url(new Uint8Array(sigBuf));
-}
+See `env.example` for the full list of variable names this app expects. Set real values under Vercel -> this project -> Settings -> Environment Variables. **Changing an environment variable requires a redeploy to take effect** -- it does not apply retroactively to an already-running deployment.
 
-/**
- * Creates a signed, expiring session token.
- */
-export async function createSessionToken(secret, maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS) {
-  const payload = JSON.stringify({ exp: Date.now() + maxAgeSeconds * 1000 });
-  const payloadB64 = bytesToBase64url(new TextEncoder().encode(payload));
-  const sigB64 = await sign(payloadB64, secret);
-  return `${payloadB64}.${sigB64}`;
-}
+Core (needed for the dashboard to load and let you log in at all):
+- `DASHBOARD_PASSWORD` -- the shared team login password
+- `SESSION_SECRET` -- long random string, signs session cookies
+- `KV_REST_API_URL`, `KV_REST_API_TOKEN` -- from the connected Upstash Redis database (Vercel: Storage -> Marketplace Database Providers)
 
-/**
- * Verifies a session token's signature and expiry.
- * Returns true/false. Never throws.
- */
-export async function verifySessionToken(token, secret) {
-  try {
-    if (!token || typeof token !== 'string') return false;
-    const parts = token.split('.');
-    if (parts.length !== 2) return false;
-    const [payloadB64, sigB64] = parts;
-    if (!payloadB64 || !sigB64) return false;
+QuickBooks Online (Settings -> Integrations -> QuickBooks Online in the app, or set up fresh via developer.intuit.com):
+- `QBO_CLIENT_ID`, `QBO_CLIENT_SECRET`, `QBO_ENVIRONMENT`, `QBO_REDIRECT_URI`
 
-    const expectedSigB64 = await sign(payloadB64, secret);
+QuickBooks Time (a separate product from QuickBooks Online -- separate OAuth server, separate credentials, set up via the QuickBooks Time API Add-On page, not developer.intuit.com):
+- `QBTIME_CLIENT_ID`, `QBTIME_CLIENT_SECRET`, `QBTIME_REDIRECT_URI`
+- `QBTIME_SEED_ACCESS_TOKEN` / `QBTIME_TOKEN_EXPIRES_AT` only apply if using the legacy manual-token connection method instead of the OAuth flow (Settings -> Integrations -> QuickBooks Time toggle is the current, preferred path -- it auto-renews, the manual method doesn't).
 
-    // Constant-time comparison to avoid timing side-channels.
-    if (expectedSigB64.length !== sigB64.length) return false;
-    let diff = 0;
-    for (let i = 0; i < expectedSigB64.length; i++) {
-      diff |= expectedSigB64.charCodeAt(i) ^ sigB64.charCodeAt(i);
-    }
-    if (diff !== 0) return false;
+## 3. Vercel Configuration Checklist
 
-    const payloadJson = new TextDecoder().decode(base64urlToBytes(payloadB64));
-    const payload = JSON.parse(payloadJson);
-    if (!payload || typeof payload.exp !== 'number') return false;
-    if (Date.now() > payload.exp) return false;
+- Deployment Protection must stay **off** (Settings -> Deployment Protection), or the app becomes unreachable without a separate Vercel login.
+- Confirm auto-deploy is wired to this repo's `main` branch.
 
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+## 4. Uploading Changes (no local dev environment, no git CLI)
 
-/**
- * Extracts a named cookie's raw value from a Request's Cookie header.
- */
-export function getCookie(request, name) {
-  const header = request.headers.get('cookie');
-  if (!header) return null;
-  const match = header.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : null;
-}
+Everything is done through GitHub's web interface:
+- **Replacing an existing file**: navigate to its exact folder, "Add file -> Upload files," drag it in -- the filename must match exactly or it creates a duplicate instead of replacing.
+- **Adding a genuinely new file**: "Add file -> Create new file," type the full path (including any new folder) into the filename field -- typing a `/` auto-creates the folder.
+- Always double-check you're in the correct folder before creating a new file -- creating it while still inside the wrong parent directory nests it incorrectly and breaks import paths.
+- After any upload, check Vercel's Deployments tab shows **Ready**, not **Error**, before assuming the change is live.
 
-export function buildSessionCookie(token, maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS) {
-  const attrs = [
-    `${COOKIE_NAME}=${encodeURIComponent(token)}`,
-    'Path=/',
-    'HttpOnly',
-    'Secure',
-    'SameSite=Lax',
-    `Max-Age=${maxAgeSeconds}`,
-  ];
-  return attrs.join('; ');
-}
+## 5. Reconnecting an Integration
 
-export function buildClearSessionCookie() {
-  return `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
-}
-
-export { COOKIE_NAME };
+If QuickBooks or QuickBooks Time ever needs to be reconnected (expired credentials, revoked access, etc.), it's a Settings-panel action inside the app itself -- toggle the integration off then on, which walks through the OAuth flow again. No file changes needed for a routine reconnect.
