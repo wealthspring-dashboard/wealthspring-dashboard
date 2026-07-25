@@ -1346,6 +1346,7 @@
                         </table>
                         </div>
                         <div id="topClientsTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                        <div id="topClientsPaginationNote" style="font-size:12px;color:var(--text-muted);"></div>
                     </div>
 
                     <div class="section">
@@ -1365,6 +1366,7 @@
                         </table>
                         </div>
                         <div id="atRiskTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                        <div id="atRiskPaginationNote" style="font-size:12px;color:var(--text-muted);"></div>
                     </div>
                 </div>
 
@@ -1413,6 +1415,7 @@
                         </table>
                         </div>
                         <div id="newClientsTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                        <div id="newClientsPaginationNote" style="font-size:12px;color:var(--text-muted);"></div>
                         <p style="color: var(--text-muted); font-size: 13px; margin-top: 16px;" data-i18n="pipeline_desc">📊 This is based on when a client's QuickBooks record was created — a "won" signal after the fact, not a true pipeline. Wealthspring doesn't currently use a CRM, so deals still in progress (leads, proposals sent, negotiations) aren't tracked anywhere yet.</p>
                     </div>
                 </div>
@@ -1494,7 +1497,8 @@
                             </tbody>
                         </table>
                         </div>
-                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">This roster is manually maintained and may be out of date — once QuickBooks Time is connected, this list and each person's hours will be pulled live instead.</div>
+                        <div id="teamTableNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;" data-i18n="team_utilization_note">This is a fallback list — once QuickBooks Time is connected in Settings, this table shows your real roster, hours, and per-person revenue automatically.</div>
+                        <div id="teamPaginationNote" style="font-size:12px;color:var(--text-muted);"></div>
                         <div id="teamRevenueAttributionNote" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
                     </div>
                 </div>
@@ -1591,8 +1595,8 @@
                             <input type="number" id="thresholdRetention" value="95" min="0" max="100" onchange="updateThreshold('retention', this.value)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="label_utilization_target">Utilization Target (%)</label>
-                            <input type="number" id="thresholdUtilization" value="80" min="0" max="100" onchange="updateThreshold('utilization', this.value)">
+                            <label data-i18n="label_billable_target">Billable Hours Target (%)</label>
+                            <input type="number" id="thresholdBillable" value="70" min="0" max="100" onchange="updateThreshold('billable', this.value)">
                         </div>
                     </div>
 
@@ -1640,15 +1644,15 @@
                             <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbo_desc">Sync P&amp;L, Balance Sheet, and customer revenue data in real-time.</p>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbo_step1">Go to developer.intuit.com and create a new app</span></div>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbo_step2">Copy your Client ID and Client Secret</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbo_step3">Set redirect URI: https://wealthspring-dashboard.vercel.app/auth/callback</span></div>
+                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbo_step3">Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback</span></div>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>4.</strong> <span data-i18n="help_qbo_step4">Paste credentials in Integrations section above</span></div>
                         </div>
 
                         <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
                             <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">QuickBooks Time</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for real utilization and effective cost-per-hour data.</p>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for billable-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to the value configured on the server</span></div>
+                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback</span></div>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
                         </div>
 
@@ -1752,11 +1756,9 @@
                 th_hours_this_period: "Hours This Period",
                 th_revenue_attributed: "Revenue Attributed (Est.)",
                 section_team_roster: "Team Roster",
-                team_utilization_note: "Per-person utilization and hours data requires a QuickBooks Time integration, planned as a future project — not shown here to avoid displaying made-up numbers.",
-                section_team_utilization: "Team Utilization",
+                team_utilization_note: "This is a fallback list — once QuickBooks Time is connected in Settings, this table shows your real roster, hours, and per-person revenue automatically.",
                 th_employee: "Employee",
                 th_role: "Role",
-                th_utilization: "Utilization",
                 th_status: "Status",
                 status_on_track: "🟢 On Track",
                 role_tech_ops: "Director of Tech Ops",
@@ -1775,7 +1777,7 @@
                 label_revenue_target: "Revenue Target ($K)",
                 label_margin_target: "Profit Margin Target (%)",
                 label_retention_target: "Retention Target (%)",
-                label_utilization_target: "Utilization Target (%)",
+                label_billable_target: "Billable Hours Target (%)",
                 label_rows_per_page: "Table Rows Per Page",
                 label_auto_refresh: "Auto-Refresh (Minutes)",
                 label_dashboard_language: "Dashboard Language",
@@ -1784,11 +1786,11 @@
                 help_qbo_desc: "Sync P&L, Balance Sheet, and customer revenue data in real-time.",
                 help_qbo_step1: "Go to developer.intuit.com and create a new app",
                 help_qbo_step2: "Copy your Client ID and Client Secret",
-                help_qbo_step3: "Set redirect URI: https://wealthspring-dashboard.vercel.app/auth/callback",
+                help_qbo_step3: "Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback",
                 help_qbo_step4: "Paste credentials in Integrations section above",
-                help_qbtime_desc: "Sync team hours for real utilization and effective cost-per-hour data.",
+                help_qbtime_desc: "Sync team hours for billable-hours tracking, effective cost-per-hour, and per-person revenue attribution.",
                 help_qbtime_step1: "Go to the QuickBooks Time API Add-On page and create an application",
-                help_qbtime_step2: "Set the OAuth Redirect URI to the value configured on the server",
+                help_qbtime_step2: "Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback",
                 help_qbtime_step3: "Toggle QuickBooks Time on above and sign in when prompted",
                 help_support_title: "Support Contact",
 
@@ -1883,11 +1885,9 @@
                 th_hours_this_period: "Horas Este Período",
                 th_revenue_attributed: "Ingresos Atribuidos (Est.)",
                 section_team_roster: "Plantilla del Equipo",
-                team_utilization_note: "Los datos de utilización y horas por persona requieren una integración con QuickBooks Time, planeada como un proyecto futuro — no se muestran aquí para evitar datos inventados.",
-                section_team_utilization: "Utilización del Equipo",
+                team_utilization_note: "Esta es una lista de respaldo — una vez que QuickBooks Time esté conectado en Configuración, esta tabla mostrará su plantilla real, horas e ingresos por persona automáticamente.",
                 th_employee: "Empleado",
                 th_role: "Puesto",
-                th_utilization: "Utilización",
                 th_status: "Estado",
                 status_on_track: "🟢 En Curso",
                 role_tech_ops: "Director de Operaciones Técnicas",
@@ -1906,7 +1906,7 @@
                 label_revenue_target: "Meta de Ingresos ($K)",
                 label_margin_target: "Meta de Margen de Utilidad (%)",
                 label_retention_target: "Meta de Retención (%)",
-                label_utilization_target: "Meta de Utilización (%)",
+                label_billable_target: "Meta de Horas Facturables (%)",
                 label_rows_per_page: "Filas de Tabla por Página",
                 label_auto_refresh: "Actualización Automática (Minutos)",
                 label_dashboard_language: "Idioma del Panel",
@@ -1915,11 +1915,11 @@
                 help_qbo_desc: "Sincronice el Estado de Resultados, Balance General y datos de ingresos de clientes en tiempo real.",
                 help_qbo_step1: "Vaya a developer.intuit.com y cree una nueva aplicación",
                 help_qbo_step2: "Copie su Client ID y Client Secret",
-                help_qbo_step3: "Configure el URI de redirección: https://wealthspring-dashboard.vercel.app/auth/callback",
+                help_qbo_step3: "Configure el URI de redirección: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback",
                 help_qbo_step4: "Pegue las credenciales en la sección de Integraciones arriba",
-                help_qbtime_desc: "Sincronice las horas del equipo para obtener datos reales de utilización y costo efectivo por hora.",
+                help_qbtime_desc: "Sincronice las horas del equipo para el seguimiento de horas facturables, costo efectivo por hora y atribución de ingresos por persona.",
                 help_qbtime_step1: "Vaya a la página del Add-On de API de QuickBooks Time y cree una aplicación",
-                help_qbtime_step2: "Configure el URI de Redirección OAuth con el valor configurado en el servidor",
+                help_qbtime_step2: "Configure el URI de Redirección OAuth con: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback",
                 help_qbtime_step3: "Active QuickBooks Time arriba e inicie sesión cuando se le solicite",
                 help_support_title: "Contacto de Soporte",
 
@@ -1967,7 +1967,7 @@
         });
 
         let thresholdState = loadJSON('dashboardThresholds', {
-            revenue: 27, margin: 25, retention: 95, utilization: 80
+            revenue: 27, margin: 25, retention: 95, billable: 70
         });
 
         let optionState = loadJSON('dashboardOptions', {
@@ -2637,7 +2637,7 @@
                 thresholdRevenue: 'revenue',
                 thresholdMargin: 'margin',
                 thresholdRetention: 'retention',
-                thresholdUtilization: 'utilization'
+                thresholdBillable: 'billable'
             };
             Object.keys(map).forEach(inputId => {
                 const el = document.getElementById(inputId);
@@ -2664,23 +2664,27 @@
 
         function applyRowsPerPage() {
             const max = optionState.rows;
-            [{ body: 'atRiskTableBody', note: 'atRiskTableNote' }, { body: 'teamTableBody', note: 'teamTableNote' }]
-                .forEach(({ body, note }) => {
-                    const tbody = document.getElementById(body);
-                    const noteEl = document.getElementById(note);
-                    if (!tbody) return;
-                    const rows = Array.from(tbody.querySelectorAll('tr'));
-                    rows.forEach((row, i) => {
-                        row.style.display = i < max ? '' : 'none';
-                    });
-                    if (noteEl) {
-                        const shown = Math.min(max, rows.length);
-                        noteEl.textContent = shown < rows.length
-                            ? translations[currentLanguage].rows_showing_note
-                                .replace('{shown}', shown).replace('{total}', rows.length)
-                            : '';
-                    }
+            [
+                { body: 'topClientsTableBody', paginationNote: 'topClientsPaginationNote' },
+                { body: 'atRiskTableBody', paginationNote: 'atRiskPaginationNote' },
+                { body: 'newClientsTableBody', paginationNote: 'newClientsPaginationNote' },
+                { body: 'teamTableBody', paginationNote: 'teamPaginationNote' },
+            ].forEach(({ body, paginationNote }) => {
+                const tbody = document.getElementById(body);
+                const noteEl = document.getElementById(paginationNote);
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.forEach((row, i) => {
+                    row.style.display = i < max ? '' : 'none';
                 });
+                if (noteEl) {
+                    const shown = Math.min(max, rows.length);
+                    noteEl.textContent = shown < rows.length
+                        ? translations[currentLanguage].rows_showing_note
+                            .replace('{shown}', shown).replace('{total}', rows.length)
+                        : '';
+                }
+            });
         }
 
         function updateTableNotes() {
@@ -3438,6 +3442,7 @@
                 }
                 const note = document.getElementById('newClientsTableNote');
                 if (note) note.textContent = rangeLabel;
+                applyRowsPerPage();
             } catch (e) {
                 console.error('Pipeline & Sales fetch failed:', e);
             }
@@ -3544,6 +3549,7 @@
                 }
                 const atRiskNote = document.getElementById('atRiskTableNote');
                 if (atRiskNote) atRiskNote.textContent = `As of ${new Date(data.asOf).toLocaleDateString()}`;
+                applyRowsPerPage();
             } catch (e) {
                 console.error('Client Intelligence fetch failed:', e);
             }
@@ -3551,11 +3557,12 @@
 
         /**
          * Loads Team & Operations tab data for the currently selected
-         * topbar period. Team size is a hardcoded constant server-side
-         * (contractors paid by bank transfer aren't a countable QBO
-         * entity). No per-employee utilization % is shown -- there is no
-         * real data source for it until QuickBooks Time is integrated
-         * (tracked separately as a future project).
+         * topbar period. Team size is derived from QuickBooks Time --
+         * the count of distinct people who actually logged hours this
+         * period, which always matches the roster table below it. Per-
+         * person revenue is an estimate (hours-weighted split of each
+         * client's billing), and Billable Hours % separates real client
+         * work from internal/non-billable time -- see computeRevenueAttribution.
          */
         let teamOpsCacheKey = null;
 
@@ -3899,7 +3906,9 @@
                     attribution.billableHoursByUserName.forEach((h) => { totalBillableHours += h; });
                     if (data.totalHours > 0) {
                         const billablePct = Math.round((totalBillableHours / data.totalHours) * 1000) / 10;
-                        setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs`, billablePct >= 70 ? 'green' : (billablePct >= 50 ? 'yellow' : 'red'));
+                        const billableTarget = thresholdState.billable || 70;
+                        const billableColor = billablePct >= billableTarget ? 'green' : (billablePct >= billableTarget - 20 ? 'yellow' : 'red');
+                        setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs (target ${billableTarget}%)`, billableColor);
                     } else {
                         setKpiMessage('to-billable-pct', 'No hours logged this period');
                     }
@@ -3909,6 +3918,7 @@
                 qbTimeKpiIds.forEach((id) => setKpiMessage(id, 'Could not load hours right now. Try again shortly.'));
             }
 
+            applyRowsPerPage();
             teamOpsCacheKey = cacheKey;
         }
 
