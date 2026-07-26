@@ -516,6 +516,26 @@
             transition: all 0.2s ease;
         }
 
+        [data-tooltip] {
+            cursor: help;
+        }
+
+        .hover-tooltip {
+            position: fixed;
+            display: none;
+            max-width: 280px;
+            background: var(--primary-darker);
+            border: 1px solid var(--accent-gold);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-light);
+            z-index: 2000;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+            pointer-events: none;
+        }
+
         .kpi-card:hover {
             border-color: var(--accent-gold);
             box-shadow: 0 8px 24px rgba(201, 169, 97, 0.1);
@@ -1192,49 +1212,49 @@
                 <!-- OVERVIEW TAB -->
                 <div id="overview" class="tab-content active">
                     <div class="kpi-grid">
-                        <div class="kpi-card" id="kpi-metric1" data-value="30.8">
+                        <div class="kpi-card" id="kpi-metric1" data-value="30.8" data-tooltip="Total Income for the selected period, from QuickBooks' Profit &amp; Loss report.">
                             <div class="kpi-status-indicator green" id="kpi-metric1-status"></div>
                             <div class="kpi-label" id="kpi-metric1-label" data-i18n="kpi_monthly_revenue">Monthly Revenue</div>
                             <div class="kpi-value">$30.8K</div>
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric2">
+                        <div class="kpi-card" id="kpi-metric2" data-tooltip="This period's billings from clients who were also billed in this same period last year — a proxy for &quot;recurring,&quot; since QuickBooks has no subscription concept.">
                             <div class="kpi-status-indicator green" id="kpi-metric2-status"></div>
                             <div class="kpi-label" data-i18n="kpi_mrr">Recurring Revenue</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric2-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric3" data-value="22">
+                        <div class="kpi-card" id="kpi-metric3" data-value="22" data-tooltip="Net Income ÷ Total Income, from the same P&amp;L report.">
                             <div class="kpi-status-indicator yellow" id="kpi-metric3-status"></div>
                             <div class="kpi-label" id="kpi-metric3-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
                             <div class="kpi-value">22%</div>
                             <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric4">
+                        <div class="kpi-card" id="kpi-metric4" data-tooltip="Sum of all Bank-type account balances, from QuickBooks' Balance Sheet.">
                             <div class="kpi-status-indicator green"></div>
                             <div class="kpi-label" data-i18n="kpi_cash_balance">Cash Balance</div>
                             <div class="kpi-value">$125K</div>
                             <div class="kpi-change positive" data-i18n="kpi_cash_change">Runway: 8.2 months</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric5">
+                        <div class="kpi-card" id="kpi-metric5" data-tooltip="% of clients billed in the prior trailing-12-month window who were also billed in the current trailing-12-month window. A client who paused and came back still counts as retained.">
                             <div class="kpi-status-indicator green" id="kpi-metric5-status"></div>
                             <div class="kpi-label" data-i18n="kpi_client_retention">Client Retention</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric5-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric6">
+                        <div class="kpi-card" id="kpi-metric6" data-tooltip="Count of clients with a genuinely past-due balance (excludes &quot;Current&quot;/not-yet-due amounts), from QuickBooks' Aged Receivables report.">
                             <div class="kpi-status-indicator green" id="kpi-metric6-status"></div>
                             <div class="kpi-label" data-i18n="kpi_at_risk_clients">At-Risk Clients</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric6-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric7">
+                        <div class="kpi-card" id="kpi-metric7" data-tooltip="Period Revenue ÷ total hours logged in QuickBooks Time, company-wide. A team average, not per-person.">
                             <div class="kpi-status-indicator green" id="kpi-metric7-status"></div>
                             <div class="kpi-label" data-i18n="kpi_revenue_per_hour">Revenue per Hour</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric7-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric8">
+                        <div class="kpi-card" id="kpi-metric8" data-tooltip="Count of QuickBooks customer records created during this period — a proxy for &quot;won,&quot; since there's no CRM tracking an actual close date.">
                             <div class="kpi-status-indicator green" id="kpi-metric8-status"></div>
                             <div class="kpi-label" data-i18n="kpi_new_clients">New Clients Won</div>
                             <div class="kpi-value">—</div>
@@ -1244,7 +1264,7 @@
 
                     <div class="section">
                         <h2 class="section-title" data-i18n="section_revenue_trend">Revenue Trend (Last 12 Months)</h2>
-                        <div class="chart-container">
+                        <div class="chart-container" data-tooltip="Monthly Total Income for the last 12 months, from QuickBooks' Profit &amp; Loss report.">
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
@@ -1260,55 +1280,55 @@
                     <div class="chart-grid">
                         <div class="section">
                             <h2 class="section-title">Gross Margin</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Gross Profit ÷ Total Revenue, by month.">
                                 <canvas id="grossMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Operating Margin</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Operating Income ÷ Total Revenue, by month.">
                                 <canvas id="operatingMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Net Margin</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Net Income ÷ Total Revenue, by month.">
                                 <canvas id="netMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Revenue Growth Rate</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Month-over-month % change in Total Revenue.">
                                 <canvas id="revenueGrowthChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Operating Cash Flow Margin</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Operating Cash Flow ÷ Total Revenue, by month.">
                                 <canvas id="cashFlowMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Return on Assets</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Net Income ÷ Total Assets — from the Balance Sheet and P&amp;L.">
                                 <canvas id="roaChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Return on Equity</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Net Income ÷ Total Owner's Equity.">
                                 <canvas id="roeChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Current Ratio</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Total Current Assets ÷ Total Current Liabilities, from the Balance Sheet.">
                                 <canvas id="currentRatioChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
                             <h2 class="section-title">Debt-to-Equity</h2>
-                            <div class="chart-container">
+                            <div class="chart-container" data-tooltip="Total Liabilities ÷ Total Owner's Equity.">
                                 <canvas id="debtEquityChart"></canvas>
                             </div>
                         </div>
@@ -1318,25 +1338,25 @@
                 <!-- CLIENTS TAB -->
                 <div id="clients" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card" id="ci-active-clients">
+                        <div class="kpi-card" id="ci-active-clients" data-tooltip="Count of distinct clients billed anything this period, from QuickBooks' Sales by Customer report.">
                             <div class="kpi-status-indicator green" id="ci-active-clients-status"></div>
                             <div class="kpi-label" data-i18n="kpi_active_clients">Active Clients</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ci-active-clients-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ci-avg-revenue">
+                        <div class="kpi-card" id="ci-avg-revenue" data-tooltip="Total revenue this period ÷ number of active clients.">
                             <div class="kpi-status-indicator green" id="ci-avg-revenue-status"></div>
                             <div class="kpi-label" data-i18n="kpi_avg_revenue_client">Avg. Revenue / Client</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ci-avg-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ci-concentration">
+                        <div class="kpi-card" id="ci-concentration" data-tooltip="Combined revenue of your top 3 clients this period, as a % of total revenue.">
                             <div class="kpi-status-indicator green" id="ci-concentration-status"></div>
                             <div class="kpi-label" data-i18n="kpi_concentration">Top-3 Client Concentration</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ci-concentration-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ci-retention">
+                        <div class="kpi-card" id="ci-retention" data-tooltip="Same trailing-12-month calculation as Client Retention on Overview.">
                             <div class="kpi-status-indicator green" id="ci-retention-status"></div>
                             <div class="kpi-label" data-i18n="kpi_retention">Client Retention (YoY)</div>
                             <div class="kpi-value">—</div>
@@ -1370,7 +1390,7 @@
                             <thead>
                                 <tr>
                                     <th data-i18n="th_client_name">Client Name</th>
-                                    <th data-i18n="th_amount_owed">Amount Owed</th>
+                                    <th data-i18n="th_amount_owed">Past Due Amount</th>
                                     <th data-i18n="th_status">Status</th>
                                 </tr>
                             </thead>
@@ -1387,25 +1407,25 @@
                 <!-- PIPELINE TAB -->
                 <div id="pipeline" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card" id="ps-new-clients">
+                        <div class="kpi-card" id="ps-new-clients" data-tooltip="Same as New Clients Won on Overview — QuickBooks customer records created this period.">
                             <div class="kpi-status-indicator green" id="ps-new-clients-status"></div>
                             <div class="kpi-label" data-i18n="kpi_new_clients">New Clients Won</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ps-new-clients-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ps-new-client-revenue">
+                        <div class="kpi-card" id="ps-new-client-revenue" data-tooltip="This period's billings specifically from clients who were also new this period.">
                             <div class="kpi-status-indicator green" id="ps-new-client-revenue-status"></div>
                             <div class="kpi-label" data-i18n="kpi_new_client_revenue">Revenue from New Clients</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ps-new-client-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ps-yoy-change">
+                        <div class="kpi-card" id="ps-yoy-change" data-tooltip="New clients this period vs. the same period last year.">
                             <div class="kpi-status-indicator green" id="ps-yoy-change-status"></div>
                             <div class="kpi-label" data-i18n="kpi_yoy_change">New Clients vs. Last Year</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="ps-yoy-change-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="ps-ytd">
+                        <div class="kpi-card" id="ps-ytd" data-tooltip="New clients from Jan 1 through today, independent of whatever period is selected above.">
                             <div class="kpi-status-indicator green" id="ps-ytd-status"></div>
                             <div class="kpi-label" data-i18n="kpi_new_clients_ytd">New Clients YTD</div>
                             <div class="kpi-value">—</div>
@@ -1437,25 +1457,25 @@
                 <!-- TEAM TAB -->
                 <div id="team" class="tab-content">
                     <div class="kpi-grid">
-                        <div class="kpi-card" id="to-team-size">
+                        <div class="kpi-card" id="to-team-size" data-tooltip="Count of distinct people who logged any hours in QuickBooks Time this period — not a fixed headcount, so it can shift period to period.">
                             <div class="kpi-status-indicator green" id="to-team-size-status"></div>
                             <div class="kpi-label" data-i18n="kpi_team_size">Team Size</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-team-size-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-revenue-per-member">
+                        <div class="kpi-card" id="to-revenue-per-member" data-tooltip="Period Revenue ÷ Team Size. A team-wide average, not a per-person measurement — see the roster table below for real per-person revenue.">
                             <div class="kpi-status-indicator green" id="to-revenue-per-member-status"></div>
                             <div class="kpi-label" data-i18n="kpi_rev_per_employee">Revenue/Team Member</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-revenue-per-member-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-contract-labor">
+                        <div class="kpi-card" id="to-contract-labor" data-tooltip="Sum of every QuickBooks account classified as a labor cost (Contract Labor, Cost of Labor, Wages, Subcontractors, etc). Payroll Taxes is deliberately excluded.">
                             <div class="kpi-status-indicator green" id="to-contract-labor-status"></div>
                             <div class="kpi-label" data-i18n="kpi_contract_labor">Contract Labor Spend</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-contract-labor-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-total-revenue">
+                        <div class="kpi-card" id="to-total-revenue" data-tooltip="Same Total Income figure as Period Revenue, from QuickBooks' P&amp;L.">
                             <div class="kpi-status-indicator green" id="to-total-revenue-status"></div>
                             <div class="kpi-label" data-i18n="kpi_period_revenue">Period Revenue</div>
                             <div class="kpi-value">—</div>
@@ -1464,19 +1484,19 @@
                     </div>
 
                     <div class="kpi-grid" style="margin-top: 16px;">
-                        <div class="kpi-card" id="to-total-hours">
+                        <div class="kpi-card" id="to-total-hours" data-tooltip="Total hours logged in QuickBooks Time by everyone, this period.">
                             <div class="kpi-status-indicator green" id="to-total-hours-status"></div>
                             <div class="kpi-label" data-i18n="kpi_total_hours">Total Team Hours</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-total-hours-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-cost-per-hour">
+                        <div class="kpi-card" id="to-cost-per-hour" data-tooltip="Contract Labor Spend ÷ Total Hours.">
                             <div class="kpi-status-indicator green" id="to-cost-per-hour-status"></div>
                             <div class="kpi-label" data-i18n="kpi_cost_per_hour">Effective Cost/Hour</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-cost-per-hour-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-billable-pct">
+                        <div class="kpi-card" id="to-billable-pct" data-tooltip="Hours logged against a real client ÷ total hours logged. Internal/admin work (anything WFS/Wealthspring-tagged) is excluded from the numerator.">
                             <div class="kpi-status-indicator green" id="to-billable-pct-status"></div>
                             <div class="kpi-label" data-i18n="kpi_billable_pct">Billable Hours %</div>
                             <div class="kpi-value">—</div>
@@ -1521,6 +1541,7 @@
                     <div class="content-loading-spinner"></div>
                     <div class="content-loading-text" data-i18n="loading_content_text">Loading live data…</div>
                 </div>
+                <div id="hoverTooltip" class="hover-tooltip"></div>
             </div>
         </div>
 
@@ -1808,7 +1829,7 @@
                 kpi_retention: "Client Retention (YoY)",
                 section_top_clients: "Top Clients by Revenue",
                 th_revenue: "Revenue",
-                th_amount_owed: "Amount Owed",
+                th_amount_owed: "Past Due Amount",
                 section_at_risk_clients: "At-Risk Clients (Overdue Balances)",
                 th_client_name: "Client Name",
                 th_health_score: "Health Score",
@@ -1938,7 +1959,7 @@
                 kpi_retention: "Retención de Clientes (Interanual)",
                 section_top_clients: "Principales Clientes por Ingresos",
                 th_revenue: "Ingresos",
-                th_amount_owed: "Monto Adeudado",
+                th_amount_owed: "Monto Vencido",
                 section_at_risk_clients: "Clientes en Riesgo (Saldos Vencidos)",
                 th_client_name: "Nombre del Cliente",
                 th_health_score: "Puntaje de Salud",
@@ -2466,6 +2487,73 @@
             if (overlay) overlay.classList.remove('active');
             const topbarIndicator = document.getElementById('topbarLoadingIndicator');
             if (topbarIndicator) topbarIndicator.classList.remove('active');
+        }
+
+        /* ============================================================
+           HOVER TOOLTIPS -- "how was this calculated?"
+           A single shared tooltip element, positioned near the cursor,
+           driven by a data-tooltip attribute on whichever card or chart
+           is being hovered. Also responds to tap on touch devices (where
+           there's no real hover), toggling open/closed and closing on a
+           tap elsewhere -- otherwise anyone on a phone or tablet would
+           never be able to see these at all.
+           ============================================================ */
+        function positionHoverTooltip(x, y) {
+            const tip = document.getElementById('hoverTooltip');
+            if (!tip || tip.style.display !== 'block') return;
+            const rect = tip.getBoundingClientRect();
+            let left = x + 16;
+            let top = y + 16;
+            if (left + rect.width > window.innerWidth - 8) left = x - rect.width - 16;
+            if (top + rect.height > window.innerHeight - 8) top = y - rect.height - 16;
+            tip.style.left = Math.max(8, left) + 'px';
+            tip.style.top = Math.max(8, top) + 'px';
+        }
+
+        function showHoverTooltip(text, x, y) {
+            const tip = document.getElementById('hoverTooltip');
+            if (!tip) return;
+            tip.textContent = text;
+            tip.style.display = 'block';
+            positionHoverTooltip(x, y);
+        }
+
+        function hideHoverTooltip() {
+            const tip = document.getElementById('hoverTooltip');
+            if (tip) tip.style.display = 'none';
+        }
+
+        function initHoverTooltips() {
+            let openedByTap = null;
+
+            document.querySelectorAll('[data-tooltip]').forEach((el) => {
+                el.addEventListener('mouseenter', (e) => showHoverTooltip(el.getAttribute('data-tooltip'), e.clientX, e.clientY));
+                el.addEventListener('mousemove', (e) => positionHoverTooltip(e.clientX, e.clientY));
+                el.addEventListener('mouseleave', hideHoverTooltip);
+
+                el.addEventListener('click', (e) => {
+                    // Touch devices fire click without a real hover -- treat a
+                    // tap on a card/chart as toggling its tooltip open/closed,
+                    // but don't hijack clicks on real desktop pointers (mouse
+                    // already shows it on hover, no need to also toggle).
+                    if (e.pointerType !== 'touch' && !('ontouchstart' in window)) return;
+                    e.stopPropagation();
+                    if (openedByTap === el) {
+                        hideHoverTooltip();
+                        openedByTap = null;
+                    } else {
+                        showHoverTooltip(el.getAttribute('data-tooltip'), e.clientX, e.clientY);
+                        openedByTap = el;
+                    }
+                });
+            });
+
+            document.addEventListener('click', () => {
+                if (openedByTap) {
+                    hideHoverTooltip();
+                    openedByTap = null;
+                }
+            });
         }
 
         /**
@@ -3643,12 +3731,13 @@
                     if (data.atRiskClients && data.atRiskClients.length > 0) {
                         atRiskBody.innerHTML = data.atRiskClients.map((c) => {
                             const badge = c.hasRecentActivity
-                                ? `<span class="status-badge yellow">🟡 Owes balance</span>`
-                                : `<span class="status-badge red">🔴 Owes balance, no recent activity</span>`;
+                                ? `<span class="status-badge yellow">🟡 Past due</span>`
+                                : `<span class="status-badge red">🔴 Past due, no recent activity</span>`;
+                            const bucketNote = c.agingBucket ? `<div style="font-size:11px;color:var(--text-muted);">${escapeHtml(c.agingBucket)} days</div>` : '';
                             return `
                                 <tr>
                                     <td><strong>${escapeHtml(c.name)}</strong></td>
-                                    <td>$${Math.round(c.amountOwed).toLocaleString()}</td>
+                                    <td>$${Math.round(c.amountOwed).toLocaleString()}${bucketNote}</td>
                                     <td>${badge}</td>
                                 </tr>
                             `;
@@ -4142,6 +4231,7 @@
             });
             safeInit('refreshQuickBooksData', refreshQuickBooksData);
             safeInit('loadOverviewExtras', loadOverviewExtras);
+            safeInit('initHoverTooltips', initHoverTooltips);
             safeInit('checkDashboardStatus', checkDashboardStatus);
         });
 
