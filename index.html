@@ -861,6 +861,20 @@
             letter-spacing: 1px;
         }
 
+        .settings-subgroup-title {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .settings-subgroup-title:first-of-type {
+            margin-top: 4px;
+        }
+
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -1522,38 +1536,108 @@
                 <div class="settings-content">
                     <div class="settings-section">
                         <div class="settings-section-title" data-i18n="settings_display_metrics">Display Metrics</div>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;" data-i18n="display_metrics_intro">Show or hide individual cards on each tab.</p>
+
+                        <div class="settings-subgroup-title" data-i18n="nav_overview">Overview</div>
                         <div class="setting-item">
                             <label data-i18n="kpi_monthly_revenue">Monthly Revenue</label>
-                            <input type="checkbox" checked data-metric="metric1" onchange="toggleMetric('metric1', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric1" onchange="toggleMetric('kpi-metric1', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_mrr_short">MRR</label>
-                            <input type="checkbox" checked data-metric="metric2" onchange="toggleMetric('metric2', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric2" onchange="toggleMetric('kpi-metric2', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_profit_margin_short">Profit Margin</label>
-                            <input type="checkbox" checked data-metric="metric3" onchange="toggleMetric('metric3', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric3" onchange="toggleMetric('kpi-metric3', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_cash_balance">Cash Balance</label>
-                            <input type="checkbox" checked data-metric="metric4" onchange="toggleMetric('metric4', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric4" onchange="toggleMetric('kpi-metric4', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_client_retention">Client Retention</label>
-                            <input type="checkbox" checked data-metric="metric5" onchange="toggleMetric('metric5', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric5" onchange="toggleMetric('kpi-metric5', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_at_risk_clients">At-Risk Clients</label>
-                            <input type="checkbox" checked data-metric="metric6" onchange="toggleMetric('metric6', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric6" onchange="toggleMetric('kpi-metric6', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_revenue_per_hour">Revenue per Hour</label>
-                            <input type="checkbox" checked data-metric="metric7" onchange="toggleMetric('metric7', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric7" onchange="toggleMetric('kpi-metric7', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="kpi_new_clients">New Clients Won</label>
-                            <input type="checkbox" checked data-metric="metric8" onchange="toggleMetric('metric8', this.checked)">
+                            <input type="checkbox" checked data-metric="kpi-metric8" onchange="toggleMetric('kpi-metric8', this.checked)">
                         </div>
+
+                        <div class="settings-subgroup-title" data-i18n="nav_clients">Client Intelligence</div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_active_clients">Active Clients</label>
+                            <input type="checkbox" checked data-metric="ci-active-clients" onchange="toggleMetric('ci-active-clients', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_avg_revenue_client">Avg. Revenue / Client</label>
+                            <input type="checkbox" checked data-metric="ci-avg-revenue" onchange="toggleMetric('ci-avg-revenue', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_concentration">Top-3 Client Concentration</label>
+                            <input type="checkbox" checked data-metric="ci-concentration" onchange="toggleMetric('ci-concentration', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_retention">Client Retention (YoY)</label>
+                            <input type="checkbox" checked data-metric="ci-retention" onchange="toggleMetric('ci-retention', this.checked)">
+                        </div>
+
+                        <div class="settings-subgroup-title" data-i18n="nav_pipeline">Pipeline & Sales</div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_new_clients">New Clients Won</label>
+                            <input type="checkbox" checked data-metric="ps-new-clients" onchange="toggleMetric('ps-new-clients', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_new_client_revenue">Revenue from New Clients</label>
+                            <input type="checkbox" checked data-metric="ps-new-client-revenue" onchange="toggleMetric('ps-new-client-revenue', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_yoy_change">New Clients vs. Last Year</label>
+                            <input type="checkbox" checked data-metric="ps-yoy-change" onchange="toggleMetric('ps-yoy-change', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_new_clients_ytd">New Clients YTD</label>
+                            <input type="checkbox" checked data-metric="ps-ytd" onchange="toggleMetric('ps-ytd', this.checked)">
+                        </div>
+
+                        <div class="settings-subgroup-title" data-i18n="nav_team">Team & Operations</div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_team_size">Team Size</label>
+                            <input type="checkbox" checked data-metric="to-team-size" onchange="toggleMetric('to-team-size', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_rev_per_employee">Revenue/Team Member</label>
+                            <input type="checkbox" checked data-metric="to-revenue-per-member" onchange="toggleMetric('to-revenue-per-member', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_contract_labor">Contract Labor Spend</label>
+                            <input type="checkbox" checked data-metric="to-contract-labor" onchange="toggleMetric('to-contract-labor', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_period_revenue">Period Revenue</label>
+                            <input type="checkbox" checked data-metric="to-total-revenue" onchange="toggleMetric('to-total-revenue', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_total_hours">Total Team Hours</label>
+                            <input type="checkbox" checked data-metric="to-total-hours" onchange="toggleMetric('to-total-hours', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_cost_per_hour">Effective Cost/Hour</label>
+                            <input type="checkbox" checked data-metric="to-cost-per-hour" onchange="toggleMetric('to-cost-per-hour', this.checked)">
+                        </div>
+                        <div class="setting-item">
+                            <label data-i18n="kpi_billable_pct">Billable Hours %</label>
+                            <input type="checkbox" checked data-metric="to-billable-pct" onchange="toggleMetric('to-billable-pct', this.checked)">
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 11px; margin-top: 10px;" data-i18n="display_metrics_financial_note">Financial Performance's 9 ratio charts aren't included here — that tab is a fixed set of trend charts rather than individual toggleable cards.</p>
                     </div>
 
                     <div class="settings-section">
@@ -1767,6 +1851,8 @@
 
                 settings_header: "Dashboard Settings",
                 settings_display_metrics: "Display Metrics",
+                display_metrics_intro: "Show or hide individual cards on each tab.",
+                display_metrics_financial_note: "Financial Performance's 9 ratio charts aren't included here — that tab is a fixed set of trend charts rather than individual toggleable cards.",
                 settings_tab_visibility: "Tab Visibility",
                 settings_thresholds: "Performance Thresholds",
                 settings_display_options: "Display Options",
@@ -1896,6 +1982,8 @@
 
                 settings_header: "Configuración del Panel",
                 settings_display_metrics: "Métricas Visibles",
+                display_metrics_intro: "Muestre u oculte tarjetas individuales en cada pestaña.",
+                display_metrics_financial_note: "Los 9 gráficos de razones financieras de Desempeño Financiero no están incluidos aquí — esa pestaña es un conjunto fijo de gráficos de tendencia en lugar de tarjetas activables individualmente.",
                 settings_tab_visibility: "Visibilidad de Pestañas",
                 settings_thresholds: "Umbrales de Desempeño",
                 settings_display_options: "Opciones de Visualización",
@@ -1957,10 +2045,32 @@
         let currentLanguage = localStorage.getItem('dashboardLanguage') || 'en';
         let currentTab = 'overview';
 
-        let metricState = loadJSON('dashboardMetrics', {
-            metric1: true, metric2: true, metric3: true, metric4: true,
-            metric5: true, metric6: true, metric7: true, metric8: true
-        });
+        const defaultMetricState = {
+            'kpi-metric1': true, 'kpi-metric2': true, 'kpi-metric3': true, 'kpi-metric4': true,
+            'kpi-metric5': true, 'kpi-metric6': true, 'kpi-metric7': true, 'kpi-metric8': true,
+            'ci-active-clients': true, 'ci-avg-revenue': true, 'ci-concentration': true, 'ci-retention': true,
+            'ps-new-clients': true, 'ps-new-client-revenue': true, 'ps-yoy-change': true, 'ps-ytd': true,
+            'to-team-size': true, 'to-revenue-per-member': true, 'to-contract-labor': true, 'to-total-revenue': true,
+            'to-total-hours': true, 'to-cost-per-hour': true, 'to-billable-pct': true
+        };
+        let metricState = loadJSON('dashboardMetrics', { ...defaultMetricState });
+
+        // Migrate old short-form keys (metric1..metric8, from before Display
+        // Metrics expanded to cover every tab) to the new full-card-id keys
+        // -- otherwise a returning visitor's saved Overview toggles would
+        // silently stop applying (old key 'metric1' vs new key 'kpi-metric1'
+        // are just never the same lookup) and every new card outside
+        // Overview would be missing from their saved state entirely.
+        if (metricState.metric1 !== undefined && metricState['kpi-metric1'] === undefined) {
+            for (let i = 1; i <= 8; i++) {
+                if (metricState['metric' + i] !== undefined) {
+                    metricState['kpi-metric' + i] = metricState['metric' + i];
+                    delete metricState['metric' + i];
+                }
+            }
+        }
+        metricState = { ...defaultMetricState, ...metricState };
+        localStorage.setItem('dashboardMetrics', JSON.stringify(metricState));
 
         let tabState = loadJSON('dashboardTabs', {
             overview: true, financial: true, clients: true, pipeline: true, team: true
@@ -2538,21 +2648,21 @@
         /* ============================================================
            DISPLAY METRICS (show/hide KPI cards on Overview)
            ============================================================ */
-        function toggleMetric(metric, checked) {
-            metricState[metric] = checked;
+        function toggleMetric(cardId, checked) {
+            metricState[cardId] = checked;
             localStorage.setItem('dashboardMetrics', JSON.stringify(metricState));
-            const card = document.getElementById('kpi-' + metric);
+            const card = document.getElementById(cardId);
             if (card) {
                 card.style.display = checked ? '' : 'none';
             }
         }
 
         function applyMetricState() {
-            Object.keys(metricState).forEach(metric => {
-                const card = document.getElementById('kpi-' + metric);
-                const checkbox = document.querySelector(`input[data-metric="${metric}"]`);
-                if (card) card.style.display = metricState[metric] ? '' : 'none';
-                if (checkbox) checkbox.checked = metricState[metric];
+            Object.keys(metricState).forEach(cardId => {
+                const card = document.getElementById(cardId);
+                const checkbox = document.querySelector(`input[data-metric="${cardId}"]`);
+                if (card) card.style.display = metricState[cardId] ? '' : 'none';
+                if (checkbox) checkbox.checked = metricState[cardId];
             });
         }
 
