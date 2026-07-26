@@ -234,6 +234,51 @@
             color: var(--accent-gold);
         }
 
+        .action-button {
+            background: var(--accent-gold);
+            color: var(--primary-darker);
+            border: none;
+            padding: 9px 22px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .action-button:hover {
+            opacity: 0.85;
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .compare-period-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .compare-period-group-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .compare-delta-positive {
+            color: var(--status-green);
+        }
+
+        .compare-delta-negative {
+            color: var(--status-red);
+        }
+
         /* MAIN CONTENT */
         .main-content {
             flex: 1;
@@ -471,7 +516,8 @@
             align-items: center;
         }
 
-        .period-selector select {
+        .period-selector select,
+        .period-selector input[type="date"] {
             padding: 6px 10px;
             font-size: 13px;
             font-weight: 600;
@@ -481,13 +527,16 @@
             border: 1px solid var(--border-subtle);
             border-radius: 7px;
             cursor: pointer;
+            color-scheme: dark;
         }
 
-        .period-selector select:hover {
+        .period-selector select:hover,
+        .period-selector input[type="date"]:hover {
             border-color: var(--accent-gold);
         }
 
-        .period-selector select:focus {
+        .period-selector select:focus,
+        .period-selector input[type="date"]:focus {
             outline: none;
             border-color: var(--accent-gold);
         }
@@ -1215,6 +1264,10 @@
                 <span class="nav-icon">👔</span>
                 <span class="nav-text" data-i18n="nav_team">Team &amp; Operations</span>
             </div>
+            <div class="nav-item" data-tab="compare" onclick="switchTab(event, 'compare')">
+                <span class="nav-icon">⚖️</span>
+                <span class="nav-text" data-i18n="nav_compare">Compare Periods</span>
+            </div>
 
             <div class="sidebar-footer">
                 <button onclick="closeMobileSidebar(); openSettings();"><span class="nav-icon" aria-hidden="true">⚙️</span> <span data-i18n="settings_title">Settings</span></button>
@@ -1245,10 +1298,13 @@
                             <option value="month">Month</option>
                             <option value="quarter">Quarter</option>
                             <option value="year">Year</option>
+                            <option value="custom">Custom Range</option>
                         </select>
                         <select id="periodMonthSelect" onchange="onPeriodControlChange()" aria-label="Month"></select>
                         <select id="periodQuarterSelect" onchange="onPeriodControlChange()" aria-label="Quarter" style="display:none;"></select>
                         <select id="periodYearSelect" onchange="onPeriodControlChange()" aria-label="Year"></select>
+                        <input type="date" id="periodFromDate" onchange="onPeriodControlChange()" aria-label="From date" style="display:none;">
+                        <input type="date" id="periodToDate" onchange="onPeriodControlChange()" aria-label="To date" style="display:none;">
                     </div>
 
                     <span class="topbar-loading-indicator" id="topbarLoadingIndicator" aria-live="polite">
@@ -1603,6 +1659,74 @@
                     </div>
                 </div>
 
+                <!-- COMPARE PERIODS TAB -->
+                <div id="compare" class="tab-content">
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="section_compare_periods">Compare Periods</h2>
+                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="compare_intro">Pick two periods and see key metrics side by side. Nothing is compared until you click "Compare."</p>
+                    </div>
+
+                    <div class="section">
+                        <div style="display:flex; gap:28px; flex-wrap:wrap; align-items:flex-end;">
+                            <div class="compare-period-group">
+                                <div class="compare-period-group-label" data-i18n="compare_period_a">Period A</div>
+                                <div class="period-selector" style="display:inline-flex;">
+                                    <select id="compareTypeA" onchange="onComparePeriodChange('A')" aria-label="Period A type">
+                                        <option value="month">Month</option>
+                                        <option value="quarter">Quarter</option>
+                                        <option value="year">Year</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
+                                    <select id="compareMonthA" onchange="onComparePeriodChange('A')" aria-label="Period A month"></select>
+                                    <select id="compareQuarterA" onchange="onComparePeriodChange('A')" aria-label="Period A quarter" style="display:none;"></select>
+                                    <select id="compareYearA" onchange="onComparePeriodChange('A')" aria-label="Period A year"></select>
+                                    <input type="date" id="compareFromA" onchange="onComparePeriodChange('A')" aria-label="Period A from date" style="display:none;">
+                                    <input type="date" id="compareToA" onchange="onComparePeriodChange('A')" aria-label="Period A to date" style="display:none;">
+                                </div>
+                            </div>
+                            <div class="compare-period-group">
+                                <div class="compare-period-group-label" data-i18n="compare_period_b">Period B</div>
+                                <div class="period-selector" style="display:inline-flex;">
+                                    <select id="compareTypeB" onchange="onComparePeriodChange('B')" aria-label="Period B type">
+                                        <option value="month">Month</option>
+                                        <option value="quarter">Quarter</option>
+                                        <option value="year">Year</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
+                                    <select id="compareMonthB" onchange="onComparePeriodChange('B')" aria-label="Period B month"></select>
+                                    <select id="compareQuarterB" onchange="onComparePeriodChange('B')" aria-label="Period B quarter" style="display:none;"></select>
+                                    <select id="compareYearB" onchange="onComparePeriodChange('B')" aria-label="Period B year"></select>
+                                    <input type="date" id="compareFromB" onchange="onComparePeriodChange('B')" aria-label="Period B from date" style="display:none;">
+                                    <input type="date" id="compareToB" onchange="onComparePeriodChange('B')" aria-label="Period B to date" style="display:none;">
+                                </div>
+                            </div>
+                            <button class="action-button" onclick="runComparison()" id="runComparisonBtn" data-i18n="compare_run_button">Compare</button>
+                        </div>
+                    </div>
+
+                    <div class="section" id="compareEmptyState">
+                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="compare_empty_state">Select two periods above and click "Compare" to see results.</p>
+                    </div>
+
+                    <div class="section" id="compareResultsSection" style="display:none;">
+                        <h2 class="section-title" data-i18n="compare_results_title">Results</h2>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="compare_th_metric">Metric</th>
+                                    <th id="compareColA">Period A</th>
+                                    <th id="compareColB">Period B</th>
+                                    <th data-i18n="compare_th_change">Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compareResultsBody"></tbody>
+                        </table>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;" data-i18n="compare_excluded_note">Cash Balance and At-Risk Clients aren't shown here — both reflect your accounts right now, not a specific period, so comparing them across two different periods wouldn't mean anything.</p>
+                    </div>
+                </div>
+
                 <div class="content-loading-overlay" id="contentLoadingOverlay">
                     <div class="content-loading-spinner"></div>
                     <div class="content-loading-text" data-i18n="loading_content_text">Loading live data…</div>
@@ -1749,6 +1873,10 @@
                             <label data-i18n="nav_team">Team &amp; Operations</label>
                             <input type="checkbox" checked data-tab-toggle="team" onchange="toggleTabVisibility('team', this.checked)">
                         </div>
+                        <div class="setting-item">
+                            <label data-i18n="nav_compare">Compare Periods</label>
+                            <input type="checkbox" checked data-tab-toggle="compare" onchange="toggleTabVisibility('compare', this.checked)">
+                        </div>
                     </div>
 
                     <div class="settings-section">
@@ -1894,6 +2022,17 @@
                 nav_clients: "Client Intelligence",
                 nav_pipeline: "Pipeline & Sales",
                 nav_team: "Team & Operations",
+                nav_compare: "Compare Periods",
+                section_compare_periods: "Compare Periods",
+                compare_intro: "Pick two periods and see key metrics side by side. Nothing is compared until you click \"Compare.\"",
+                compare_period_a: "Period A",
+                compare_period_b: "Period B",
+                compare_run_button: "Compare",
+                compare_empty_state: "Select two periods above and click \"Compare\" to see results.",
+                compare_results_title: "Results",
+                compare_th_metric: "Metric",
+                compare_th_change: "Change",
+                compare_excluded_note: "Cash Balance and At-Risk Clients aren't shown here — both reflect your accounts right now, not a specific period, so comparing them across two different periods wouldn't mean anything.",
                 sign_out: "Sign Out",
                 toggle_sidebar_title: "Toggle Sidebar",
                 settings_title: "Settings",
@@ -2035,6 +2174,17 @@
                 nav_clients: "Inteligencia de Clientes",
                 nav_pipeline: "Canal y Ventas",
                 nav_team: "Equipo y Operaciones",
+                nav_compare: "Comparar Períodos",
+                section_compare_periods: "Comparar Períodos",
+                compare_intro: "Elija dos períodos y vea las métricas clave lado a lado. No se compara nada hasta que haga clic en \"Comparar.\"",
+                compare_period_a: "Período A",
+                compare_period_b: "Período B",
+                compare_run_button: "Comparar",
+                compare_empty_state: "Seleccione dos períodos arriba y haga clic en \"Comparar\" para ver los resultados.",
+                compare_results_title: "Resultados",
+                compare_th_metric: "Métrica",
+                compare_th_change: "Cambio",
+                compare_excluded_note: "El Saldo de Caja y los Clientes en Riesgo no se muestran aquí — ambos reflejan sus cuentas en este momento, no un período específico, por lo que compararlos entre dos períodos diferentes no tendría sentido.",
                 sign_out: "Cerrar Sesión",
                 toggle_sidebar_title: "Alternar Barra Lateral",
                 settings_title: "Configuración",
@@ -2222,9 +2372,10 @@
         metricState = { ...defaultMetricState, ...metricState };
         localStorage.setItem('dashboardMetrics', JSON.stringify(metricState));
 
-        let tabState = loadJSON('dashboardTabs', {
-            overview: true, financial: true, clients: true, pipeline: true, team: true
-        });
+        const defaultTabState = {
+            overview: true, financial: true, clients: true, pipeline: true, team: true, compare: true
+        };
+        let tabState = { ...defaultTabState, ...loadJSON('dashboardTabs', defaultTabState) };
 
         let thresholdState = loadJSON('dashboardThresholds', {
             revenue: 27, margin: 25, retention: 95, billable: 70, cashReserve: 30, atRiskAlert: 1, concentration: 60
@@ -2340,7 +2491,21 @@
         }
 
         function periodCacheKey() {
+            if (periodState.type === 'custom') {
+                return `custom:${periodState.fromDate}:${periodState.toDate}`;
+            }
             return `${periodState.type}:${periodState.year}:${periodState.month}:${periodState.quarter}`;
+        }
+
+        /** Builds the query params every tab loader sends for the current period -- one place instead of six. */
+        function buildPeriodParams() {
+            if (periodState.type === 'custom') {
+                return new URLSearchParams({ type: 'custom', from: periodState.fromDate, to: periodState.toDate });
+            }
+            const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
+            if (periodState.type === 'month') params.set('month', periodState.month);
+            if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+            return params;
         }
 
         function pctTick(value) {
@@ -2449,9 +2614,7 @@
             }
 
             try {
-                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-                if (periodState.type === 'month') params.set('month', periodState.month);
-                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+                const params = buildPeriodParams();
 
                 const res = await fetch(`/api/quickbooks/ratios?${params.toString()}`);
                 const data = await res.json();
@@ -3255,19 +3418,33 @@
             const monthSelect = document.getElementById('periodMonthSelect');
             const quarterSelect = document.getElementById('periodQuarterSelect');
             const yearSelect = document.getElementById('periodYearSelect');
-            if (!typeSelect || !monthSelect || !quarterSelect || !yearSelect) return;
+            const fromInput = document.getElementById('periodFromDate');
+            const toInput = document.getElementById('periodToDate');
+            if (!typeSelect || !monthSelect || !quarterSelect || !yearSelect || !fromInput || !toInput) return;
 
             typeSelect.value = periodState.type;
             yearSelect.value = periodState.year;
             monthSelect.value = Math.min(periodState.month, monthSelect.options.length);
             quarterSelect.value = Math.min(periodState.quarter, quarterSelect.options.length);
 
+            const isCustom = periodState.type === 'custom';
             monthSelect.style.display = periodState.type === 'month' ? '' : 'none';
             quarterSelect.style.display = periodState.type === 'quarter' ? '' : 'none';
+            yearSelect.style.display = isCustom ? 'none' : '';
+            fromInput.style.display = isCustom ? '' : 'none';
+            toInput.style.display = isCustom ? '' : 'none';
+
+            if (isCustom) {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                fromInput.max = todayStr;
+                toInput.max = todayStr;
+                if (periodState.fromDate) fromInput.value = periodState.fromDate;
+                if (periodState.toDate) toInput.value = periodState.toDate;
+            }
         }
 
         /**
-         * Fired on any dropdown change. Reads all three controls, clamps
+         * Fired on any dropdown/date-input change. Reads all controls, clamps
          * month/quarter to whatever's valid for the selected year (in case
          * the year changed to one where the previously-selected month/quarter
          * would be in the future), persists the choice, and re-fetches data.
@@ -3276,12 +3453,35 @@
             const type = document.getElementById('periodTypeSelect').value;
             const year = parseInt(document.getElementById('periodYearSelect').value, 10);
 
-            periodState = {
-                type,
-                year,
-                month: parseInt(document.getElementById('periodMonthSelect').value, 10) || CURRENT_MONTH,
-                quarter: parseInt(document.getElementById('periodQuarterSelect').value, 10) || CURRENT_QUARTER,
-            };
+            if (type === 'custom') {
+                const fromInput = document.getElementById('periodFromDate');
+                const toInput = document.getElementById('periodToDate');
+                let fromDate = fromInput.value || periodState.fromDate;
+                let toDate = toInput.value || periodState.toDate;
+
+                // Default to "this month so far" the first time Custom Range
+                // is selected, rather than leaving both inputs empty.
+                if (!fromDate || !toDate) {
+                    const now = new Date();
+                    const todayStr = now.toISOString().slice(0, 10);
+                    fromDate = fromDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                    toDate = toDate || todayStr;
+                }
+                // Don't let From land after To -- swap rather than send a
+                // nonsensical inverted range to the backend.
+                if (fromDate > toDate) {
+                    [fromDate, toDate] = [toDate, fromDate];
+                }
+
+                periodState = { type, year: periodState.year, month: periodState.month, quarter: periodState.quarter, fromDate, toDate };
+            } else {
+                periodState = {
+                    type,
+                    year,
+                    month: parseInt(document.getElementById('periodMonthSelect').value, 10) || CURRENT_MONTH,
+                    quarter: parseInt(document.getElementById('periodQuarterSelect').value, 10) || CURRENT_QUARTER,
+                };
+            }
 
             syncPeriodDropdownsToState();
             localStorage.setItem('wsfDashboardPeriod', JSON.stringify(periodState));
@@ -3302,6 +3502,7 @@
         function formatPeriodRevenueLabel(p) {
             if (p.type === 'month') return `${MONTH_NAMES[p.month - 1]} ${p.year} Revenue`;
             if (p.type === 'quarter') return `Q${p.quarter} ${p.year} Revenue`;
+            if (p.type === 'custom') return 'Revenue';
             return `${p.year} Revenue`;
         }
 
@@ -3322,9 +3523,7 @@
          */
         async function refreshQuickBooksData() {
             try {
-                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-                if (periodState.type === 'month') params.set('month', periodState.month);
-                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+                const params = buildPeriodParams();
 
                 const res = await fetch(`/api/quickbooks/summary?${params.toString()}`);
                 const data = await res.json();
@@ -3465,9 +3664,7 @@
          * than showing a fabricated number.
          */
         async function loadOverviewExtras() {
-            const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-            if (periodState.type === 'month') params.set('month', periodState.month);
-            if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+            const params = buildPeriodParams();
             const qs = params.toString();
 
             try {
@@ -3809,9 +4006,7 @@
             const kpiIds = ['ps-new-clients', 'ps-new-client-revenue', 'ps-yoy-change', 'ps-ytd'];
 
             try {
-                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-                if (periodState.type === 'month') params.set('month', periodState.month);
-                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+                const params = buildPeriodParams();
 
                 const res = await fetch(`/api/quickbooks/pipeline?${params.toString()}`);
                 const data = await res.json();
@@ -3890,9 +4085,7 @@
             const kpiIds = ['ci-active-clients', 'ci-avg-revenue', 'ci-concentration', 'ci-retention'];
 
             try {
-                const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-                if (periodState.type === 'month') params.set('month', periodState.month);
-                if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+                const params = buildPeriodParams();
 
                 const res = await fetch(`/api/quickbooks/clients?${params.toString()}`);
                 const data = await res.json();
@@ -4181,9 +4374,7 @@
             const qboKpiIds = ['to-team-size', 'to-revenue-per-member', 'to-contract-labor', 'to-total-revenue'];
             const qbTimeKpiIds = ['to-team-size', 'to-total-hours', 'to-cost-per-hour', 'to-billable-pct'];
 
-            const params = new URLSearchParams({ type: periodState.type, year: periodState.year });
-            if (periodState.type === 'month') params.set('month', periodState.month);
-            if (periodState.type === 'quarter') params.set('quarter', periodState.quarter);
+            const params = buildPeriodParams();
             const qs = params.toString();
 
             let contractLaborSpend = null;
