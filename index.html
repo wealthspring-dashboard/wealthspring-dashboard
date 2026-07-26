@@ -545,9 +545,18 @@
         }
 
         .tooltip-icon-chart {
-            position: absolute;
-            top: 8px;
-            right: 8px;
+            flex-shrink: 0;
+        }
+
+        .section-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .section-title-row .section-title {
+            margin-bottom: 0;
         }
 
         .hover-tooltip {
@@ -581,6 +590,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: help;
         }
 
         .kpi-status-indicator.green {
@@ -1319,8 +1329,8 @@
                     </div>
 
                     <div class="section">
-                        <h2 class="section-title" data-i18n="section_revenue_trend">Revenue Trend (Last 12 Months)</h2>
-                        <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Monthly Total Income for the last 12 months, from QuickBooks' Profit &amp; Loss report.">i</span>
+                        <div class="section-title-row"><h2 class="section-title" data-i18n="section_revenue_trend">Revenue Trend (Last 12 Months)</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Monthly Total Income for the last 12 months, from QuickBooks' Profit &amp; Loss report.">i</span></div>
+                            <div class="chart-container">
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
@@ -1335,56 +1345,56 @@
 
                     <div class="chart-grid">
                         <div class="section">
-                            <h2 class="section-title">Gross Margin</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Gross Profit ÷ Total Revenue, by month.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Gross Margin</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Gross Profit ÷ Total Revenue, by month.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="grossMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Operating Margin</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Operating Income ÷ Total Revenue, by month.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Operating Margin</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Operating Income ÷ Total Revenue, by month.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="operatingMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Net Margin</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Revenue, by month.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Net Margin</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Revenue, by month.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="netMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Revenue Growth Rate</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Month-over-month % change in Total Revenue.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Revenue Growth Rate</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Month-over-month % change in Total Revenue.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="revenueGrowthChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Operating Cash Flow Margin</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Operating Cash Flow ÷ Total Revenue, by month.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Operating Cash Flow Margin</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Operating Cash Flow ÷ Total Revenue, by month.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="cashFlowMarginChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Return on Assets</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Assets — from the Balance Sheet and P&amp;L.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Return on Assets</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Assets — from the Balance Sheet and P&amp;L.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="roaChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Return on Equity</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Owner's Equity.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Return on Equity</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Net Income ÷ Total Owner's Equity.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="roeChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Current Ratio</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Current Assets ÷ Total Current Liabilities, from the Balance Sheet.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Current Ratio</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Current Assets ÷ Total Current Liabilities, from the Balance Sheet.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="currentRatioChart"></canvas>
                             </div>
                         </div>
                         <div class="section">
-                            <h2 class="section-title">Debt-to-Equity</h2>
-                            <div class="chart-container"><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Liabilities ÷ Total Owner's Equity.">i</span>
+                            <div class="section-title-row"><h2 class="section-title">Debt-to-Equity</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Liabilities ÷ Total Owner's Equity.">i</span></div>
+                            <div class="chart-container">
                                 <canvas id="debtEquityChart"></canvas>
                             </div>
                         </div>
@@ -2645,30 +2655,47 @@
         function initHoverTooltips() {
             let openedByTap = null;
 
-            document.querySelectorAll('[data-tooltip]').forEach((el) => {
-                el.addEventListener('mouseenter', (e) => showHoverTooltip(el.getAttribute('data-tooltip'), e.clientX, e.clientY));
-                el.addEventListener('mousemove', (e) => positionHoverTooltip(e.clientX, e.clientY));
-                el.addEventListener('mouseleave', hideHoverTooltip);
+            // Event delegation (not per-element listeners) on purpose --
+            // status indicator dots get their data-tooltip attribute set
+            // dynamically, after real data loads, not at page load like the
+            // static card/chart icons. Delegating from document means any
+            // element with data-tooltip works automatically, whether it had
+            // the attribute at page load or got it added/updated later.
+            document.addEventListener('mouseover', (e) => {
+                const el = e.target.closest('[data-tooltip]');
+                if (!el) return;
+                const text = el.getAttribute('data-tooltip');
+                if (text) showHoverTooltip(text, e.clientX, e.clientY);
+            });
 
-                el.addEventListener('click', (e) => {
-                    // Touch devices fire click without a real hover -- treat a
-                    // tap on a card/chart as toggling its tooltip open/closed,
-                    // but don't hijack clicks on real desktop pointers (mouse
-                    // already shows it on hover, no need to also toggle).
-                    if (e.pointerType !== 'touch' && !('ontouchstart' in window)) return;
+            document.addEventListener('mousemove', (e) => {
+                if (e.target.closest('[data-tooltip]')) positionHoverTooltip(e.clientX, e.clientY);
+            });
+
+            document.addEventListener('mouseout', (e) => {
+                const el = e.target.closest('[data-tooltip]');
+                if (!el) return;
+                // Moving to a child of the same tooltip element isn't a real exit.
+                if (el.contains(e.relatedTarget)) return;
+                hideHoverTooltip();
+            });
+
+            document.addEventListener('click', (e) => {
+                const el = e.target.closest('[data-tooltip]');
+                const isTouch = e.pointerType === 'touch' || 'ontouchstart' in window;
+
+                if (el && isTouch) {
+                    const text = el.getAttribute('data-tooltip');
+                    if (!text) return;
                     e.stopPropagation();
                     if (openedByTap === el) {
                         hideHoverTooltip();
                         openedByTap = null;
                     } else {
-                        showHoverTooltip(el.getAttribute('data-tooltip'), e.clientX, e.clientY);
+                        showHoverTooltip(text, e.clientX, e.clientY);
                         openedByTap = el;
                     }
-                });
-            });
-
-            document.addEventListener('click', () => {
-                if (openedByTap) {
+                } else if (openedByTap) {
                     hideHoverTooltip();
                     openedByTap = null;
                 }
@@ -2907,10 +2934,11 @@
             recomputeThresholds();
         }
 
-        function setStatusColor(card, statusEl, colorClass) {
+        function setStatusColor(card, statusEl, colorClass, explanation) {
             if (statusEl) {
                 statusEl.classList.remove('green', 'yellow', 'red');
                 statusEl.classList.add(colorClass);
+                if (explanation) statusEl.setAttribute('data-tooltip', explanation);
             }
         }
 
@@ -2951,7 +2979,18 @@
                 let colorClass = 'green';
                 if (diffPct < 0 && diffPct >= -10) colorClass = 'yellow';
                 else if (diffPct < -10) colorClass = 'red';
-                setStatusColor(card, statusEl, colorClass);
+
+                const displayValue = `${cfg.prefix}${Math.round(value * 10) / 10}${cfg.suffix}`;
+                const displayTarget = `${cfg.prefix}${cfg.target}${cfg.suffix}`;
+                let explanation;
+                if (colorClass === 'green') {
+                    explanation = `🟢 Green: ${displayValue} is at or above your ${displayTarget} target.`;
+                } else if (colorClass === 'yellow') {
+                    explanation = `🟡 Yellow: ${displayValue} is below your ${displayTarget} target, but within 10%.`;
+                } else {
+                    explanation = `🔴 Red: ${displayValue} is more than 10% below your ${displayTarget} target.`;
+                }
+                setStatusColor(card, statusEl, colorClass, explanation);
             });
         }
 
@@ -3294,9 +3333,20 @@
                         const cashColor = data.cashBalance >= cashTarget ? 'green' : (data.cashBalance >= cashTarget * 0.7 ? 'yellow' : 'red');
                         const cashStatusEl = document.getElementById('kpi-metric4-status');
                         const cashChangeEl = document.getElementById('kpi-metric4-change');
+                        const cashDisplay = `$${(data.cashBalance / 1000).toFixed(0)}K`;
+                        const cashTargetDisplay = `$${(cashTarget / 1000).toFixed(0)}K`;
+                        let cashExplanation;
+                        if (cashColor === 'green') {
+                            cashExplanation = `🟢 Green: ${cashDisplay} is at or above your ${cashTargetDisplay} reserve target.`;
+                        } else if (cashColor === 'yellow') {
+                            cashExplanation = `🟡 Yellow: ${cashDisplay} is below your ${cashTargetDisplay} reserve target, but within 30%.`;
+                        } else {
+                            cashExplanation = `🔴 Red: ${cashDisplay} is more than 30% below your ${cashTargetDisplay} reserve target.`;
+                        }
                         if (cashStatusEl) {
                             cashStatusEl.classList.remove('green', 'yellow', 'red');
                             cashStatusEl.classList.add(cashColor);
+                            cashStatusEl.setAttribute('data-tooltip', cashExplanation);
                         }
                         if (cashChangeEl) {
                             cashChangeEl.textContent = `vs. $${(cashTarget / 1000).toFixed(0)}K reserve target`;
@@ -3430,10 +3480,20 @@
                         const statusEl = document.getElementById('kpi-metric6-status');
                         const atRiskAlertThreshold = thresholdState.atRiskAlert ?? 1;
                         const isAlerting = data.atRiskClientCount >= atRiskAlertThreshold && atRiskAlertThreshold > 0;
+                        const atRiskColor = isAlerting ? 'red' : (data.atRiskClientCount > 0 ? 'yellow' : 'green');
                         if (el) { el.textContent = data.atRiskClientCount > 0 ? `Have an overdue balance (alert at ${atRiskAlertThreshold})` : 'None right now'; el.className = 'kpi-change'; }
                         if (statusEl) {
                             statusEl.classList.remove('green', 'yellow', 'red');
-                            statusEl.classList.add(isAlerting ? 'red' : (data.atRiskClientCount > 0 ? 'yellow' : 'green'));
+                            statusEl.classList.add(atRiskColor);
+                            let atRiskExplanation;
+                            if (atRiskColor === 'green') {
+                                atRiskExplanation = `🟢 Green: no clients with an overdue balance right now.`;
+                            } else if (atRiskColor === 'yellow') {
+                                atRiskExplanation = `🟡 Yellow: ${data.atRiskClientCount} client(s) overdue, below your alert threshold of ${atRiskAlertThreshold}.`;
+                            } else {
+                                atRiskExplanation = `🔴 Red: ${data.atRiskClientCount} client(s) overdue, at or above your alert threshold of ${atRiskAlertThreshold}.`;
+                            }
+                            statusEl.setAttribute('data-tooltip', atRiskExplanation);
                         }
                     }
                 }
@@ -3543,7 +3603,7 @@
             }
         }
 
-        function setKpiValueAndNote(cardId, value, formatFn, noteText, colorClass) {
+        function setKpiValueAndNote(cardId, value, formatFn, noteText, colorClass, statusExplanation) {
             if (value === null || value === undefined || isNaN(value)) {
                 setKpiMessage(cardId, noteText || '—');
                 return;
@@ -3563,6 +3623,7 @@
                 if (statusEl) {
                     statusEl.classList.remove('green', 'yellow', 'red');
                     statusEl.classList.add(colorClass);
+                    if (statusExplanation) statusEl.setAttribute('data-tooltip', statusExplanation);
                 }
             }
         }
@@ -3749,7 +3810,10 @@
                 if (data.yoyChangePct !== null && data.yoyChangePct !== undefined) {
                     const yoyColor = data.yoyChangePct >= 0 ? 'green' : 'red';
                     const arrow = data.yoyChangePct >= 0 ? '↑' : '↓';
-                    setKpiValueAndNote('ps-yoy-change', data.yoyChangePct, (v) => `${arrow} ${Math.abs(v)}%`, `vs. ${data.newClientCountPriorYear} same period last year`, yoyColor);
+                    const yoyExplanation = yoyColor === 'green'
+                        ? `🟢 Green: new clients this period are up ${Math.abs(data.yoyChangePct)}% vs. the same period last year.`
+                        : `🔴 Red: new clients this period are down ${Math.abs(data.yoyChangePct)}% vs. the same period last year.`;
+                    setKpiValueAndNote('ps-yoy-change', data.yoyChangePct, (v) => `${arrow} ${Math.abs(v)}%`, `vs. ${data.newClientCountPriorYear} same period last year`, yoyColor, yoyExplanation);
                 } else {
                     setKpiMessage('ps-yoy-change', 'No clients added in this period last year to compare');
                 }
@@ -3829,7 +3893,12 @@
                 if (data.topClientConcentration !== null && data.topClientConcentration !== undefined) {
                     const concentrationTarget = thresholdState.concentration || 60;
                     const concColor = data.topClientConcentration > concentrationTarget ? 'red' : (data.topClientConcentration > concentrationTarget - 20 ? 'yellow' : 'green');
-                    setKpiValueAndNote('ci-concentration', data.topClientConcentration, (v) => `${v}%`, `Top 3 clients' share of revenue (alert above ${concentrationTarget}%)`, concColor);
+                    const concExplanation = concColor === 'green'
+                        ? `🟢 Green: your top 3 clients are ${data.topClientConcentration}% of revenue, well under your ${concentrationTarget}% alert level.`
+                        : concColor === 'yellow'
+                        ? `🟡 Yellow: your top 3 clients are ${data.topClientConcentration}% of revenue, approaching your ${concentrationTarget}% alert level.`
+                        : `🔴 Red: your top 3 clients are ${data.topClientConcentration}% of revenue, at or above your ${concentrationTarget}% alert level -- a real concentration risk.`;
+                    setKpiValueAndNote('ci-concentration', data.topClientConcentration, (v) => `${v}%`, `Top 3 clients' share of revenue (alert above ${concentrationTarget}%)`, concColor, concExplanation);
                 } else {
                     setKpiMessage('ci-concentration', 'No revenue this period');
                 }
@@ -3837,7 +3906,12 @@
                 if (data.retentionRate !== null && data.retentionRate !== undefined) {
                     const target = thresholdState.retention || 95;
                     const retColor = data.retentionRate >= target ? 'green' : (data.retentionRate >= target - 15 ? 'yellow' : 'red');
-                    setKpiValueAndNote('ci-retention', data.retentionRate, (v) => `${v}%`, `trailing 12 months (target ${target}%)`, retColor);
+                    const retExplanation = retColor === 'green'
+                        ? `🟢 Green: ${data.retentionRate}% retention is at or above your ${target}% target.`
+                        : retColor === 'yellow'
+                        ? `🟡 Yellow: ${data.retentionRate}% retention is below your ${target}% target, but within 15 points.`
+                        : `🔴 Red: ${data.retentionRate}% retention is more than 15 points below your ${target}% target.`;
+                    setKpiValueAndNote('ci-retention', data.retentionRate, (v) => `${v}%`, `trailing 12 months (target ${target}%)`, retColor, retExplanation);
                 } else {
                     setKpiMessage('ci-retention', 'No prior-year data to compare');
                 }
@@ -4239,7 +4313,12 @@
                         const billablePct = Math.round((totalBillableHours / data.totalHours) * 1000) / 10;
                         const billableTarget = thresholdState.billable || 70;
                         const billableColor = billablePct >= billableTarget ? 'green' : (billablePct >= billableTarget - 20 ? 'yellow' : 'red');
-                        setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs (target ${billableTarget}%)`, billableColor);
+                        const billableExplanation = billableColor === 'green'
+                            ? `🟢 Green: ${billablePct}% billable is at or above your ${billableTarget}% target.`
+                            : billableColor === 'yellow'
+                            ? `🟡 Yellow: ${billablePct}% billable is below your ${billableTarget}% target, but within 20 points.`
+                            : `🔴 Red: ${billablePct}% billable is more than 20 points below your ${billableTarget}% target.`;
+                        setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs (target ${billableTarget}%)`, billableColor, billableExplanation);
                     } else {
                         setKpiMessage('to-billable-pct', 'No hours logged this period');
                     }
