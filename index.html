@@ -917,6 +917,32 @@
             accent-color: var(--accent-gold);
         }
 
+        .setting-item-with-hint {
+            margin-bottom: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .setting-item-with-hint .setting-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .setting-item-with-hint .setting-item-row label {
+            font-size: 13px;
+            color: var(--text-light);
+            flex: 1;
+        }
+
+        .setting-item-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.45;
+        }
+
         .setting-item input[type="number"] {
             background: var(--primary-darker);
             border: 1px solid var(--border-subtle);
@@ -1231,10 +1257,10 @@
                             <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric4" data-tooltip="Sum of all Bank-type account balances, from QuickBooks' Balance Sheet.">
-                            <div class="kpi-status-indicator green"></div>
+                            <div class="kpi-status-indicator green" id="kpi-metric4-status"></div>
                             <div class="kpi-label" data-i18n="kpi_cash_balance">Cash Balance</div>
-                            <div class="kpi-value">$125K</div>
-                            <div class="kpi-change positive" data-i18n="kpi_cash_change">Runway: 8.2 months</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric4-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric5" data-tooltip="% of clients billed in the prior trailing-12-month window who were also billed in the current trailing-12-month window. A client who paused and came back still counts as retained.">
                             <div class="kpi-status-indicator green" id="kpi-metric5-status"></div>
@@ -1687,21 +1713,62 @@
 
                     <div class="settings-section">
                         <div class="settings-section-title" data-i18n="settings_thresholds">Performance Thresholds</div>
-                        <div class="setting-item">
-                            <label data-i18n="label_revenue_target">Revenue Target ($K)</label>
-                            <input type="number" id="thresholdRevenue" value="27" min="0" max="100" onchange="updateThreshold('revenue', this.value)">
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 14px; line-height: 1.5;" data-i18n="thresholds_intro">Each target below controls the green/yellow/red indicator on its matching card — hitting or beating it shows green, falling meaningfully short shows red. These aren't fixed rules, they're your own goals; adjust anytime.</p>
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_revenue_target">Revenue Target ($K)</label>
+                                <input type="number" id="thresholdRevenue" value="27" min="0" max="1000" onchange="updateThreshold('revenue', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_revenue_target">Colors Monthly Revenue on Overview. No universal benchmark — set this to your own monthly goal.</div>
                         </div>
-                        <div class="setting-item">
-                            <label data-i18n="label_margin_target">Profit Margin Target (%)</label>
-                            <input type="number" id="thresholdMargin" value="25" min="0" max="100" onchange="updateThreshold('margin', this.value)">
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_margin_target">Profit Margin Target (%)</label>
+                                <input type="number" id="thresholdMargin" value="25" min="0" max="100" onchange="updateThreshold('margin', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_margin_target">Colors Net Profit Margin on Overview. For professional services firms, 15–25% net margin is commonly considered healthy; below ~10% is often a warning sign.</div>
                         </div>
-                        <div class="setting-item">
-                            <label data-i18n="label_retention_target">Retention Target (%)</label>
-                            <input type="number" id="thresholdRetention" value="95" min="0" max="100" onchange="updateThreshold('retention', this.value)">
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_retention_target">Retention Target (%)</label>
+                                <input type="number" id="thresholdRetention" value="95" min="0" max="100" onchange="updateThreshold('retention', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_retention_target">Colors Client Retention on Overview and Client Intelligence (trailing 12-month basis). Service firms often aim for 90%+; below 80% typically signals a real churn problem worth investigating.</div>
                         </div>
-                        <div class="setting-item">
-                            <label data-i18n="label_billable_target">Billable Hours Target (%)</label>
-                            <input type="number" id="thresholdBillable" value="70" min="0" max="100" onchange="updateThreshold('billable', this.value)">
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_billable_target">Billable Hours Target (%)</label>
+                                <input type="number" id="thresholdBillable" value="70" min="0" max="100" onchange="updateThreshold('billable', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_billable_target">Colors Billable Hours % on Team & Operations. Bookkeeping/accounting firms commonly target 65–80% — lower for owners/managers who also handle sales and admin, higher for dedicated staff.</div>
+                        </div>
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_cash_reserve_target">Cash Reserve Target ($K)</label>
+                                <input type="number" id="thresholdCashReserve" value="30" min="0" max="1000" onchange="updateThreshold('cashReserve', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_cash_reserve_target">Colors Cash Balance on Overview. A common small-business guideline is 3–6 months of operating expenses held in reserve — set this to whatever that works out to for you.</div>
+                        </div>
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_at_risk_alert_target">At-Risk Client Alert (count)</label>
+                                <input type="number" id="thresholdAtRiskAlert" value="1" min="0" max="100" onchange="updateThreshold('atRiskAlert', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_at_risk_alert_target">Colors At-Risk Clients on Overview red once the count reaches this number. Default of 1 means any past-due client shows red immediately — raise it if a client or two carrying a balance is normal for how you bill.</div>
+                        </div>
+
+                        <div class="setting-item-with-hint">
+                            <div class="setting-item-row">
+                                <label data-i18n="label_concentration_target">Concentration Risk Alert (%)</label>
+                                <input type="number" id="thresholdConcentration" value="60" min="0" max="100" onchange="updateThreshold('concentration', this.value)">
+                            </div>
+                            <div class="setting-item-hint" data-i18n="hint_concentration_target">Colors Top-3 Client Concentration on Client Intelligence red once your top 3 clients account for this share of revenue. Many small businesses treat 40–60%+ concentrated in a handful of clients as a real diversification risk.</div>
                         </div>
                     </div>
 
@@ -1885,6 +1952,17 @@
                 label_margin_target: "Profit Margin Target (%)",
                 label_retention_target: "Retention Target (%)",
                 label_billable_target: "Billable Hours Target (%)",
+                label_cash_reserve_target: "Cash Reserve Target ($K)",
+                label_at_risk_alert_target: "At-Risk Client Alert (count)",
+                label_concentration_target: "Concentration Risk Alert (%)",
+                thresholds_intro: "Each target below controls the green/yellow/red indicator on its matching card — hitting or beating it shows green, falling meaningfully short shows red. These aren't fixed rules, they're your own goals; adjust anytime.",
+                hint_revenue_target: "Colors Monthly Revenue on Overview. No universal benchmark — set this to your own monthly goal.",
+                hint_margin_target: "Colors Net Profit Margin on Overview. For professional services firms, 15–25% net margin is commonly considered healthy; below ~10% is often a warning sign.",
+                hint_retention_target: "Colors Client Retention on Overview and Client Intelligence (trailing 12-month basis). Service firms often aim for 90%+; below 80% typically signals a real churn problem worth investigating.",
+                hint_billable_target: "Colors Billable Hours % on Team & Operations. Bookkeeping/accounting firms commonly target 65–80% — lower for owners/managers who also handle sales and admin, higher for dedicated staff.",
+                hint_cash_reserve_target: "Colors Cash Balance on Overview. A common small-business guideline is 3–6 months of operating expenses held in reserve — set this to whatever that works out to for you.",
+                hint_at_risk_alert_target: "Colors At-Risk Clients on Overview red once the count reaches this number. Default of 1 means any past-due client shows red immediately — raise it if a client or two carrying a balance is normal for how you bill.",
+                hint_concentration_target: "Colors Top-3 Client Concentration on Client Intelligence red once your top 3 clients account for this share of revenue. Many small businesses treat 40–60%+ concentrated in a handful of clients as a real diversification risk.",
                 label_rows_per_page: "Table Rows Per Page",
                 label_auto_refresh: "Auto-Refresh (Minutes)",
                 label_dashboard_language: "Dashboard Language",
@@ -2016,6 +2094,17 @@
                 label_margin_target: "Meta de Margen de Utilidad (%)",
                 label_retention_target: "Meta de Retención (%)",
                 label_billable_target: "Meta de Horas Facturables (%)",
+                label_cash_reserve_target: "Meta de Reserva de Efectivo ($K)",
+                label_at_risk_alert_target: "Alerta de Clientes en Riesgo (cantidad)",
+                label_concentration_target: "Alerta de Riesgo de Concentración (%)",
+                thresholds_intro: "Cada meta a continuación controla el indicador verde/amarillo/rojo de su tarjeta correspondiente — alcanzarla o superarla muestra verde, quedarse considerablemente por debajo muestra rojo. No son reglas fijas, son sus propias metas; ajústelas cuando quiera.",
+                hint_revenue_target: "Colorea los Ingresos Mensuales en Resumen. No hay un punto de referencia universal — configure esto según su propia meta mensual.",
+                hint_margin_target: "Colorea el Margen de Utilidad Neta en Resumen. Para firmas de servicios profesionales, un margen neto de 15–25% se considera comúnmente saludable; por debajo de ~10% suele ser una señal de alerta.",
+                hint_retention_target: "Colorea la Retención de Clientes en Resumen e Inteligencia de Clientes (base de 12 meses móviles). Las firmas de servicios suelen apuntar a 90%+; por debajo de 80% típicamente indica un problema real de pérdida de clientes que vale la pena investigar.",
+                hint_billable_target: "Colorea el % de Horas Facturables en Equipo y Operaciones. Las firmas de contabilidad suelen apuntar a 65–80% — más bajo para dueños/gerentes que también manejan ventas y administración, más alto para personal dedicado.",
+                hint_cash_reserve_target: "Colorea el Saldo de Caja en Resumen. Una guía común para pequeñas empresas es mantener de 3 a 6 meses de gastos operativos en reserva — configure esto según lo que eso represente para usted.",
+                hint_at_risk_alert_target: "Colorea Clientes en Riesgo en Resumen de rojo una vez que la cantidad alcance este número. El valor predeterminado de 1 significa que cualquier cliente con saldo vencido se muestra en rojo de inmediato — auméntelo si tener uno o dos clientes con saldo pendiente es normal en su forma de facturar.",
+                hint_concentration_target: "Colorea la Concentración de los 3 Principales Clientes en Inteligencia de Clientes de rojo una vez que sus 3 principales clientes representen esta proporción de ingresos. Muchas pequeñas empresas consideran que un 40–60%+ concentrado en pocos clientes es un riesgo real de diversificación.",
                 label_rows_per_page: "Filas de Tabla por Página",
                 label_auto_refresh: "Actualización Automática (Minutos)",
                 label_dashboard_language: "Idioma del Panel",
@@ -2098,7 +2187,7 @@
         });
 
         let thresholdState = loadJSON('dashboardThresholds', {
-            revenue: 27, margin: 25, retention: 95, billable: 70
+            revenue: 27, margin: 25, retention: 95, billable: 70, cashReserve: 30, atRiskAlert: 1, concentration: 60
         });
 
         let optionState = loadJSON('dashboardOptions', {
@@ -2806,7 +2895,13 @@
             configs.forEach(cfg => {
                 const card = document.getElementById(cfg.cardId);
                 if (!card) return;
-                const value = parseFloat(card.getAttribute('data-value'));
+                let value = parseFloat(card.getAttribute('data-value'));
+                // kpi-metric1's data-value is stored in raw dollars (e.g.
+                // 337800) but its target is entered in thousands ($27K =
+                // "27") -- without this, the diff came out as literally
+                // hundreds of thousands of percent (a real bug: comparing
+                // $337,800 against "27" instead of against $27,000).
+                if (cfg.cardId === 'kpi-metric1') value = value / 1000;
                 const statusEl = document.getElementById(cfg.statusId);
                 const changeEl = document.getElementById(cfg.changeId);
                 if (isNaN(value) || !cfg.target) return;
@@ -2835,7 +2930,10 @@
                 thresholdRevenue: 'revenue',
                 thresholdMargin: 'margin',
                 thresholdRetention: 'retention',
-                thresholdBillable: 'billable'
+                thresholdBillable: 'billable',
+                thresholdCashReserve: 'cashReserve',
+                thresholdAtRiskAlert: 'atRiskAlert',
+                thresholdConcentration: 'concentration'
             };
             Object.keys(map).forEach(inputId => {
                 const el = document.getElementById(inputId);
@@ -2996,27 +3094,12 @@
         // who used the dashboard before this update. Never trust localStorage
         // content blindly.
         function loadStoredPeriodState() {
-            const fallback = { type: 'month', year: CURRENT_YEAR, month: CURRENT_MONTH, quarter: CURRENT_QUARTER };
-            const raw = localStorage.getItem('wsfDashboardPeriod');
-            if (!raw) return fallback;
-            try {
-                const parsed = JSON.parse(raw);
-                const validTypes = ['month', 'quarter', 'year'];
-                if (parsed && typeof parsed === 'object' && validTypes.includes(parsed.type) && Number.isInteger(parsed.year)) {
-                    return {
-                        type: parsed.type,
-                        year: parsed.year,
-                        month: Number.isInteger(parsed.month) ? parsed.month : CURRENT_MONTH,
-                        quarter: Number.isInteger(parsed.quarter) ? parsed.quarter : CURRENT_QUARTER,
-                    };
-                }
-            } catch (e) {
-                // Old/corrupt value (e.g. a bare string from a previous
-                // version) -- fall through to the default below rather than
-                // letting this take down the rest of the page.
-            }
+            // Always start on the current month, every login -- a
+            // stale period (e.g. still on "Year 2025" long after 2025
+            // ended) was confusing and made the dashboard look broken.
+            // Clear out any old saved value so it doesn't linger.
             localStorage.removeItem('wsfDashboardPeriod');
-            return fallback;
+            return { type: 'month', year: CURRENT_YEAR, month: CURRENT_MONTH, quarter: CURRENT_QUARTER };
         }
 
         let periodState = loadStoredPeriodState();
@@ -3175,7 +3258,23 @@
                         setKpiNoData('kpi-metric3');
                     }
 
-                    applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
+                    if (data.cashBalance !== null && data.cashBalance !== undefined) {
+                        applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
+                        const cashTarget = (thresholdState.cashReserve || 30) * 1000;
+                        const cashColor = data.cashBalance >= cashTarget ? 'green' : (data.cashBalance >= cashTarget * 0.7 ? 'yellow' : 'red');
+                        const cashStatusEl = document.getElementById('kpi-metric4-status');
+                        const cashChangeEl = document.getElementById('kpi-metric4-change');
+                        if (cashStatusEl) {
+                            cashStatusEl.classList.remove('green', 'yellow', 'red');
+                            cashStatusEl.classList.add(cashColor);
+                        }
+                        if (cashChangeEl) {
+                            cashChangeEl.textContent = `vs. $${(cashTarget / 1000).toFixed(0)}K reserve target`;
+                            cashChangeEl.className = 'kpi-change';
+                        }
+                    } else {
+                        setKpiNoData('kpi-metric4');
+                    }
 
                     // A "vs target" comparison only makes sense for the actual
                     // current MONTH -- the $27K target baked into this dashboard
@@ -3299,10 +3398,12 @@
                         applyRealKpiValue('kpi-metric6', data.atRiskClientCount, (v) => `${v}`);
                         const el = document.getElementById('kpi-metric6-change');
                         const statusEl = document.getElementById('kpi-metric6-status');
-                        if (el) { el.textContent = data.atRiskClientCount > 0 ? 'Have an overdue balance' : 'None right now'; el.className = 'kpi-change'; }
+                        const atRiskAlertThreshold = thresholdState.atRiskAlert ?? 1;
+                        const isAlerting = data.atRiskClientCount >= atRiskAlertThreshold && atRiskAlertThreshold > 0;
+                        if (el) { el.textContent = data.atRiskClientCount > 0 ? `Have an overdue balance (alert at ${atRiskAlertThreshold})` : 'None right now'; el.className = 'kpi-change'; }
                         if (statusEl) {
                             statusEl.classList.remove('green', 'yellow', 'red');
-                            statusEl.classList.add(data.atRiskClientCount > 0 ? 'red' : 'green');
+                            statusEl.classList.add(isAlerting ? 'red' : (data.atRiskClientCount > 0 ? 'yellow' : 'green'));
                         }
                     }
                 }
@@ -3696,8 +3797,9 @@
                 setKpiValueAndNote('ci-avg-revenue', data.avgRevenuePerClient, (v) => `$${Math.round(v).toLocaleString()}`, rangeLabel, 'green');
 
                 if (data.topClientConcentration !== null && data.topClientConcentration !== undefined) {
-                    const concColor = data.topClientConcentration > 60 ? 'red' : (data.topClientConcentration > 40 ? 'yellow' : 'green');
-                    setKpiValueAndNote('ci-concentration', data.topClientConcentration, (v) => `${v}%`, "Top 3 clients' share of revenue", concColor);
+                    const concentrationTarget = thresholdState.concentration || 60;
+                    const concColor = data.topClientConcentration > concentrationTarget ? 'red' : (data.topClientConcentration > concentrationTarget - 20 ? 'yellow' : 'green');
+                    setKpiValueAndNote('ci-concentration', data.topClientConcentration, (v) => `${v}%`, `Top 3 clients' share of revenue (alert above ${concentrationTarget}%)`, concColor);
                 } else {
                     setKpiMessage('ci-concentration', 'No revenue this period');
                 }
@@ -4219,7 +4321,6 @@
             safeInit('updateIntegrationBadges', updateIntegrationBadges);
             safeInit('applyLanguage', () => applyLanguage(currentLanguage));
             safeInit('updateTopbarDate', updateTopbarDate);
-            safeInit('recomputeThresholds', recomputeThresholds);
             safeInit('applyRowsPerPage', applyRowsPerPage);
             safeInit('startAutoRefresh', startAutoRefresh);
             safeInit('handleResponsiveState', handleResponsiveState);
