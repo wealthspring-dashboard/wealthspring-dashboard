@@ -145,12 +145,16 @@ export default async function handler(request) {
     }
 
     // At-risk: real outstanding balances over $0, flagged distinctly if the
-    // client also isn't showing up in this period's active sales (i.e. they
-    // owe money AND haven't had new billable activity recently).
+    // At risk = genuinely past due (not just "has an open invoice within
+    // terms"), flagged distinctly if the client also isn't showing up in
+    // this period's active sales (i.e. they owe money AND haven't had new
+    // billable activity recently).
     const atRiskClientCount = agedReceivables.length;
     const atRiskClients = agedReceivables.slice(0, 10).map((c) => ({
       name: c.name,
-      amountOwed: c.amount,
+      amountOwed: c.pastDueAmount,
+      totalOwed: c.totalOwed,
+      agingBucket: c.oldestBucketLabel,
       hasRecentActivity: currentSales.some((s) => s.name.toLowerCase() === c.name.toLowerCase()),
     }));
 
