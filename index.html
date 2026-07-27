@@ -2046,6 +2046,7 @@
                 title_clients: "Client Intelligence",
                 title_pipeline: "Pipeline & Sales",
                 title_team: "Team & Operations",
+                title_compare: "Compare Periods",
 
                 kpi_monthly_revenue: "Monthly Revenue",
                 kpi_mrr: "Recurring Revenue",
@@ -2198,6 +2199,7 @@
                 title_clients: "Inteligencia de Clientes",
                 title_pipeline: "Canal y Ventas",
                 title_team: "Equipo y Operaciones",
+                title_compare: "Comparar Períodos",
 
                 kpi_monthly_revenue: "Ingresos Mensuales",
                 kpi_mrr: "Ingresos Recurrentes",
@@ -2327,7 +2329,8 @@
             financial: 'title_financial',
             clients: 'title_clients',
             pipeline: 'title_pipeline',
-            team: 'title_team'
+            team: 'title_team',
+            compare: 'title_compare'
         };
 
         /* ============================================================
@@ -2902,6 +2905,8 @@
                 runWithLoadingIndicator(loadPipelineSales);
             } else if (tabName === 'team') {
                 runWithLoadingIndicator(loadTeamOperations);
+            } else if (tabName === 'compare') {
+                initCompareControls();
             }
         }
 
@@ -2920,7 +2925,7 @@
         }
 
         function activateFirstVisibleTab() {
-            const order = ['overview', 'financial', 'clients', 'pipeline', 'team'];
+            const order = ['overview', 'financial', 'clients', 'pipeline', 'team', 'compare'];
             const target = order.find(t => tabState[t] !== false) || 'overview';
             const navItem = document.querySelector(`.nav-item[data-tab="${target}"]`);
             if (navItem) {
@@ -3369,6 +3374,45 @@
 
         let periodState = loadStoredPeriodState();
 
+        /**
+         * Same population logic as populatePeriodDropdowns, but parameterized
+         * by an id suffix and year so it can drive the Compare tab's two
+         * independent period pickers (A/B) instead of the single topbar one.
+         */
+        function populateGenericPeriodDropdowns(suffix, year) {
+            const yearSelect = document.getElementById('compareYear' + suffix);
+            const monthSelect = document.getElementById('compareMonth' + suffix);
+            const quarterSelect = document.getElementById('compareQuarter' + suffix);
+            if (!yearSelect || !monthSelect || !quarterSelect) return;
+
+            yearSelect.innerHTML = '';
+            for (let y = CURRENT_YEAR; y >= EARLIEST_YEAR; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            }
+
+            const maxMonth = year === CURRENT_YEAR ? CURRENT_MONTH : 12;
+            monthSelect.innerHTML = '';
+            for (let m = 1; m <= maxMonth; m++) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = MONTH_NAMES[m - 1];
+                monthSelect.appendChild(opt);
+            }
+
+            const maxQuarter = year === CURRENT_YEAR ? CURRENT_QUARTER : 4;
+            quarterSelect.innerHTML = '';
+            for (let q = 1; q <= maxQuarter; q++) {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = `Q${q}`;
+                quarterSelect.appendChild(opt);
+            }
+        }
+
+
         function populatePeriodDropdowns() {
             const yearSelect = document.getElementById('periodYearSelect');
             const monthSelect = document.getElementById('periodMonthSelect');
@@ -3405,6 +3449,260 @@
                 quarterSelect.appendChild(opt);
             }
         }
+
+        /* ============================================================
+           COMPARE PERIODS
+           Entirely separate from the topbar's periodState -- this tab has
+           its own two independent period selections (A and B) and never
+           fetches anything until the Compare button is explicitly clicked,
+           per design: comparison is opt-in, not automatic.
+           ============================================================ */
+        let compareState = null;
+        let compareInitialized = false;
+
+        function defaultComparePeriod(monthsAgo) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - monthsAgo);
+            return { type: 'month', year: d.getFullYear(), month: d.getMonth() + 1, quarter: Math.floor(d.getMonth() / 3) + 1, fromDate: null, toDate: null };
+        }
+
+        function initCompareControls() {
+            if (!compareInitialized) {
+                compareState = {
+                    A: defaultComparePeriod(0), // this month
+                    B: defaultComparePeriod(1), // last month
+                };
+                compareInitialized = true;
+            }
+            populateGenericPeriodDropdowns('A', compareState.A.year);
+            populateGenericPeriodDropdowns('B', compareState.B.year);
+            syncCompareControlsToState('A');
+            syncCompareControlsToState('B');
+        }
+
+        function syncCompareControlsToState(suffix) {
+            const state = compareState[suffix];
+            const typeSelect = document.getElementById('compareType' + suffix);
+            const monthSelect = document.getElementById('compareMonth' + suffix);
+            const quarterSelect = document.getElementById('compareQuarter' + suffix);
+            const yearSelect = document.getElementById('compareYear' + suffix);
+            const fromInput = document.getElementById('compareFrom' + suffix);
+            const toInput = document.getElementById('compareTo' + suffix);
+            if (!typeSelect) return;
+
+            typeSelect.value = state.type;
+            yearSelect.value = state.year;
+            monthSelect.value = Math.min(state.month, monthSelect.options.length);
+            quarterSelect.value = Math.min(state.quarter, quarterSelect.options.length);
+
+            const isCustom = state.type === 'custom';
+            monthSelect.style.display = state.type === 'month' ? '' : 'none';
+            quarterSelect.style.display = state.type === 'quarter' ? '' : 'none';
+            yearSelect.style.display = isCustom ? 'none' : '';
+            fromInput.style.display = isCustom ? '' : 'none';
+            toInput.style.display = isCustom ? '' : 'none';
+
+            if (isCustom) {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                fromInput.max = todayStr;
+                toInput.max = todayStr;
+                if (state.fromDate) fromInput.value = state.fromDate;
+                if (state.toDate) toInput.value = state.toDate;
+            }
+        }
+
+        function onComparePeriodChange(suffix) {
+            const type = document.getElementById('compareType' + suffix).value;
+            const year = parseInt(document.getElementById('compareYear' + suffix).value, 10) || CURRENT_YEAR;
+
+            if (type === 'custom') {
+                const fromInput = document.getElementById('compareFrom' + suffix);
+                const toInput = document.getElementById('compareTo' + suffix);
+                let fromDate = fromInput.value || compareState[suffix].fromDate;
+                let toDate = toInput.value || compareState[suffix].toDate;
+                if (!fromDate || !toDate) {
+                    const now = new Date();
+                    const todayStr = now.toISOString().slice(0, 10);
+                    fromDate = fromDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                    toDate = toDate || todayStr;
+                }
+                if (fromDate > toDate) {
+                    [fromDate, toDate] = [toDate, fromDate];
+                }
+                compareState[suffix] = { type, year: compareState[suffix].year, month: compareState[suffix].month, quarter: compareState[suffix].quarter, fromDate, toDate };
+            } else {
+                populateGenericPeriodDropdowns(suffix, year);
+                compareState[suffix] = {
+                    type,
+                    year,
+                    month: parseInt(document.getElementById('compareMonth' + suffix).value, 10) || CURRENT_MONTH,
+                    quarter: parseInt(document.getElementById('compareQuarter' + suffix).value, 10) || CURRENT_QUARTER,
+                    fromDate: null,
+                    toDate: null,
+                };
+            }
+            syncCompareControlsToState(suffix);
+
+            // Stale results no longer reflect what's selected -- hide until
+            // Compare is clicked again, rather than leave an out-of-date
+            // table sitting there looking current.
+            const resultsSection = document.getElementById('compareResultsSection');
+            const emptyState = document.getElementById('compareEmptyState');
+            if (resultsSection) resultsSection.style.display = 'none';
+            if (emptyState) emptyState.style.display = '';
+        }
+
+        function buildPeriodParamsFor(state) {
+            if (state.type === 'custom') {
+                return new URLSearchParams({ type: 'custom', from: state.fromDate, to: state.toDate });
+            }
+            const params = new URLSearchParams({ type: state.type, year: state.year });
+            if (state.type === 'month') params.set('month', state.month);
+            if (state.type === 'quarter') params.set('quarter', state.quarter);
+            return params;
+        }
+
+        function periodLabelFor(state) {
+            if (state.type === 'month') return `${MONTH_NAMES[state.month - 1]} ${state.year}`;
+            if (state.type === 'quarter') return `Q${state.quarter} ${state.year}`;
+            if (state.type === 'year') return `${state.year}`;
+            if (state.type === 'custom') return `${state.fromDate} – ${state.toDate}`;
+            return '';
+        }
+
+        /**
+         * Pulls the same data every other tab already pulls (summary,
+         * clients, pipeline, team, team-hours) for one specific period,
+         * and derives the two computed ratios (Revenue/Hour, Cost/Hour)
+         * the same way Team & Operations does. Deliberately does NOT
+         * replicate the full per-person revenue-attribution logic (that
+         * needs a third cross-referencing fetch and is a bigger
+         * undertaking) -- Billable Hours % isn't part of this comparison
+         * for that reason.
+         */
+        async function fetchPeriodMetrics(state) {
+            const params = buildPeriodParamsFor(state).toString();
+            const safeFetch = (url) => fetch(url).then((r) => r.json()).catch(() => ({ connected: false }));
+
+            const [summaryRes, clientsRes, pipelineRes, teamRes, teamHoursRes] = await Promise.all([
+                safeFetch(`/api/quickbooks/summary?${params}`),
+                safeFetch(`/api/quickbooks/clients?${params}`),
+                safeFetch(`/api/quickbooks/pipeline?${params}`),
+                safeFetch(`/api/quickbooks/team?${params}`),
+                safeFetch(`/api/quickbooks/team-hours?${params}`),
+            ]);
+
+            const revenuePerHour = (teamRes.totalRevenue && teamHoursRes.totalHours)
+                ? teamRes.totalRevenue / teamHoursRes.totalHours
+                : null;
+            const costPerHour = (teamRes.contractLaborSpend && teamHoursRes.totalHours)
+                ? teamRes.contractLaborSpend / teamHoursRes.totalHours
+                : null;
+
+            return {
+                connected: Boolean(summaryRes.connected),
+                periodLabel: (summaryRes.periodStart && summaryRes.periodEnd)
+                    ? formatPeriodRangeLabel(summaryRes.periodStart, summaryRes.periodEnd)
+                    : periodLabelFor(state),
+                revenue: summaryRes.periodRevenue ?? null,
+                netProfitMargin: summaryRes.netProfitMargin ?? null,
+                recurringRevenue: clientsRes.recurringRevenue ?? null,
+                retentionRate: clientsRes.retentionRate ?? null,
+                newClientCount: pipelineRes.newClientCount ?? null,
+                newClientRevenue: pipelineRes.newClientRevenue ?? null,
+                teamSize: teamHoursRes.teamSize ?? null,
+                totalHours: teamHoursRes.totalHours ?? null,
+                revenuePerHour,
+                contractLaborSpend: teamRes.contractLaborSpend ?? null,
+                costPerHour,
+            };
+        }
+
+        const COMPARE_ROWS = [
+            { label: 'Revenue', key: 'revenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
+            { label: 'Net Profit Margin', key: 'netProfitMargin', fmt: (v) => `${v}%`, isAlreadyPercent: true },
+            { label: 'Recurring Revenue', key: 'recurringRevenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
+            { label: 'Client Retention', key: 'retentionRate', fmt: (v) => `${v}%`, isAlreadyPercent: true },
+            { label: 'New Clients Won', key: 'newClientCount', fmt: (v) => `${v}` },
+            { label: 'Revenue from New Clients', key: 'newClientRevenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
+            { label: 'Team Size', key: 'teamSize', fmt: (v) => `${v}` },
+            { label: 'Total Team Hours', key: 'totalHours', fmt: (v) => `${v.toLocaleString()} hrs` },
+            { label: 'Revenue per Hour', key: 'revenuePerHour', fmt: (v) => `$${v.toFixed(0)}/hr` },
+            { label: 'Contract Labor Spend', key: 'contractLaborSpend', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
+            { label: 'Effective Cost/Hour', key: 'costPerHour', fmt: (v) => `$${v.toFixed(2)}` },
+        ];
+
+        function renderCompareRow(row, a, b) {
+            const hasA = a !== null && a !== undefined && !isNaN(a);
+            const hasB = b !== null && b !== undefined && !isNaN(b);
+            const aDisplay = hasA ? row.fmt(a) : '—';
+            const bDisplay = hasB ? row.fmt(b) : '—';
+
+            let changeDisplay = '—';
+            if (hasA && hasB) {
+                const diff = b - a;
+                const arrow = diff >= 0 ? '↑' : '↓';
+                const colorClass = diff >= 0 ? 'compare-delta-positive' : 'compare-delta-negative';
+                if (row.isAlreadyPercent) {
+                    // Already a %, e.g. margin going from 22% to 25% -- the
+                    // meaningful figure is "+3 points," not a % change of a
+                    // percentage (which reads as a second, confusingly
+                    // different number using the same "%" symbol).
+                    const pointsDiff = Math.round(diff * 10) / 10;
+                    changeDisplay = `<span class="${colorClass}">${arrow} ${Math.abs(pointsDiff)} pts</span>`;
+                } else {
+                    const pctChange = a !== 0 ? Math.round((diff / Math.abs(a)) * 1000) / 10 : null;
+                    const pctText = pctChange !== null ? ` (${pctChange >= 0 ? '+' : ''}${pctChange}%)` : '';
+                    changeDisplay = `<span class="${colorClass}">${arrow} ${row.fmt(Math.abs(diff))}${pctText}</span>`;
+                }
+            }
+
+            return `<tr><td>${row.label}</td><td>${aDisplay}</td><td>${bDisplay}</td><td>${changeDisplay}</td></tr>`;
+        }
+
+        async function runComparison() {
+            const btn = document.getElementById('runComparisonBtn');
+            const emptyState = document.getElementById('compareEmptyState');
+            const resultsSection = document.getElementById('compareResultsSection');
+            if (!btn || !compareState) return;
+
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            showContentLoading();
+
+            try {
+                const [metricsA, metricsB] = await Promise.all([
+                    fetchPeriodMetrics(compareState.A),
+                    fetchPeriodMetrics(compareState.B),
+                ]);
+
+                if (!metricsA.connected || !metricsB.connected) {
+                    flagDashboardIssue('qbo-disconnected', 'QuickBooks is not connected — connect it in Settings to run a comparison.', 'critical');
+                    emptyState.textContent = 'Connect QuickBooks in Settings to run a comparison.';
+                    emptyState.style.display = '';
+                    resultsSection.style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('compareColA').textContent = metricsA.periodLabel;
+                document.getElementById('compareColB').textContent = metricsB.periodLabel;
+
+                const tbody = document.getElementById('compareResultsBody');
+                tbody.innerHTML = COMPARE_ROWS.map((row) => renderCompareRow(row, metricsA[row.key], metricsB[row.key])).join('');
+
+                emptyState.style.display = 'none';
+                resultsSection.style.display = '';
+            } catch (e) {
+                console.error('Comparison failed:', e);
+                flagDashboardIssue('compare-fetch-failed', 'Could not run the comparison right now. Try again shortly.', 'warning');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+                hideContentLoading();
+            }
+        }
+
+
 
         /**
          * Reflects periodState into the dropdown controls and shows only the
