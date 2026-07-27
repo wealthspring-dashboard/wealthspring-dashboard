@@ -2442,10 +2442,10 @@
             revenueChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    labels: [],
                     datasets: [{
                         label: 'Monthly Revenue',
-                        data: [22, 24, 28, 30, 30, 33, 32, 32, 33, 34, 36, 30.8],
+                        data: [],
                         borderColor: '#c9a961',
                         backgroundColor: 'rgba(201, 169, 97, 0.1)',
                         borderWidth: 3,
@@ -2467,7 +2467,6 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 40,
                             ticks: {
                                 callback: function(value) {
                                     return '$' + value + 'K';
@@ -2486,6 +2485,65 @@
                     }
                 }
             });
+        }
+
+        /**
+         * Determines which {year, month} the trailing-12-month revenue
+         * trend should end at, based on whatever period is currently
+         * selected -- so the chart actually reflects the topbar selector
+         * instead of always showing a fixed "last 12 months from today"
+         * regardless of what's chosen (which is what it did before this
+         * was wired up for real; the chart used to be entirely hardcoded
+         * demo data, never connected to anything).
+         */
+        function revenueTrendAnchor() {
+            if (periodState.type === 'month') {
+                return { year: periodState.year, month: periodState.month };
+            }
+            if (periodState.type === 'quarter') {
+                return { year: periodState.year, month: periodState.quarter * 3 };
+            }
+            if (periodState.type === 'year') {
+                return { year: periodState.year, month: 12 };
+            }
+            // custom -- anchor on the end date the person actually picked.
+            if (periodState.toDate) {
+                const [y, m] = periodState.toDate.split('-');
+                return { year: parseInt(y, 10), month: parseInt(m, 10) };
+            }
+            return { year: CURRENT_YEAR, month: CURRENT_MONTH };
+        }
+
+        async function loadRevenueTrendChart() {
+            if (!revenueChart) return;
+            const anchor = revenueTrendAnchor();
+
+            try {
+                const params = new URLSearchParams({ type: 'month', year: anchor.year, month: anchor.month, count: 12 });
+                const res = await fetch(`/api/quickbooks/ratios?${params.toString()}`);
+                const data = await res.json();
+
+                const container = document.getElementById('revenueChart')?.closest('.chart-container');
+
+                if (!data.connected) {
+                    if (container) {
+                        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">Connect QuickBooks in Settings</div>';
+                    }
+                    return;
+                }
+                if (data.error || !Array.isArray(data.series)) {
+                    flagDashboardIssue('revenue-trend-fetch-failed', 'Revenue Trend chart failed to load. Will retry automatically.', 'warning');
+                    return;
+                }
+                clearDashboardIssue('revenue-trend-fetch-failed');
+
+                revenueChart.data.labels = data.series.map((p) => p.label);
+                revenueChart.data.datasets[0].data = data.series.map((p) => (p.totalRevenue !== null && p.totalRevenue !== undefined ? Math.round((p.totalRevenue / 1000) * 10) / 10 : null));
+                revenueChart.update();
+            } catch (e) {
+                console.error('Revenue Trend chart fetch failed:', e);
+                flagDashboardIssue('revenue-trend-fetch-failed', 'Revenue Trend chart failed to load. Will retry automatically.', 'warning');
+            }
         }
 
         /* ============================================================
@@ -4011,6 +4069,8 @@
         async function loadOverviewExtras() {
             const params = buildPeriodParams();
             const qs = params.toString();
+
+            loadRevenueTrendChart();
 
             try {
                 const res = await fetch(`/api/quickbooks/clients?${qs}`);
