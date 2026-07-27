@@ -642,6 +642,7 @@
             z-index: 2000;
             box-shadow: 0 4px 16px rgba(0,0,0,0.45);
             pointer-events: none;
+            white-space: pre-line;
         }
 
         .kpi-card:hover {
@@ -3994,6 +3995,20 @@
                             cashExplanation = `🟡 Yellow: ${cashDisplay} is below your ${cashTargetDisplay} reserve target, but within 30%.`;
                         } else {
                             cashExplanation = `🔴 Red: ${cashDisplay} is more than 30% below your ${cashTargetDisplay} reserve target.`;
+                        }
+                        // A combined total across several accounts can look
+                        // surprising (or land near/below zero) even when the
+                        // math is entirely correct -- one account running
+                        // negative is enough to drag the whole sum down.
+                        // Showing the real per-account breakdown turns "why
+                        // does this say $0K?" into a visible answer instead
+                        // of an opaque total.
+                        if (Array.isArray(data.cashBreakdown) && data.cashBreakdown.length > 0) {
+                            const lines = data.cashBreakdown.map((a) => {
+                                const sign = a.balance < 0 ? '-' : '';
+                                return `${a.name}: ${sign}$${Math.abs(Math.round(a.balance)).toLocaleString()}`;
+                            });
+                            cashExplanation += `\n\nAccounts:\n${lines.join('\n')}`;
                         }
                         if (cashStatusEl) {
                             cashStatusEl.classList.remove('green', 'yellow', 'red');
