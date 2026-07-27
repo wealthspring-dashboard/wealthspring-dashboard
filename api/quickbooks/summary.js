@@ -3,16 +3,32 @@ import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance, QboAuth
 
 export const config = { runtime: 'edge' };
 
-const VALID_TYPES = new Set(['month', 'quarter', 'year']);
+const VALID_TYPES = new Set(['month', 'quarter', 'year', 'custom']);
 const CURRENT_YEAR = new Date().getFullYear();
+
+function isValidDateStr(s) {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
 
 function parseRequestedPeriod(url) {
   const type = url.searchParams.get('type');
   const yearParam = parseInt(url.searchParams.get('year'), 10);
   const monthParam = parseInt(url.searchParams.get('month'), 10);
   const quarterParam = parseInt(url.searchParams.get('quarter'), 10);
+  const fromParam = url.searchParams.get('from');
+  const toParam = url.searchParams.get('to');
 
   const resolvedType = VALID_TYPES.has(type) ? type : 'month';
+
+  // Custom range -- fiscal years vary by company, so this bypasses the
+  // year/month/quarter validation below entirely. Falls back to "this
+  // month" if the dates are missing/malformed rather than crashing.
+  if (resolvedType === 'custom') {
+    if (isValidDateStr(fromParam) && isValidDateStr(toParam) && fromParam <= toParam) {
+      return { type: 'custom', fromDate: fromParam, toDate: toParam };
+    }
+    return { type: 'month', year: CURRENT_YEAR, month: new Date().getMonth() + 1, quarter: Math.floor(new Date().getMonth() / 3) + 1 };
+  }
 
   // Sanity-bound everything server-side too, not just in the UI -- a
   // malformed or malicious query string should degrade to "this month",
