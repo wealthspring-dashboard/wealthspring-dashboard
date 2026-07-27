@@ -3980,13 +3980,13 @@
                     }
 
                     if (data.cashBalance !== null && data.cashBalance !== undefined) {
-                        applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
+                        applyRealKpiValue('kpi-metric4', data.cashBalance, formatK);
                         const cashTarget = (thresholdState.cashReserve || 30) * 1000;
                         const cashColor = data.cashBalance >= cashTarget ? 'green' : (data.cashBalance >= cashTarget * 0.7 ? 'yellow' : 'red');
                         const cashStatusEl = document.getElementById('kpi-metric4-status');
                         const cashChangeEl = document.getElementById('kpi-metric4-change');
-                        const cashDisplay = `$${(data.cashBalance / 1000).toFixed(0)}K`;
-                        const cashTargetDisplay = `$${(cashTarget / 1000).toFixed(0)}K`;
+                        const cashDisplay = formatK(data.cashBalance);
+                        const cashTargetDisplay = formatK(cashTarget);
                         let cashExplanation;
                         if (cashColor === 'green') {
                             cashExplanation = `🟢 Green: ${cashDisplay} is at or above your ${cashTargetDisplay} reserve target.`;
@@ -4214,6 +4214,20 @@
             } catch (e) {
                 console.error('Overview pipeline fetch failed:', e);
             }
+        }
+
+        /**
+         * Formats a dollar value in thousands, e.g. 30800 -> "$31K". Guards
+         * against a real JS quirk: toFixed() on a small negative number
+         * that rounds to zero (like -123) produces the literal string
+         * "-0", showing as the confusing "$-0K" -- Math.round(...) || 0
+         * converts that specific -0 case to a plain 0 while still showing
+         * a real negative sign for any value that's actually meaningfully
+         * negative (e.g. -5000 still correctly shows "$-5K").
+         */
+        function formatK(v) {
+            const rounded = Math.round(v / 1000) || 0;
+            return `$${rounded}K`;
         }
 
         function applyRealKpiValue(cardId, value, formatFn) {
