@@ -140,6 +140,7 @@ export default async function handler(request) {
         label: periodLabel({ type, year: p.year, month: p.month, quarter: p.quarter }),
         periodStart: pnl.startDate,
         periodEnd: pnl.endDate,
+        totalRevenue: pnl.totalRevenue,
         revenueGrowthRate,
         grossMargin: ratio(pnl.grossProfit, pnl.totalRevenue),
         operatingMargin: ratio(pnl.operatingIncome, pnl.totalRevenue),
