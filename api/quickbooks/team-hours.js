@@ -1,40 +1,13 @@
 import { getQbTimeTokens, setQbTimeTokens, clearQbTimeTokens } from '../../lib/kv.js';
 import { ensureFreshQbTimeTokens, fetchHoursByUser, QbTimeAuthError } from '../../lib/qbotime.js';
+import { getDateRangeFor } from '../../lib/qbo.js';
 
 export const config = { runtime: 'edge' };
 
-const VALID_TYPES = new Set(['month', 'quarter', 'year']);
+const VALID_TYPES = new Set(['month', 'quarter', 'year', 'custom']);
 
-function pad(n) {
-  return String(n).padStart(2, '0');
-}
-
-function lastDayOfMonth(year, month) {
-  return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-/** Same date-range logic used elsewhere: full period, capped at today if current. */
-function getDateRangeFor({ type, year, month, quarter }) {
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
-  let startMonth, endMonth;
-
-  if (type === 'month') {
-    startMonth = month;
-    endMonth = month;
-  } else if (type === 'quarter') {
-    startMonth = (quarter - 1) * 3 + 1;
-    endMonth = startMonth + 2;
-  } else {
-    startMonth = 1;
-    endMonth = 12;
-  }
-
-  const startDate = `${year}-${pad(startMonth)}-01`;
-  const fullEndDate = `${year}-${pad(endMonth)}-${pad(lastDayOfMonth(year, endMonth))}`;
-  const endDate = fullEndDate > todayStr ? todayStr : fullEndDate;
-
-  return { startDate, endDate };
+function isValidDateStr(s) {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
 
 function parseRequest(url) {
@@ -43,7 +16,11 @@ function parseRequest(url) {
   const year = parseInt(url.searchParams.get('year'), 10) || now.getFullYear();
   const month = parseInt(url.searchParams.get('month'), 10) || now.getMonth() + 1;
   const quarter = parseInt(url.searchParams.get('quarter'), 10) || Math.floor(now.getMonth() / 3) + 1;
-  return { type, year, month, quarter };
+  const fromParam = url.searchParams.get('from');
+  const toParam = url.searchParams.get('to');
+  const fromDate = isValidDateStr(fromParam) ? fromParam : null;
+  const toDate = isValidDateStr(toParam) ? toParam : null;
+  return { type, year, month, quarter, fromDate, toDate };
 }
 
 function json(obj) {
@@ -55,7 +32,7 @@ function json(obj) {
 
 export default async function handler(request) {
   const url = new URL(request.url);
-  const { type, year, month, quarter } = parseRequest(url);
+  const { type, year, month, quarter, fromDate, toDate } = parseRequest(url);
 
   const tokens = await getQbTimeTokens();
   if (!tokens) return json({ connected: false });
@@ -67,7 +44,7 @@ export default async function handler(request) {
     const { tokens: freshTokens, refreshed } = await ensureFreshQbTimeTokens(tokens, clientId, clientSecret);
     if (refreshed) await setQbTimeTokens(freshTokens);
 
-    const current = getDateRangeFor({ type, year, month, quarter });
+    const current = getDateRangeFor({ type, year, month, quarter, fromDate, toDate });
     const { hoursByUser, hoursByUserAndClient } = await fetchHoursByUser(freshTokens, current);
 
     const totalHours = hoursByUser.reduce((sum, u) => sum + u.hours, 0);
