@@ -541,6 +541,26 @@
             border-color: var(--accent-gold);
         }
 
+        .period-go-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            font-size: 14px;
+            background: var(--accent-gold);
+            color: var(--primary-darker);
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .period-go-button:hover {
+            opacity: 0.85;
+        }
+
         @media (max-width: 640px) {
             .period-selector select {
                 padding: 5px 6px;
@@ -1294,17 +1314,18 @@
                 </div>
                 <div class="topbar-actions">
                     <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
-                        <select id="periodTypeSelect" onchange="onPeriodControlChange()" aria-label="Period type">
+                        <select id="periodTypeSelect" onchange="syncPeriodControlsOnly()" aria-label="Period type">
                             <option value="month">Month</option>
                             <option value="quarter">Quarter</option>
                             <option value="year">Year</option>
                             <option value="custom">Custom Range</option>
                         </select>
-                        <select id="periodMonthSelect" onchange="onPeriodControlChange()" aria-label="Month"></select>
-                        <select id="periodQuarterSelect" onchange="onPeriodControlChange()" aria-label="Quarter" style="display:none;"></select>
-                        <select id="periodYearSelect" onchange="onPeriodControlChange()" aria-label="Year"></select>
-                        <input type="date" id="periodFromDate" onchange="onPeriodControlChange()" aria-label="From date" style="display:none;">
-                        <input type="date" id="periodToDate" onchange="onPeriodControlChange()" aria-label="To date" style="display:none;">
+                        <select id="periodMonthSelect" onchange="syncPeriodControlsOnly()" aria-label="Month"></select>
+                        <select id="periodQuarterSelect" onchange="syncPeriodControlsOnly()" aria-label="Quarter" style="display:none;"></select>
+                        <select id="periodYearSelect" onchange="syncPeriodControlsOnly()" aria-label="Year"></select>
+                        <input type="date" id="periodFromDate" onchange="syncPeriodControlsOnly()" aria-label="From date" style="display:none;">
+                        <input type="date" id="periodToDate" onchange="syncPeriodControlsOnly()" aria-label="To date" style="display:none;">
+                        <button class="period-go-button" onclick="applyPeriodChange()" title="Apply period" data-i18n-title="period_go_title" aria-label="Apply period">🔍</button>
                     </div>
 
                     <span class="topbar-loading-indicator" id="topbarLoadingIndicator" aria-live="polite">
@@ -2039,6 +2060,7 @@
                 loading_updating: "Updating…",
                 loading_content_text: "Loading live data…",
                 theme_dark_title: "Dark Theme",
+                period_go_title: "Apply period",
                 theme_light_title: "Light Theme",
 
                 title_overview: "Executive Dashboard",
@@ -2192,6 +2214,7 @@
                 loading_updating: "Actualizando…",
                 loading_content_text: "Cargando datos en vivo…",
                 theme_dark_title: "Tema Oscuro",
+                period_go_title: "Aplicar período",
                 theme_light_title: "Tema Claro",
 
                 title_overview: "Panel Ejecutivo",
@@ -3747,31 +3770,31 @@
          * the year changed to one where the previously-selected month/quarter
          * would be in the future), persists the choice, and re-fetches data.
          */
-        function onPeriodControlChange() {
+        /**
+         * Fires on every change to any period control. Updates periodState
+         * and shows/hides the right sub-controls (month vs quarter vs custom
+         * dates) -- but does NOT fetch anything. Deliberately does not
+         * validate/default/swap the custom dates either, since that logic
+         * belongs at "apply" time, not on every keystroke while someone is
+         * still mid-edit (adjusting a date via the native picker's year
+         * spinner, for instance, fires this repeatedly with intermediate
+         * values along the way).
+         */
+        function syncPeriodControlsOnly() {
             const type = document.getElementById('periodTypeSelect').value;
             const year = parseInt(document.getElementById('periodYearSelect').value, 10);
 
             if (type === 'custom') {
                 const fromInput = document.getElementById('periodFromDate');
                 const toInput = document.getElementById('periodToDate');
-                let fromDate = fromInput.value || periodState.fromDate;
-                let toDate = toInput.value || periodState.toDate;
-
-                // Default to "this month so far" the first time Custom Range
-                // is selected, rather than leaving both inputs empty.
-                if (!fromDate || !toDate) {
-                    const now = new Date();
-                    const todayStr = now.toISOString().slice(0, 10);
-                    fromDate = fromDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-                    toDate = toDate || todayStr;
-                }
-                // Don't let From land after To -- swap rather than send a
-                // nonsensical inverted range to the backend.
-                if (fromDate > toDate) {
-                    [fromDate, toDate] = [toDate, fromDate];
-                }
-
-                periodState = { type, year: periodState.year, month: periodState.month, quarter: periodState.quarter, fromDate, toDate };
+                periodState = {
+                    type,
+                    year: periodState.year,
+                    month: periodState.month,
+                    quarter: periodState.quarter,
+                    fromDate: fromInput.value || periodState.fromDate || null,
+                    toDate: toInput.value || periodState.toDate || null,
+                };
             } else {
                 periodState = {
                     type,
@@ -3782,6 +3805,30 @@
             }
 
             syncPeriodDropdownsToState();
+        }
+
+        /**
+         * Fires only when "Go" is clicked. Finalizes whatever's currently
+         * in the controls (filling in defaults and fixing an inverted
+         * custom range, only now rather than on every intermediate edit),
+         * persists it, and actually triggers the data refresh.
+         */
+        function applyPeriodChange() {
+            if (periodState.type === 'custom') {
+                let { fromDate, toDate } = periodState;
+                if (!fromDate || !toDate) {
+                    const now = new Date();
+                    const todayStr = now.toISOString().slice(0, 10);
+                    fromDate = fromDate || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                    toDate = toDate || todayStr;
+                }
+                if (fromDate > toDate) {
+                    [fromDate, toDate] = [toDate, fromDate];
+                }
+                periodState = { ...periodState, fromDate, toDate };
+                syncPeriodDropdownsToState();
+            }
+
             localStorage.setItem('wsfDashboardPeriod', JSON.stringify(periodState));
 
             const revenueLabel = document.getElementById('kpi-metric1-label');
