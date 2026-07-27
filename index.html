@@ -1360,6 +1360,7 @@
                             <div class="kpi-label" id="kpi-metric1-label" data-i18n="kpi_monthly_revenue">Monthly Revenue</div>
                             <div class="kpi-value">$30.8K</div>
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
+                            <div class="kpi-period-note" id="kpi-metric1-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
                         </div>
                         <div class="kpi-card" id="kpi-metric2"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="This period's billings from clients who were also billed in this same period last year — a proxy for &quot;recurring,&quot; since QuickBooks has no subscription concept.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric2-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
@@ -1372,6 +1373,7 @@
                             <div class="kpi-label" id="kpi-metric3-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
                             <div class="kpi-value">22%</div>
                             <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
+                            <div class="kpi-period-note" id="kpi-metric3-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
                         </div>
                         <div class="kpi-card" id="kpi-metric4"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of all Bank-type account balances, from QuickBooks' Balance Sheet.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric4-status"></div>
@@ -3962,6 +3964,21 @@
                         setKpiNoData('kpi-metric3');
                     }
 
+                    // Revenue and Net Profit Margin both use whatever period is
+                    // selected -- unlike Cash Balance and At-Risk Clients below,
+                    // which are always "right now" regardless of the selector.
+                    // Their main text slot shows the vs-target comparison, so
+                    // the actual date range goes here instead, to make that
+                    // distinction clear at a glance rather than leaving people
+                    // to guess which cards move with the period picker.
+                    if (data.periodStart && data.periodEnd) {
+                        const periodRangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
+                        const metric1PeriodEl = document.getElementById('kpi-metric1-period');
+                        const metric3PeriodEl = document.getElementById('kpi-metric3-period');
+                        if (metric1PeriodEl) metric1PeriodEl.textContent = periodRangeLabel;
+                        if (metric3PeriodEl) metric3PeriodEl.textContent = periodRangeLabel;
+                    }
+
                     if (data.cashBalance !== null && data.cashBalance !== undefined) {
                         applyRealKpiValue('kpi-metric4', data.cashBalance, (v) => `$${(v / 1000).toFixed(0)}K`);
                         const cashTarget = (thresholdState.cashReserve || 30) * 1000;
@@ -4214,6 +4231,8 @@
             card.removeAttribute('data-value');
             const valueEl = card.querySelector('.kpi-value');
             if (valueEl) valueEl.textContent = '—';
+            const periodEl = card.querySelector('.kpi-period-note');
+            if (periodEl) periodEl.textContent = '';
         }
 
         /* ============================================================
@@ -4236,6 +4255,8 @@
                 changeEl.textContent = message;
                 changeEl.className = 'kpi-change';
             }
+            const periodEl = card.querySelector('.kpi-period-note');
+            if (periodEl) periodEl.textContent = '';
         }
 
         function setKpiValueAndNote(cardId, value, formatFn, noteText, colorClass, statusExplanation) {
