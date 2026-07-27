@@ -81,7 +81,7 @@ export default async function handler(request) {
       await setQboTokens(freshTokens);
     }
 
-    const [pnl, cashBalance] = await Promise.all([
+    const [pnl, cash] = await Promise.all([
       fetchProfitAndLossSummary(freshTokens, requestedPeriod),
       fetchCashBalance(freshTokens),
     ]);
@@ -101,7 +101,8 @@ export default async function handler(request) {
         periodRevenue: pnl.totalRevenue,
         netIncome: pnl.netIncome,
         netProfitMargin: pnl.netProfitMargin,
-        cashBalance,
+        cashBalance: cash.total,
+        cashBreakdown: cash.breakdown,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
