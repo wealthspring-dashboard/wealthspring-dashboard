@@ -4,7 +4,7 @@ import {
   fetchCustomerSales,
   fetchAgedReceivables,
   fetchAllCustomers,
-  fetchServiceItemsDiagnostic,
+  fetchRevenueByServiceCategory,
   mapWithConcurrency,
   getDateRangeFor,
   QboAuthError,
@@ -140,16 +140,10 @@ export default async function handler(request) {
       hasRecentActivity: currentSales.some((s) => s.name.toLowerCase() === c.name.toLowerCase()),
     }));
 
-    // Temporary diagnostic: for designing real Tax-vs-Bookkeeping client
-    // categorization, log the real active Products/Services list and how
-    // recent invoices actually reference them -- rather than guessing at
-    // service names. Safe to remove once the real categorization ships.
-    try {
-      const serviceDiagnostic = await fetchServiceItemsDiagnostic(freshTokens);
-      console.error('Service items diagnostic:', JSON.stringify(serviceDiagnostic));
-    } catch (e) {
-      console.error('Service items diagnostic failed:', e.message);
-    }
+    const serviceRevenue = await fetchRevenueByServiceCategory(freshTokens, current).catch((e) => {
+      console.error('Service category revenue fetch failed:', e.message);
+      return null;
+    });
 
     return json({
       connected: true,
@@ -177,6 +171,7 @@ export default async function handler(request) {
       // that didn't match a billing customer is still a real QuickBooks
       // customer versus genuinely not in QuickBooks at all.
       allCustomers,
+      serviceRevenue,
     });
   } catch (e) {
     console.error('QuickBooks client intelligence fetch failed:', e.message);
