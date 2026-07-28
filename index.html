@@ -1511,17 +1511,43 @@
                     </div>
 
                     <div class="section">
+                        <h2 class="section-title" data-i18n="section_service_revenue">Revenue by Service Line</h2>
+                        <div class="kpi-grid">
+                            <div class="kpi-card" id="ci-tax-revenue"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of invoice line items whose service name contains &quot;tax&quot; (e.g. Annual Tax Preparation, Extension of Taxes) for the selected period.">i</span>
+                                <div class="kpi-status-indicator green" id="ci-tax-revenue-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                                <div class="kpi-label" data-i18n="kpi_tax_revenue">Tax Revenue</div>
+                                <div class="kpi-value">—</div>
+                                <div class="kpi-change" id="ci-tax-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            </div>
+                            <div class="kpi-card" id="ci-bookkeeping-revenue"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of invoice line items whose service name contains &quot;bookkeeping&quot; (e.g. Bookkeeping, Bookkeeping Maintenance) for the selected period.">i</span>
+                                <div class="kpi-status-indicator green" id="ci-bookkeeping-revenue-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                                <div class="kpi-label" data-i18n="kpi_bookkeeping_revenue">Bookkeeping Revenue</div>
+                                <div class="kpi-value">—</div>
+                                <div class="kpi-change" id="ci-bookkeeping-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            </div>
+                            <div class="kpi-card" id="ci-other-revenue"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Everything else -- Advisory, Accounting/Consultation, Audit, 1099 Filings, entity/compliance filings, admin fees, and anything else that isn't Tax or Bookkeeping by name.">i</span>
+                                <div class="kpi-status-indicator green" id="ci-other-revenue-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                                <div class="kpi-label" data-i18n="kpi_other_revenue">Other Revenue</div>
+                                <div class="kpi-value">—</div>
+                                <div class="kpi-change" id="ci-other-revenue-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;" data-i18n="service_revenue_note">Based on the service name on each invoice line item — matches "Tax" and "Bookkeeping" by name, so it works on past invoices too, not just ones tagged going forward.</p>
+                    </div>
+
+                    <div class="section">
                         <h2 class="section-title" data-i18n="section_top_clients">Top Clients by Revenue</h2>
                         <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
                                     <th data-i18n="th_client_name">Client Name</th>
+                                    <th data-i18n="th_service">Service</th>
                                     <th data-i18n="th_revenue">Revenue</th>
                                 </tr>
                             </thead>
                             <tbody id="topClientsTableBody">
-                                <tr><td colspan="2" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
+                                <tr><td colspan="3" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
                             </tbody>
                         </table>
                         </div>
@@ -2099,6 +2125,12 @@
                 kpi_avg_revenue_client: "Avg. Revenue / Client",
                 kpi_concentration: "Top-3 Client Concentration",
                 kpi_retention: "Client Retention (YoY)",
+                section_service_revenue: "Revenue by Service Line",
+                kpi_tax_revenue: "Tax Revenue",
+                kpi_bookkeeping_revenue: "Bookkeeping Revenue",
+                kpi_other_revenue: "Other Revenue",
+                service_revenue_note: "Based on the service name on each invoice line item — matches \"Tax\" and \"Bookkeeping\" by name, so it works on past invoices too, not just ones tagged going forward.",
+                th_service: "Service",
                 section_top_clients: "Top Clients by Revenue",
                 th_revenue: "Revenue",
                 th_amount_owed: "Past Due Amount",
@@ -2253,6 +2285,12 @@
                 kpi_avg_revenue_client: "Ingresos Prom. / Cliente",
                 kpi_concentration: "Concentración de los 3 Principales Clientes",
                 kpi_retention: "Retención de Clientes (Interanual)",
+                section_service_revenue: "Ingresos por Línea de Servicio",
+                kpi_tax_revenue: "Ingresos de Impuestos",
+                kpi_bookkeeping_revenue: "Ingresos de Contabilidad",
+                kpi_other_revenue: "Otros Ingresos",
+                service_revenue_note: "Basado en el nombre del servicio en cada línea de factura — coincide con \"Tax\" (impuestos) y \"Bookkeeping\" (contabilidad) por nombre, por lo que también funciona con facturas pasadas, no solo las etiquetadas en adelante.",
+                th_service: "Servicio",
                 section_top_clients: "Principales Clientes por Ingresos",
                 th_revenue: "Ingresos",
                 th_amount_owed: "Monto Vencido",
@@ -2640,6 +2678,64 @@
             };
         }
 
+        /** Filled-line variant -- same trend shape as ratioLineDataset, but with the area under the line shaded in for a visually distinct third style. */
+        function ratioAreaDataset(label, data, color, labelFormatter) {
+            const { cardBg } = getChartThemeColors();
+            return {
+                label,
+                data,
+                borderColor: color,
+                backgroundColor: color + '33', // ~20% opacity fill, more visible than the line variant's subtle fill
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: color,
+                pointBorderColor: cardBg,
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: (ctx) => ctx.dataset.data[ctx.dataIndex] !== null,
+                    color,
+                    backgroundColor: cardBg,
+                    borderRadius: 4,
+                    padding: { top: 3, bottom: 3, left: 5, right: 5 },
+                    font: { weight: 'bold', size: 11 },
+                    align: 'top',
+                    anchor: 'end',
+                    offset: 6,
+                    clip: false,
+                    formatter: labelFormatter || ((v) => v),
+                },
+            };
+        }
+
+        /**
+         * Bar variant -- generalized from what Revenue Growth Rate already
+         * used. Suits metrics that swing between clearly positive and
+         * negative period to period (a bar's discrete columns read those
+         * swings more clearly than a connected line does), colored
+         * per-bar by sign rather than a single fixed color.
+         */
+        function ratioBarDataset(label, data, positiveColor, negativeColor, labelFormatter) {
+            return {
+                label,
+                data,
+                backgroundColor: data.map((v) => (v === null ? 'transparent' : v >= 0 ? positiveColor : negativeColor)),
+                borderRadius: 4,
+                datalabels: {
+                    display: (ctx) => ctx.dataset.data[ctx.dataIndex] !== null,
+                    color: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? positiveColor : negativeColor),
+                    font: { weight: 'bold', size: 11 },
+                    anchor: 'end',
+                    align: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom'),
+                    offset: 4,
+                    clip: false,
+                    formatter: labelFormatter || ((v) => v),
+                },
+            };
+        }
+
         function baseChartOptions(tickFormatter) {
             const { tickColor, gridColor } = getChartThemeColors();
             return {
@@ -2750,7 +2846,7 @@
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust, formatPctLabel)],
+                        datasets: [ratioAreaDataset('Net Margin', series.map((p) => asChartGap(p.netMargin)), RATIO_CHART_COLORS.rust, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
@@ -2760,32 +2856,17 @@
                     type: 'bar',
                     data: {
                         labels,
-                        datasets: [{
-                            label: 'Revenue Growth',
-                            data: series.map((p) => asChartGap(p.revenueGrowthRate)),
-                            backgroundColor: series.map((p) => (p.revenueGrowthRate >= 0 ? RATIO_CHART_COLORS.teal : RATIO_CHART_COLORS.rust)),
-                            borderRadius: 4,
-                            datalabels: {
-                                display: (ctx) => ctx.dataset.data[ctx.dataIndex] !== null,
-                                color: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? RATIO_CHART_COLORS.teal : RATIO_CHART_COLORS.rust),
-                                font: { weight: 'bold', size: 11 },
-                                anchor: 'end',
-                                align: (ctx) => (ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom'),
-                                offset: 4,
-                                clip: false,
-                                formatter: formatPctLabel,
-                            },
-                        }],
+                        datasets: [ratioBarDataset('Revenue Growth', series.map((p) => asChartGap(p.revenueGrowthRate)), RATIO_CHART_COLORS.teal, RATIO_CHART_COLORS.rust, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
 
                 destroyIfExists(cashFlowMarginChart);
                 cashFlowMarginChart = new Chart(document.getElementById('cashFlowMarginChart'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Operating Cash Flow Margin', series.map((p) => asChartGap(p.operatingCashFlowMargin)), RATIO_CHART_COLORS.gold, formatPctLabel)],
+                        datasets: [ratioBarDataset('Operating Cash Flow Margin', series.map((p) => asChartGap(p.operatingCashFlowMargin)), RATIO_CHART_COLORS.gold, RATIO_CHART_COLORS.rust, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
@@ -2795,17 +2876,17 @@
                     type: 'line',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold, formatPctLabel)],
+                        datasets: [ratioAreaDataset('Return on Assets', series.map((p) => asChartGap(p.returnOnAssets)), RATIO_CHART_COLORS.gold, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
 
                 destroyIfExists(roeChart);
                 roeChart = new Chart(document.getElementById('roeChart'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal, formatPctLabel)],
+                        datasets: [ratioBarDataset('Return on Equity', series.map((p) => asChartGap(p.returnOnEquity)), RATIO_CHART_COLORS.teal, RATIO_CHART_COLORS.rust, formatPctLabel)],
                     },
                     options: { ...baseChartOptions(pctTick), plugins: { legend: { display: false } } },
                 });
@@ -2822,10 +2903,10 @@
 
                 destroyIfExists(debtEquityChart);
                 debtEquityChart = new Chart(document.getElementById('debtEquityChart'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels,
-                        datasets: [ratioLineDataset('Debt-to-Equity', series.map((p) => asChartGap(p.debtToEquity)), RATIO_CHART_COLORS.rust, formatDecimalLabel)],
+                        datasets: [ratioBarDataset('Debt-to-Equity', series.map((p) => asChartGap(p.debtToEquity)), RATIO_CHART_COLORS.gold, RATIO_CHART_COLORS.rust, formatDecimalLabel)],
                     },
                     options: { ...baseChartOptions((v) => v.toFixed(1)), plugins: { legend: { display: false } } },
                 });
@@ -4550,7 +4631,7 @@
                         ? 'QuickBooks connection expired — please reconnect in Settings'
                         : 'Connect QuickBooks in Settings to see client data here.';
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
-                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
+                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 3, msg);
                     setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
                     flagDashboardIssue('qbo-disconnected', msg, 'critical');
                     return;
@@ -4558,7 +4639,7 @@
                 if (data.error) {
                     const msg = 'Could not load client data right now. Try again shortly.';
                     kpiIds.forEach((id) => setKpiMessage(id, msg));
-                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 2, msg);
+                    setTableMessage('topClientsTableBody', 'topClientsTableNote', 3, msg);
                     setTableMessage('atRiskTableBody', 'atRiskTableNote', 3, msg);
                     flagDashboardIssue('clients-fetch-failed', 'Client Intelligence data failed to load. Will retry automatically.', 'warning');
                     return;
@@ -4598,20 +4679,46 @@
                 }
 
                 const topBody = document.getElementById('topClientsTableBody');
+                const serviceByClient = new Map(
+                    (data.serviceRevenue?.clientBreakdown || []).map((c) => [c.name.toLowerCase(), c])
+                );
+                function serviceBadgesFor(clientName) {
+                    const cats = serviceByClient.get(clientName.toLowerCase());
+                    if (!cats) return '<span style="color:var(--text-muted);">—</span>';
+                    const badges = [];
+                    if (cats.tax > 0) badges.push('<span class="status-badge" style="background:rgba(201,169,97,0.15);color:var(--accent-gold);">Tax</span>');
+                    if (cats.bookkeeping > 0) badges.push('<span class="status-badge" style="background:rgba(94,163,150,0.15);color:#5ea396;">Bookkeeping</span>');
+                    if (cats.other > 0) badges.push('<span class="status-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);">Other</span>');
+                    return badges.length > 0 ? badges.join(' ') : '<span style="color:var(--text-muted);">—</span>';
+                }
                 if (topBody) {
                     if (data.topClients && data.topClients.length > 0) {
                         topBody.innerHTML = data.topClients.map((c) => `
                             <tr>
                                 <td><strong>${escapeHtml(c.name)}</strong></td>
+                                <td>${serviceBadgesFor(c.name)}</td>
                                 <td>$${Math.round(c.amount).toLocaleString()}</td>
                             </tr>
                         `).join('');
                     } else {
-                        topBody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No client revenue recorded for ${escapeHtml(rangeLabel)}.</td></tr>`;
+                        topBody.innerHTML = `<tr><td colspan="3" style="color:var(--text-muted);text-align:center;padding:20px;">No client revenue recorded for ${escapeHtml(rangeLabel)}.</td></tr>`;
                     }
                 }
                 const topNote = document.getElementById('topClientsTableNote');
                 if (topNote) topNote.textContent = rangeLabel;
+
+                if (data.serviceRevenue) {
+                    const { tax, bookkeeping, other } = data.serviceRevenue.totals;
+                    const svcTotal = tax + bookkeeping + other;
+                    const pctOf = (v) => (svcTotal > 0 ? `${Math.round((v / svcTotal) * 1000) / 10}% of revenue` : rangeLabel);
+                    setKpiValueAndNote('ci-tax-revenue', tax, (v) => `$${Math.round(v).toLocaleString()}`, pctOf(tax), 'green');
+                    setKpiValueAndNote('ci-bookkeeping-revenue', bookkeeping, (v) => `$${Math.round(v).toLocaleString()}`, pctOf(bookkeeping), 'green');
+                    setKpiValueAndNote('ci-other-revenue', other, (v) => `$${Math.round(v).toLocaleString()}`, pctOf(other), 'green');
+                } else {
+                    setKpiMessage('ci-tax-revenue', 'Could not load right now. Try again shortly.');
+                    setKpiMessage('ci-bookkeeping-revenue', 'Could not load right now. Try again shortly.');
+                    setKpiMessage('ci-other-revenue', 'Could not load right now. Try again shortly.');
+                }
 
                 const atRiskBody = document.getElementById('atRiskTableBody');
                 if (atRiskBody) {
