@@ -4,6 +4,7 @@ import {
   fetchCustomerSales,
   fetchAgedReceivables,
   fetchAllCustomers,
+  fetchServiceItemsDiagnostic,
   mapWithConcurrency,
   getDateRangeFor,
   QboAuthError,
@@ -138,6 +139,17 @@ export default async function handler(request) {
       agingBucket: c.oldestBucketLabel,
       hasRecentActivity: currentSales.some((s) => s.name.toLowerCase() === c.name.toLowerCase()),
     }));
+
+    // Temporary diagnostic: for designing real Tax-vs-Bookkeeping client
+    // categorization, log the real active Products/Services list and how
+    // recent invoices actually reference them -- rather than guessing at
+    // service names. Safe to remove once the real categorization ships.
+    try {
+      const serviceDiagnostic = await fetchServiceItemsDiagnostic(freshTokens);
+      console.error('Service items diagnostic:', JSON.stringify(serviceDiagnostic));
+    } catch (e) {
+      console.error('Service items diagnostic failed:', e.message);
+    }
 
     return json({
       connected: true,
