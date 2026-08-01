@@ -3696,16 +3696,23 @@
                 }
                 compareState[suffix] = { type, year: compareState[suffix].year, month: compareState[suffix].month, quarter: compareState[suffix].quarter, fromDate, toDate };
             } else {
-                populateGenericPeriodDropdowns(suffix, year);
-                compareState[suffix] = {
-                    type,
-                    year,
-                    month: parseInt(document.getElementById('compareMonth' + suffix).value, 10) || CURRENT_MONTH,
-                    quarter: parseInt(document.getElementById('compareQuarter' + suffix).value, 10) || CURRENT_QUARTER,
-                    fromDate: null,
-                    toDate: null,
-                };
+                // Read the actual month/quarter selections BEFORE rebuilding
+                // the dropdown options below -- rebuilding a <select>'s
+                // options resets the browser's chosen value back to the
+                // first option, so reading AFTER the rebuild (the original,
+                // buggy order) silently discarded whatever the person had
+                // just picked (e.g. Q2) and always captured Q1 instead. This
+                // is exactly why a Q1-vs-Q2 comparison wasn't showing
+                // accurate figures -- Q2 could never actually be selected.
+                const month = parseInt(document.getElementById('compareMonth' + suffix).value, 10) || CURRENT_MONTH;
+                const quarter = parseInt(document.getElementById('compareQuarter' + suffix).value, 10) || CURRENT_QUARTER;
+                compareState[suffix] = { type, year, month, quarter, fromDate: null, toDate: null };
             }
+
+            // Rebuild the dropdown options for the (possibly new) year, then
+            // restore the actual selected values from compareState -- must
+            // run after state is captured above, never before.
+            populateGenericPeriodDropdowns(suffix, compareState[suffix].year);
             syncCompareControlsToState(suffix);
 
             // Stale results no longer reflect what's selected -- hide until
@@ -3757,10 +3764,10 @@
                 safeFetch(`/api/quickbooks/team-hours?${params}`),
             ]);
 
-            const revenuePerHour = (teamRes.totalRevenue && teamHoursRes.totalHours)
+            const revenuePerHour = (teamRes.totalRevenue !== null && teamRes.totalRevenue !== undefined && teamHoursRes.totalHours)
                 ? teamRes.totalRevenue / teamHoursRes.totalHours
                 : null;
-            const costPerHour = (teamRes.contractLaborSpend && teamHoursRes.totalHours)
+            const costPerHour = (teamRes.contractLaborSpend !== null && teamRes.contractLaborSpend !== undefined && teamHoursRes.totalHours)
                 ? teamRes.contractLaborSpend / teamHoursRes.totalHours
                 : null;
 
