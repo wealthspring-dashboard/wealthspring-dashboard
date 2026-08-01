@@ -1678,13 +1678,14 @@
 
                     <div class="section">
                         <h2 class="section-title" data-i18n="section_team_roster">Team Roster</h2>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: -8px; margin-bottom: 12px;" data-i18n="team_roster_not_pay_note">⚠️ Not compensation. This shows which clients' billing traces back to each person's logged hours — not what anyone is paid.</p>
                         <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
                                     <th data-i18n="th_employee">Employee</th>
                                     <th id="teamHoursColumnHeader" data-i18n="th_role">Role</th>
-                                    <th id="teamRevenueColumnHeader" data-i18n="th_revenue_attributed" style="display:none;">Revenue Attributed (Est.)</th>
+                                    <th id="teamRevenueColumnHeader" data-i18n="th_client_revenue_attributed" style="display:none;">Est. Client Revenue</th>
                                 </tr>
                             </thead>
                             <tbody id="teamTableBody">
@@ -2163,7 +2164,8 @@
                 kpi_billable_pct: "Billable Hours %",
                 kpi_connect_qbtime: "Connect QuickBooks Time in Settings",
                 th_hours_this_period: "Hours This Period",
-                th_revenue_attributed: "Revenue Attributed (Est.)",
+                th_client_revenue_attributed: "Est. Client Revenue",
+                team_roster_not_pay_note: "⚠️ Not compensation. This shows which clients' billing traces back to each person's logged hours — not what anyone is paid.",
                 section_team_roster: "Team Roster",
                 team_utilization_note: "This is a fallback list — once QuickBooks Time is connected in Settings, this table shows your real roster, hours, and per-person revenue automatically.",
                 th_employee: "Employee",
@@ -2324,7 +2326,8 @@
                 kpi_billable_pct: "% de Horas Facturables",
                 kpi_connect_qbtime: "Conecte QuickBooks Time en Configuración",
                 th_hours_this_period: "Horas Este Período",
-                th_revenue_attributed: "Ingresos Atribuidos (Est.)",
+                th_client_revenue_attributed: "Ingresos de Clientes Estimados",
+                team_roster_not_pay_note: "⚠️ No es compensación. Esto muestra qué facturación de clientes se atribuye a las horas registradas de cada persona — no lo que se le paga a nadie.",
                 section_team_roster: "Plantilla del Equipo",
                 team_utilization_note: "Esta es una lista de respaldo — una vez que QuickBooks Time esté conectado en Configuración, esta tabla mostrará su plantilla real, horas e ingresos por persona automáticamente.",
                 th_employee: "Empleado",
@@ -3668,9 +3671,9 @@
             toInput.style.display = isCustom ? '' : 'none';
 
             if (isCustom) {
-                const todayStr = new Date().toISOString().slice(0, 10);
-                fromInput.max = todayStr;
-                toInput.max = todayStr;
+                // Same reasoning as the topbar's version of this control --
+                // no max attribute, to avoid year-typing friction; the
+                // backend already caps future dates at today.
                 if (state.fromDate) fromInput.value = state.fromDate;
                 if (state.toDate) toInput.value = state.toDate;
             }
@@ -3905,9 +3908,13 @@
             toInput.style.display = isCustom ? '' : 'none';
 
             if (isCustom) {
-                const todayStr = new Date().toISOString().slice(0, 10);
-                fromInput.max = todayStr;
-                toInput.max = todayStr;
+                // No max attribute here on purpose -- a max date makes the
+                // browser validate against it on every keystroke while
+                // typing a year, which is a well-known source of friction
+                // (partial digits can look like they violate the max mid-
+                // type). The backend already safely caps anything in the
+                // future at today, so this client-side constraint was only
+                // adding friction without adding real protection.
                 if (periodState.fromDate) fromInput.value = periodState.fromDate;
                 if (periodState.toDate) toInput.value = periodState.toDate;
             }
@@ -5088,7 +5095,7 @@
                         if (!hasAttribution) {
                             attrNote.textContent = '';
                         } else {
-                            let text = `Revenue Attributed is an estimate: each client's billing this period, split across whoever logged hours against them, proportional to hours worked. Job codes matching "WFS"/"Wealthspring" or internal admin work are tracked as non-billable, not attributed to a client.`;
+                            let text = `Not compensation — this is an estimate of client billing, not what anyone is paid. Each client's billing this period is split across whoever logged hours against them, proportional to hours worked. Job codes matching "WFS"/"Wealthspring" or internal admin work are tracked as non-billable, not attributed to a client.`;
                             if (attribution.unmatchedClientNames.length > 0) {
                                 text += ` Couldn't find these QuickBooks Time job codes anywhere in your QuickBooks customer list -- worth checking if they're a contact name rather than the actual customer name, or a typo: ${attribution.unmatchedClientNames.join(', ')}.`;
                             }
