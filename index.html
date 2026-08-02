@@ -1668,9 +1668,9 @@
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-cost-per-hour-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
-                        <div class="kpi-card" id="to-billable-pct"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Hours logged against a real client ÷ total hours logged. Internal/admin work (anything WFS/Wealthspring-tagged) is excluded from the numerator.">i</span>
+                        <div class="kpi-card" id="to-billable-pct"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Hours logged against a real client ÷ total hours logged — measures time on client work, not hourly billing (most work here is flat-fee, not billed by the hour). Internal/admin work (anything WFS/Wealthspring-tagged) is excluded from the numerator.">i</span>
                             <div class="kpi-status-indicator green" id="to-billable-pct-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_billable_pct">Billable Hours %</div>
+                            <div class="kpi-label" data-i18n="kpi_billable_pct">Client Hours %</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="to-billable-pct-change" data-i18n="kpi_connect_qbtime">Connect QuickBooks Time in Settings</div>
                         </div>
@@ -1896,7 +1896,7 @@
                             <input type="checkbox" checked data-metric="to-cost-per-hour" onchange="toggleMetric('to-cost-per-hour', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="kpi_billable_pct">Billable Hours %</label>
+                            <label data-i18n="kpi_billable_pct">Client Hours %</label>
                             <input type="checkbox" checked data-metric="to-billable-pct" onchange="toggleMetric('to-billable-pct', this.checked)">
                         </div>
                         <p style="color: var(--text-muted); font-size: 11px; margin-top: 10px;" data-i18n="display_metrics_financial_note">Financial Performance's 9 ratio charts aren't included here — that tab is a fixed set of trend charts rather than individual toggleable cards.</p>
@@ -1960,10 +1960,10 @@
 
                         <div class="setting-item-with-hint">
                             <div class="setting-item-row">
-                                <label data-i18n="label_billable_target">Billable Hours Target (%)</label>
+                                <label data-i18n="label_billable_target">Client Hours Target (%)</label>
                                 <input type="number" id="thresholdBillable" value="70" min="0" max="100" onchange="updateThreshold('billable', this.value)">
                             </div>
-                            <div class="setting-item-hint" data-i18n="hint_billable_target">Colors Billable Hours % on Team & Operations. Bookkeeping/accounting firms commonly target 65–80% — lower for owners/managers who also handle sales and admin, higher for dedicated staff.</div>
+                            <div class="setting-item-hint" data-i18n="hint_billable_target">Colors Client Hours % on Team & Operations — time on client work vs. internal/admin. Not tied to hourly billing (most work here is flat-fee); 65–80% is a common general benchmark for time spent on client work.</div>
                         </div>
 
                         <div class="setting-item-with-hint">
@@ -2041,7 +2041,7 @@
 
                         <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
                             <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">QuickBooks Time</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for billable-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for client-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback</span></div>
                             <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
@@ -2161,7 +2161,7 @@
                 kpi_period_revenue: "Period Revenue",
                 kpi_total_hours: "Total Team Hours",
                 kpi_cost_per_hour: "Effective Cost/Hour",
-                kpi_billable_pct: "Billable Hours %",
+                kpi_billable_pct: "Client Hours %",
                 kpi_connect_qbtime: "Connect QuickBooks Time in Settings",
                 th_hours_this_period: "Hours This Period",
                 th_client_revenue_attributed: "Est. Client Revenue",
@@ -2190,7 +2190,7 @@
                 label_revenue_target: "Revenue Target ($K)",
                 label_margin_target: "Profit Margin Target (%)",
                 label_retention_target: "Retention Target (%)",
-                label_billable_target: "Billable Hours Target (%)",
+                label_billable_target: "Client Hours Target (%)",
                 label_cash_reserve_target: "Cash Reserve Target ($K)",
                 label_at_risk_alert_target: "At-Risk Client Alert (count)",
                 label_concentration_target: "Concentration Risk Alert (%)",
@@ -2198,7 +2198,7 @@
                 hint_revenue_target: "Colors Monthly Revenue on Overview. No universal benchmark — set this to your own monthly goal.",
                 hint_margin_target: "Colors Net Profit Margin on Overview. For professional services firms, 15–25% net margin is commonly considered healthy; below ~10% is often a warning sign.",
                 hint_retention_target: "Colors Client Retention on Overview and Client Intelligence (trailing 12-month basis). Service firms often aim for 90%+; below 80% typically signals a real churn problem worth investigating.",
-                hint_billable_target: "Colors Billable Hours % on Team & Operations. Bookkeeping/accounting firms commonly target 65–80% — lower for owners/managers who also handle sales and admin, higher for dedicated staff.",
+                hint_billable_target: "Colors Client Hours % on Team & Operations — time on client work vs. internal/admin. Not tied to hourly billing (most work here is flat-fee); 65–80% is a common general benchmark for time spent on client work.",
                 hint_cash_reserve_target: "Colors Cash Balance on Overview. A common small-business guideline is 3–6 months of operating expenses held in reserve — set this to whatever that works out to for you.",
                 hint_at_risk_alert_target: "Colors At-Risk Clients on Overview red once the count reaches this number. Default of 1 means any past-due client shows red immediately — raise it if a client or two carrying a balance is normal for how you bill.",
                 hint_concentration_target: "Colors Top-3 Client Concentration on Client Intelligence red once your top 3 clients account for this share of revenue. Many small businesses treat 40–60%+ concentrated in a handful of clients as a real diversification risk.",
@@ -2212,7 +2212,7 @@
                 help_qbo_step2: "Copy your Client ID and Client Secret",
                 help_qbo_step3: "Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback",
                 help_qbo_step4: "Paste credentials in Integrations section above",
-                help_qbtime_desc: "Sync team hours for billable-hours tracking, effective cost-per-hour, and per-person revenue attribution.",
+                help_qbtime_desc: "Sync team hours for client-hours tracking, effective cost-per-hour, and per-person revenue attribution.",
                 help_qbtime_step1: "Go to the QuickBooks Time API Add-On page and create an application",
                 help_qbtime_step2: "Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback",
                 help_qbtime_step3: "Toggle QuickBooks Time on above and sign in when prompted",
@@ -2323,7 +2323,7 @@
                 kpi_period_revenue: "Ingresos del Período",
                 kpi_total_hours: "Horas Totales del Equipo",
                 kpi_cost_per_hour: "Costo Efectivo por Hora",
-                kpi_billable_pct: "% de Horas Facturables",
+                kpi_billable_pct: "% de Horas de Cliente",
                 kpi_connect_qbtime: "Conecte QuickBooks Time en Configuración",
                 th_hours_this_period: "Horas Este Período",
                 th_client_revenue_attributed: "Ingresos de Clientes Estimados",
@@ -2352,7 +2352,7 @@
                 label_revenue_target: "Meta de Ingresos ($K)",
                 label_margin_target: "Meta de Margen de Utilidad (%)",
                 label_retention_target: "Meta de Retención (%)",
-                label_billable_target: "Meta de Horas Facturables (%)",
+                label_billable_target: "Meta de Horas de Cliente (%)",
                 label_cash_reserve_target: "Meta de Reserva de Efectivo ($K)",
                 label_at_risk_alert_target: "Alerta de Clientes en Riesgo (cantidad)",
                 label_concentration_target: "Alerta de Riesgo de Concentración (%)",
@@ -2360,7 +2360,7 @@
                 hint_revenue_target: "Colorea los Ingresos Mensuales en Resumen. No hay un punto de referencia universal — configure esto según su propia meta mensual.",
                 hint_margin_target: "Colorea el Margen de Utilidad Neta en Resumen. Para firmas de servicios profesionales, un margen neto de 15–25% se considera comúnmente saludable; por debajo de ~10% suele ser una señal de alerta.",
                 hint_retention_target: "Colorea la Retención de Clientes en Resumen e Inteligencia de Clientes (base de 12 meses móviles). Las firmas de servicios suelen apuntar a 90%+; por debajo de 80% típicamente indica un problema real de pérdida de clientes que vale la pena investigar.",
-                hint_billable_target: "Colorea el % de Horas Facturables en Equipo y Operaciones. Las firmas de contabilidad suelen apuntar a 65–80% — más bajo para dueños/gerentes que también manejan ventas y administración, más alto para personal dedicado.",
+                hint_billable_target: "Colorea el % de Horas de Cliente en Equipo y Operaciones — tiempo en trabajo de clientes vs. interno/administrativo. No está vinculado a facturación por hora (la mayoría del trabajo aquí es de tarifa fija); 65–80% es un punto de referencia general común.",
                 hint_cash_reserve_target: "Colorea el Saldo de Caja en Resumen. Una guía común para pequeñas empresas es mantener de 3 a 6 meses de gastos operativos en reserva — configure esto según lo que eso represente para usted.",
                 hint_at_risk_alert_target: "Colorea Clientes en Riesgo en Resumen de rojo una vez que la cantidad alcance este número. El valor predeterminado de 1 significa que cualquier cliente con saldo vencido se muestra en rojo de inmediato — auméntelo si tener uno o dos clientes con saldo pendiente es normal en su forma de facturar.",
                 hint_concentration_target: "Colorea la Concentración de los 3 Principales Clientes en Inteligencia de Clientes de rojo una vez que sus 3 principales clientes representen esta proporción de ingresos. Muchas pequeñas empresas consideran que un 40–60%+ concentrado en pocos clientes es un riesgo real de diversificación.",
@@ -3752,7 +3752,7 @@
          * the same way Team & Operations does. Deliberately does NOT
          * replicate the full per-person revenue-attribution logic (that
          * needs a third cross-referencing fetch and is a bigger
-         * undertaking) -- Billable Hours % isn't part of this comparison
+         * undertaking) -- Client Hours % isn't part of this comparison
          * for that reason.
          */
         async function fetchPeriodMetrics(state) {
@@ -4768,7 +4768,7 @@
          * the count of distinct people who actually logged hours this
          * period, which always matches the roster table below it. Per-
          * person revenue is an estimate (hours-weighted split of each
-         * client's billing), and Billable Hours % separates real client
+         * client's billing), and Client Hours % separates real client
          * work from internal/non-billable time -- see computeRevenueAttribution.
          */
         let teamOpsCacheKey = null;
@@ -5069,10 +5069,10 @@
                                 const revenue = attribution.revenueByUserName.get(key);
                                 const internalHours = attribution.internalHoursByUserName.get(key) || 0;
                                 const internalNote = internalHours > 0
-                                    ? `<div style="font-size:11px;color:var(--text-muted);">${internalHours.toLocaleString()} hrs internal/non-billable</div>`
+                                    ? `<div style="font-size:11px;color:var(--text-muted);">${internalHours.toLocaleString()} hrs internal/non-client</div>`
                                     : '';
                                 const revenueCell = hasAttribution
-                                    ? `<td>${revenue !== undefined ? '$' + Math.round(revenue).toLocaleString() : '<span style="color:var(--text-muted);">No billable client hours</span>'}</td>`
+                                    ? `<td>${revenue !== undefined ? '$' + Math.round(revenue).toLocaleString() : '<span style="color:var(--text-muted);">No client hours logged</span>'}</td>`
                                     : '';
                                 return `
                                 <tr>
@@ -5103,7 +5103,7 @@
                         }
                     }
 
-                    // Billable Hours % -- total hours matched to a real client
+                    // Client Hours % -- total hours matched to a real client
                     // divided by total hours logged, company-wide. A standard
                     // practice-management ratio: how much of the team's time
                     // is actually billable versus internal/admin overhead.
@@ -5114,10 +5114,10 @@
                         const billableTarget = thresholdState.billable || 70;
                         const billableColor = billablePct >= billableTarget ? 'green' : (billablePct >= billableTarget - 20 ? 'yellow' : 'red');
                         const billableExplanation = billableColor === 'green'
-                            ? `🟢 Green: ${billablePct}% billable is at or above your ${billableTarget}% target.`
+                            ? `🟢 Green: ${billablePct}% client hours is at or above your ${billableTarget}% target.`
                             : billableColor === 'yellow'
-                            ? `🟡 Yellow: ${billablePct}% billable is below your ${billableTarget}% target, but within 20 points.`
-                            : `🔴 Red: ${billablePct}% billable is more than 20 points below your ${billableTarget}% target.`;
+                            ? `🟡 Yellow: ${billablePct}% client hours is below your ${billableTarget}% target, but within 20 points.`
+                            : `🔴 Red: ${billablePct}% client hours is more than 20 points below your ${billableTarget}% target.`;
                         setKpiValueAndNote('to-billable-pct', billablePct, (v) => `${v}%`, `${totalBillableHours.toLocaleString()} of ${data.totalHours.toLocaleString()} hrs (target ${billableTarget}%)`, billableColor, billableExplanation);
                     } else {
                         setKpiMessage('to-billable-pct', 'No hours logged this period');
