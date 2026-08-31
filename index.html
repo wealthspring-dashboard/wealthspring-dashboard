@@ -989,6 +989,25 @@
             margin-bottom: 12px;
             font-weight: 600;
             letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        .settings-section-arrow {
+            display: inline-block;
+            transition: transform 0.2s ease;
+            font-size: 10px;
+        }
+
+        .settings-section.collapsed .settings-section-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .settings-section.collapsed > *:not(.settings-section-title) {
+            display: none;
         }
 
         .settings-subgroup-title {
@@ -1288,6 +1307,10 @@
             <div class="nav-item" data-tab="compare" onclick="switchTab(event, 'compare')">
                 <span class="nav-icon">⚖️</span>
                 <span class="nav-text" data-i18n="nav_compare">Compare Periods</span>
+            </div>
+            <div class="nav-item" data-tab="help" onclick="switchTab(event, 'help')">
+                <span class="nav-icon">❓</span>
+                <span class="nav-text" data-i18n="nav_help">Help &amp; Support</span>
             </div>
 
             <div class="sidebar-footer">
@@ -1778,6 +1801,40 @@
                     </div>
                 </div>
 
+                <!-- HELP & SUPPORT TAB -->
+                <div id="help" class="tab-content">
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="settings_need_help">Need Help?</h2>
+                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="help_intro">Integration guides below. Contact us for support.</p>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">QuickBooks Online</h2>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbo_desc">Sync P&amp;L, Balance Sheet, and customer revenue data in real-time.</p>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbo_step1">Go to developer.intuit.com and create a new app</span></div>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbo_step2">Copy your Client ID and Client Secret</span></div>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbo_step3">Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback</span></div>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>4.</strong> <span data-i18n="help_qbo_step4">Paste credentials in Integrations section of Settings</span></div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">QuickBooks Time</h2>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for client-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback</span></div>
+                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
+                    </div>
+
+                    <!-- Reserved for the troubleshooting guide / user manual -- to be added here once designed. -->
+
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="help_support_title">Support Contact</h2>
+                        <div style="font-size: 13px; margin-bottom: 8px;">📞 <a href="tel:917-862-3085" style="color: var(--accent-teal); text-decoration: none;">917-862-3085</a></div>
+                        <div style="font-size: 13px; margin-bottom: 8px;">📧 <a href="mailto:info@wealthspringfinserv.com" style="color: var(--accent-teal); text-decoration: none;">info@wealthspringfinserv.com</a></div>
+                        <div style="font-size: 13px;">📍 560 West 218 St., Suite 4C, New York, NY 10034</div>
+                    </div>
+                </div>
+
                 <div class="content-loading-overlay" id="contentLoadingOverlay">
                     <div class="content-loading-spinner"></div>
                     <div class="content-loading-text" data-i18n="loading_content_text">Loading live data…</div>
@@ -1797,7 +1854,7 @@
 
                 <div class="settings-content">
                     <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_display_metrics">Display Metrics</div>
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_display_metrics">Display Metrics<span class="settings-section-arrow">▼</span></div>
                         <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;" data-i18n="display_metrics_intro">Show or hide individual cards on each tab.</p>
 
                         <div class="settings-subgroup-title" data-i18n="nav_overview">Overview</div>
@@ -1902,8 +1959,8 @@
                         <p style="color: var(--text-muted); font-size: 11px; margin-top: 10px;" data-i18n="display_metrics_financial_note">Financial Performance's 9 ratio charts aren't included here — that tab is a fixed set of trend charts rather than individual toggleable cards.</p>
                     </div>
 
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_tab_visibility">Tab Visibility</div>
+                    <div class="settings-section collapsed">
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_tab_visibility">Tab Visibility<span class="settings-section-arrow">▼</span></div>
                         <div class="setting-item">
                             <label data-i18n="nav_overview">Overview</label>
                             <input type="checkbox" checked data-tab-toggle="overview" onchange="toggleTabVisibility('overview', this.checked)">
@@ -1928,10 +1985,14 @@
                             <label data-i18n="nav_compare">Compare Periods</label>
                             <input type="checkbox" checked data-tab-toggle="compare" onchange="toggleTabVisibility('compare', this.checked)">
                         </div>
+                        <div class="setting-item">
+                            <label data-i18n="nav_help">Help &amp; Support</label>
+                            <input type="checkbox" checked data-tab-toggle="help" onchange="toggleTabVisibility('help', this.checked)">
+                        </div>
                     </div>
 
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_thresholds">Performance Thresholds</div>
+                    <div class="settings-section collapsed">
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_thresholds">Performance Thresholds<span class="settings-section-arrow">▼</span></div>
                         <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 14px; line-height: 1.5;" data-i18n="thresholds_intro">Each target below controls the green/yellow/red indicator on its matching card — hitting or beating it shows green, falling meaningfully short shows red. These aren't fixed rules, they're your own goals; adjust anytime.</p>
 
                         <div class="setting-item-with-hint">
@@ -1991,8 +2052,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_display_options">Display Options</div>
+                    <div class="settings-section collapsed">
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_display_options">Display Options<span class="settings-section-arrow">▼</span></div>
                         <div class="setting-item">
                             <label data-i18n="label_rows_per_page">Table Rows Per Page</label>
                             <input type="number" id="optionRows" value="10" min="1" max="50" onchange="updateOption('rows', this.value)">
@@ -2003,8 +2064,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_language">Language</div>
+                    <div class="settings-section collapsed">
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_language">Language<span class="settings-section-arrow">▼</span></div>
                         <div class="setting-item">
                             <label data-i18n="label_dashboard_language">Dashboard Language</label>
                             <select id="languageSelect" onchange="setLanguage(this.value)" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--primary-forest); color: var(--text-light); cursor: pointer;">
@@ -2014,8 +2075,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_integrations">Integrations</div>
+                    <div class="settings-section collapsed">
+                        <div class="settings-section-title" onclick="toggleSettingsSection(this)" data-i18n="settings_integrations">Integrations<span class="settings-section-arrow">▼</span></div>
                         <div class="setting-item">
                             <label>QuickBooks Online <span class="integration-status" id="qboStatus" style="font-size:11px;margin-left:6px;padding:2px 8px;border-radius:10px;"></span></label>
                             <input type="checkbox" id="integrationQbo" onchange="handleQboToggle(this.checked)">
@@ -2023,35 +2084,6 @@
                         <div class="setting-item">
                             <label>QuickBooks Time <span class="integration-status" id="qbtimeStatus" style="font-size:11px;margin-left:6px;padding:2px 8px;border-radius:10px;"></span></label>
                             <input type="checkbox" id="integrationQbtime" onchange="handleQbTimeToggle(this.checked)">
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings_need_help">Need Help?</div>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;" data-i18n="help_intro">Integration guides below. Contact us for support.</p>
-                        
-                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
-                            <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">QuickBooks Online</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbo_desc">Sync P&amp;L, Balance Sheet, and customer revenue data in real-time.</p>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbo_step1">Go to developer.intuit.com and create a new app</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbo_step2">Copy your Client ID and Client Secret</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbo_step3">Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>4.</strong> <span data-i18n="help_qbo_step4">Paste credentials in Integrations section above</span></div>
-                        </div>
-
-                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
-                            <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-gold);">QuickBooks Time</div>
-                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for client-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback</span></div>
-                            <div style="font-size: 12px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
-                        </div>
-
-                        <div style="background: var(--primary-darker); padding: 12px; border-radius: 6px;">
-                            <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-gold);" data-i18n="help_support_title">Support Contact</div>
-                            <div style="font-size: 12px; margin-bottom: 8px;">📞 <a href="tel:917-862-3085" style="color: var(--accent-teal); text-decoration: none;">917-862-3085</a></div>
-                            <div style="font-size: 12px; margin-bottom: 8px;">📧 <a href="mailto:info@wealthspringfinserv.com" style="color: var(--accent-teal); text-decoration: none;">info@wealthspringfinserv.com</a></div>
-                            <div style="font-size: 12px;">📍 560 West 218 St., Suite 4C, New York, NY 10034</div>
                         </div>
                     </div>
                 </div>
@@ -2074,6 +2106,7 @@
                 nav_pipeline: "Pipeline & Sales",
                 nav_team: "Team & Operations",
                 nav_compare: "Compare Periods",
+                nav_help: "Help & Support",
                 section_compare_periods: "Compare Periods",
                 compare_intro: "Pick two periods and see key metrics side by side. Nothing is compared until you click \"Compare.\"",
                 compare_period_a: "Period A",
@@ -2099,6 +2132,7 @@
                 title_pipeline: "Pipeline & Sales",
                 title_team: "Team & Operations",
                 title_compare: "Compare Periods",
+                title_help: "Help & Support",
 
                 kpi_monthly_revenue: "Monthly Revenue",
                 kpi_mrr: "Recurring Revenue",
@@ -2235,6 +2269,7 @@
                 nav_pipeline: "Canal y Ventas",
                 nav_team: "Equipo y Operaciones",
                 nav_compare: "Comparar Períodos",
+                nav_help: "Ayuda y Soporte",
                 section_compare_periods: "Comparar Períodos",
                 compare_intro: "Elija dos períodos y vea las métricas clave lado a lado. No se compara nada hasta que haga clic en \"Comparar.\"",
                 compare_period_a: "Período A",
@@ -2260,6 +2295,7 @@
                 title_pipeline: "Canal y Ventas",
                 title_team: "Equipo y Operaciones",
                 title_compare: "Comparar Períodos",
+                title_help: "Ayuda y Soporte",
 
                 kpi_monthly_revenue: "Ingresos Mensuales",
                 kpi_mrr: "Ingresos Recurrentes",
@@ -2397,7 +2433,8 @@
             clients: 'title_clients',
             pipeline: 'title_pipeline',
             team: 'title_team',
-            compare: 'title_compare'
+            compare: 'title_compare',
+            help: 'title_help'
         };
 
         /* ============================================================
@@ -2443,7 +2480,7 @@
         localStorage.setItem('dashboardMetrics', JSON.stringify(metricState));
 
         const defaultTabState = {
-            overview: true, financial: true, clients: true, pipeline: true, team: true, compare: true
+            overview: true, financial: true, clients: true, pipeline: true, team: true, compare: true, help: true
         };
         let tabState = { ...defaultTabState, ...loadJSON('dashboardTabs', defaultTabState) };
 
@@ -3093,7 +3130,7 @@
         }
 
         function activateFirstVisibleTab() {
-            const order = ['overview', 'financial', 'clients', 'pipeline', 'team', 'compare'];
+            const order = ['overview', 'financial', 'clients', 'pipeline', 'team', 'compare', 'help'];
             const target = order.find(t => tabState[t] !== false) || 'overview';
             const navItem = document.querySelector(`.nav-item[data-tab="${target}"]`);
             if (navItem) {
@@ -3176,6 +3213,10 @@
         function closeSettings() {
             document.getElementById('settingsModal').classList.remove('active');
             document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function toggleSettingsSection(titleEl) {
+            titleEl.closest('.settings-section').classList.toggle('collapsed');
         }
 
         /* ============================================================
@@ -3774,6 +3815,24 @@
                 ? teamRes.contractLaborSpend / teamHoursRes.totalHours
                 : null;
 
+            // Client Hours % -- reuses the same attribution logic Team &
+            // Operations already runs, against data this function was
+            // already fetching anyway (clientsRes.allClientRevenue/
+            // allCustomers, teamHoursRes.hoursByUserAndClient). No new
+            // fetch needed -- this was previously left out under the
+            // assumption it would require one, which wasn't actually true.
+            let clientHoursPct = null;
+            if (teamHoursRes.totalHours > 0 && Array.isArray(teamHoursRes.hoursByUserAndClient)) {
+                const attribution = computeRevenueAttribution(
+                    teamHoursRes.hoursByUserAndClient,
+                    clientsRes.allClientRevenue,
+                    clientsRes.allCustomers
+                );
+                let totalBillableHours = 0;
+                attribution.billableHoursByUserName.forEach((h) => { totalBillableHours += h; });
+                clientHoursPct = Math.round((totalBillableHours / teamHoursRes.totalHours) * 1000) / 10;
+            }
+
             return {
                 connected: Boolean(summaryRes.connected),
                 periodLabel: (summaryRes.periodStart && summaryRes.periodEnd)
@@ -3790,6 +3849,7 @@
                 revenuePerHour,
                 contractLaborSpend: teamRes.contractLaborSpend ?? null,
                 costPerHour,
+                clientHoursPct,
             };
         }
 
@@ -3802,6 +3862,7 @@
             { label: 'Revenue from New Clients', key: 'newClientRevenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Team Size', key: 'teamSize', fmt: (v) => `${v}` },
             { label: 'Total Team Hours', key: 'totalHours', fmt: (v) => `${v.toLocaleString()} hrs` },
+            { label: 'Client Hours %', key: 'clientHoursPct', fmt: (v) => `${v}%`, isAlreadyPercent: true },
             { label: 'Revenue per Hour', key: 'revenuePerHour', fmt: (v) => `$${v.toFixed(0)}/hr` },
             { label: 'Contract Labor Spend', key: 'contractLaborSpend', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Effective Cost/Hour', key: 'costPerHour', fmt: (v) => `$${v.toFixed(2)}` },
