@@ -213,7 +213,9 @@
             padding: 12px 16px;
             border-top: 1px solid var(--border-subtle);
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             gap: 8px;
         }
 
@@ -221,14 +223,47 @@
             background: none;
             border: 1px solid var(--border-subtle);
             color: var(--text-light);
-            padding: 8px;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 15px;
             transition: all 0.2s ease;
         }
 
         .sidebar-footer button:hover {
+            background: var(--primary-darker);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .sidebar-footer .nav-item {
+            background: none;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-light);
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            margin: 0;
+        }
+
+        .sidebar-footer .nav-item .nav-text {
+            display: none;
+        }
+
+        .sidebar-footer .nav-item:hover,
+        .sidebar-footer .nav-item.active {
             background: var(--primary-darker);
             border-color: var(--accent-gold);
             color: var(--accent-gold);
@@ -997,9 +1032,21 @@
         }
 
         .settings-section-arrow {
-            display: inline-block;
-            transition: transform 0.2s ease;
-            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .settings-section-title:hover .settings-section-arrow {
+            border-color: var(--accent-gold);
         }
 
         .settings-section.collapsed .settings-section-arrow {
@@ -1308,14 +1355,18 @@
                 <span class="nav-icon">⚖️</span>
                 <span class="nav-text" data-i18n="nav_compare">Compare Periods</span>
             </div>
-            <div class="nav-item" data-tab="help" onclick="switchTab(event, 'help')">
-                <span class="nav-icon">❓</span>
-                <span class="nav-text" data-i18n="nav_help">Help &amp; Support</span>
-            </div>
 
             <div class="sidebar-footer">
-                <button onclick="closeMobileSidebar(); openSettings();"><span class="nav-icon" aria-hidden="true">⚙️</span> <span data-i18n="settings_title">Settings</span></button>
-                <button onclick="signOut()" data-i18n="sign_out">Sign Out</button>
+                <div class="theme-toggle" id="themeToggle">
+                    <div class="theme-icon active" onclick="setTheme('dark')" title="Dark Theme" data-i18n-title="theme_dark_title">🌙</div>
+                    <div class="theme-icon" onclick="setTheme('light')" title="Light Theme" data-i18n-title="theme_light_title">☀️</div>
+                </div>
+                <div class="nav-item" data-tab="help" onclick="switchTab(event, 'help')" title="Help & Support" data-i18n-title="nav_help">
+                    <span class="nav-icon" aria-hidden="true">❓</span>
+                    <span class="nav-text" data-i18n="nav_help">Help &amp; Support</span>
+                </div>
+                <button onclick="closeMobileSidebar(); openSettings();" title="Settings" data-i18n-title="settings_title"><span aria-hidden="true">⚙️</span></button>
+                <button onclick="signOut()" title="Sign Out" data-i18n-title="sign_out"><span aria-hidden="true">⏻</span></button>
             </div>
         </div>
 
@@ -1337,6 +1388,9 @@
                     </div>
                 </div>
                 <div class="topbar-actions">
+                    <span class="topbar-date" id="topbarDate"></span>
+                    <span class="topbar-date" id="lastUpdated" style="opacity:0.7;"></span>
+
                     <div class="period-selector" id="periodSelector" role="group" aria-label="Reporting period">
                         <select id="periodTypeSelect" onchange="syncPeriodControlsOnly()" aria-label="Period type">
                             <option value="month">Month</option>
@@ -1356,14 +1410,6 @@
                         <span class="topbar-loading-spinner"></span>
                         <span data-i18n="loading_updating">Updating…</span>
                     </span>
-
-                    <span class="topbar-date" id="topbarDate"></span>
-                    <span class="topbar-date" id="lastUpdated" style="opacity:0.7;"></span>
-                    
-                    <div class="theme-toggle" id="themeToggle">
-                        <div class="theme-icon active" onclick="setTheme('dark')" title="Dark Theme" data-i18n-title="theme_dark_title">🌙</div>
-                        <div class="theme-icon" onclick="setTheme('light')" title="Light Theme" data-i18n-title="theme_light_title">☀️</div>
-                    </div>
                 </div>
             </div>
 
@@ -3095,7 +3141,8 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            event.target.closest('.nav-item').classList.add('active');
+            const navItem = event.target.closest('.nav-item');
+            if (navItem) navItem.classList.add('active');
             updatePageTitle(tabName);
             closeSettings();
             closeMobileSidebar();
