@@ -1057,6 +1057,71 @@
             display: none;
         }
 
+        .help-topic {
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .help-topic-title {
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            user-select: none;
+        }
+
+        .help-topic-title:hover {
+            color: var(--accent-gold);
+        }
+
+        .help-topic-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            background: var(--primary-darker);
+            border: 1px solid var(--border-subtle);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .help-topic-title:hover .help-topic-arrow {
+            border-color: var(--accent-gold);
+        }
+
+        .help-topic.collapsed .help-topic-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .help-topic-body {
+            padding: 0 14px 14px 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .help-topic-body p {
+            margin: 0 0 8px 0;
+        }
+
+        .help-topic-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-topic.collapsed .help-topic-body {
+            display: none;
+        }
+
         .settings-subgroup-title {
             font-size: 12px;
             color: var(--text-light);
@@ -1871,7 +1936,119 @@
                         <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
                     </div>
 
-                    <!-- Reserved for the troubleshooting guide / user manual -- to be added here once designed. -->
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="help_howto_title">How to Use This Dashboard</h2>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_howto_tabs_title">Navigating the tabs</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p><strong>Overview</strong> — the executive summary: revenue, margin, cash, retention, and a 12-month trend chart.</p>
+                                <p><strong>Financial Performance</strong> — margin and ratio trends over time, always shown as a rolling trend rather than one period.</p>
+                                <p><strong>Client Intelligence</strong> — your client list, revenue concentration, retention, at-risk balances, and the Tax vs. Bookkeeping revenue split.</p>
+                                <p><strong>Pipeline & Sales</strong> — new clients won, based on when they were added in QuickBooks.</p>
+                                <p><strong>Team & Operations</strong> — hours, client hours %, and per-person client revenue.</p>
+                                <p><strong>Compare Periods</strong> — pick two periods and see key metrics side by side.</p>
+                                <p>Some tabs may be hidden on your view — see "Customizing your view" below.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_howto_period_title">Choosing your time period</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>The controls at the top of the screen set which period most of the dashboard shows: Month, Quarter, Year, or Custom Range (pick any two dates).</p>
+                                <p>Changing a dropdown or typing a date doesn't update anything by itself — nothing refreshes until you click the search (🔍) button. This is deliberate, so a half-finished selection never sends a request before you're ready.</p>
+                                <p>A few cards (Cash Balance, At-Risk Clients) always show right now, regardless of the period selected — see "Cash Balance or At-Risk Clients don't change" below.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_howto_compare_title">Comparing two periods</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>The Compare Periods tab lets you set up Period A and Period B independently — each can be its own Month, Quarter, Year, or Custom Range.</p>
+                                <p>Nothing compares automatically. Set both periods, then click "Compare" to see the results table, with the dollar and percentage change between them.</p>
+                                <p>Cash Balance and At-Risk Clients aren't included here, since both always reflect right now rather than a specific period, so comparing them wouldn't mean anything.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_howto_colors_title">Reading the status colors</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>The small colored dot on most cards shows how that number compares to a target: green is on track, yellow is a bit behind, red is well behind.</p>
+                                <p>Hover (or tap, on mobile) the dot to see exactly why it's that color, with the real numbers behind it. Hover the small "i" icon on a card or chart to see how that number is calculated.</p>
+                                <p>Some cards are informational only and always show green — they're not being measured against any target.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_howto_settings_title">Customizing your view</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>Open Settings (the gear icon, bottom of the sidebar) to show or hide individual cards per tab, show or hide entire tabs, set your own performance targets, switch light/dark theme, and change language.</p>
+                                <p>Each section in Settings can be expanded or collapsed by clicking its title — click the arrow to open just the section you need.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="help_troubleshooting_title">Troubleshooting</h2>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_blank_title">A number shows a dash (—) or looks blank</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>This means there's genuinely no data to show for that card and period — not an error being hidden. Common reasons: QuickBooks (or QuickBooks Time) isn't connected yet, the selected period has no activity, or that specific data hasn't loaded yet.</p>
+                                <p>Check Settings → Integrations to confirm QuickBooks shows as connected. If it should be connected and isn't, see "I got signed out" below — an expired QuickBooks connection is the most common cause.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_notab_title">I don't see a tab I'm expecting</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>Tabs can be individually hidden. Open Settings → Tab Visibility and check that the tab you're looking for is toggled on.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_revenue_attr_title">The dollar figure next to a team member's name</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p><strong>This is not anyone's pay or salary.</strong> The "Est. Client Revenue" figure on the Team Roster is an estimate of which clients' billing traces back to that person's logged hours — useful for seeing where client revenue comes from, but it has nothing to do with compensation. Actual pay is handled entirely separately from this dashboard.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_clienthours_title">Client Hours % looks lower than expected</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>Client Hours % measures time logged against a real client versus internal/admin work — it's not tied to hourly billing. For a firm that bills flat-fee rather than by the hour, this number reflects time allocation, not additional revenue generated. A lower number simply means more time went to internal work that period, which isn't inherently a problem.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_snapshot_title">Cash Balance or At-Risk Clients don't change when I pick a different period</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>This is expected. Both of these always reflect your accounts right now — today's actual bank balance and today's actual overdue invoices — regardless of what period is selected anywhere on the dashboard. There isn't a historical "balance as of last month" version of these.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_qbtime_slow_title">QuickBooks Time data is slow or missing for a long date range</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>QuickBooks Time has its own limit on how much data can be requested at once. Broad ranges (like a full year) are automatically split into smaller pieces behind the scenes and pulled together, which can take a few seconds longer than a single month or quarter. If it doesn't load at all, try a narrower range and widen it gradually.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_signedout_title">I got signed out unexpectedly</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>Sessions last 1 hour and automatically extend while the tab stays open and visible. Closing the browser, leaving the tab inactive for over an hour, or switching devices will require signing back in — this is a deliberate security measure, not a bug.</p>
+                                <p>If QuickBooks itself shows as disconnected (not just the dashboard login), that's separate — QuickBooks connections can expire independently and need reconnecting via Settings → Integrations.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-topic collapsed">
+                            <div class="help-topic-title" onclick="toggleHelpTopic(this)"><span data-i18n="help_ts_banner_title">There's a banner saying something failed</span><span class="help-topic-arrow">▼</span></div>
+                            <div class="help-topic-body">
+                                <p>Click the banner for more detail on what specifically failed. Most issues here resolve on their own on the next automatic refresh; if one persists, contact support below with what the banner says.</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="section">
                         <h2 class="section-title" data-i18n="help_support_title">Support Contact</h2>
@@ -2297,6 +2474,21 @@
                 help_qbtime_step2: "Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback",
                 help_qbtime_step3: "Toggle QuickBooks Time on above and sign in when prompted",
                 help_support_title: "Support Contact",
+                help_howto_title: "How to Use This Dashboard",
+                help_howto_tabs_title: "Navigating the tabs",
+                help_howto_period_title: "Choosing your time period",
+                help_howto_compare_title: "Comparing two periods",
+                help_howto_colors_title: "Reading the status colors",
+                help_howto_settings_title: "Customizing your view",
+                help_troubleshooting_title: "Troubleshooting",
+                help_ts_blank_title: "A number shows a dash (—) or looks blank",
+                help_ts_notab_title: "I don't see a tab I'm expecting",
+                help_ts_revenue_attr_title: "The dollar figure next to a team member's name",
+                help_ts_clienthours_title: "Client Hours % looks lower than expected",
+                help_ts_snapshot_title: "Cash Balance or At-Risk Clients don't change when I pick a different period",
+                help_ts_qbtime_slow_title: "QuickBooks Time data is slow or missing for a long date range",
+                help_ts_signedout_title: "I got signed out unexpectedly",
+                help_ts_banner_title: "There's a banner saying something failed",
 
                 integration_connected: "Connected",
                 integration_not_connected: "Not Connected",
@@ -2461,6 +2653,21 @@
                 help_qbtime_step2: "Configure el URI de Redirección OAuth con: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback",
                 help_qbtime_step3: "Active QuickBooks Time arriba e inicie sesión cuando se le solicite",
                 help_support_title: "Contacto de Soporte",
+                help_howto_title: "Cómo Usar Este Panel",
+                help_howto_tabs_title: "Navegar por las pestañas",
+                help_howto_period_title: "Elegir su período de tiempo",
+                help_howto_compare_title: "Comparar dos períodos",
+                help_howto_colors_title: "Interpretar los colores de estado",
+                help_howto_settings_title: "Personalizar su vista",
+                help_troubleshooting_title: "Solución de Problemas",
+                help_ts_blank_title: "Un número muestra un guion (—) o se ve en blanco",
+                help_ts_notab_title: "No veo una pestaña que espero ver",
+                help_ts_revenue_attr_title: "La cifra en dólares junto al nombre de un miembro del equipo",
+                help_ts_clienthours_title: "El % de Horas de Cliente se ve más bajo de lo esperado",
+                help_ts_snapshot_title: "El Saldo de Caja o los Clientes en Riesgo no cambian al elegir otro período",
+                help_ts_qbtime_slow_title: "Los datos de QuickBooks Time son lentos o faltan en un rango de fechas largo",
+                help_ts_signedout_title: "Se cerró mi sesión inesperadamente",
+                help_ts_banner_title: "Hay un aviso que dice que algo falló",
 
                 integration_connected: "Conectado",
                 integration_not_connected: "No Conectado",
@@ -3264,6 +3471,10 @@
 
         function toggleSettingsSection(titleEl) {
             titleEl.closest('.settings-section').classList.toggle('collapsed');
+        }
+
+        function toggleHelpTopic(titleEl) {
+            titleEl.closest('.help-topic').classList.toggle('collapsed');
         }
 
         /* ============================================================
