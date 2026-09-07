@@ -217,33 +217,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .sidebar-footer button {
-            background: none;
-            border: 1px solid var(--border-subtle);
-            color: var(--text-light);
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 15px;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-footer button:hover {
-            background: var(--primary-darker);
-            border-color: var(--accent-gold);
-            color: var(--accent-gold);
-        }
-
+        .sidebar-footer button,
         .sidebar-footer .nav-item {
             background: none;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--accent-gold);
             color: var(--text-light);
             width: 36px;
             height: 36px;
@@ -253,20 +233,22 @@
             justify-content: center;
             cursor: pointer;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 16px;
+            line-height: 1;
             transition: all 0.2s ease;
             margin: 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer button:hover,
+        .sidebar-footer .nav-item:hover,
+        .sidebar-footer .nav-item.active {
+            background: var(--primary-darker);
+            color: var(--accent-gold);
         }
 
         .sidebar-footer .nav-item .nav-text {
             display: none;
-        }
-
-        .sidebar-footer .nav-item:hover,
-        .sidebar-footer .nav-item.active {
-            background: var(--primary-darker);
-            border-color: var(--accent-gold);
-            color: var(--accent-gold);
         }
 
         .action-button {
@@ -1422,15 +1404,12 @@
             </div>
 
             <div class="sidebar-footer">
-                <div class="theme-toggle" id="themeToggle">
-                    <div class="theme-icon active" onclick="setTheme('dark')" title="Dark Theme" data-i18n-title="theme_dark_title">🌙</div>
-                    <div class="theme-icon" onclick="setTheme('light')" title="Light Theme" data-i18n-title="theme_light_title">☀️</div>
-                </div>
+                <button id="themeToggleBtn" onclick="toggleTheme()" title="Switch to Light Theme" data-i18n-title="theme_toggle_to_light"><span id="themeToggleIcon" aria-hidden="true">☾</span></button>
                 <div class="nav-item" data-tab="help" onclick="switchTab(event, 'help')" title="Help & Support" data-i18n-title="nav_help">
-                    <span class="nav-icon" aria-hidden="true">❓</span>
+                    <span class="nav-icon" aria-hidden="true" style="font-weight:700;">?</span>
                     <span class="nav-text" data-i18n="nav_help">Help &amp; Support</span>
                 </div>
-                <button onclick="closeMobileSidebar(); openSettings();" title="Settings" data-i18n-title="settings_title"><span aria-hidden="true">⚙️</span></button>
+                <button onclick="closeMobileSidebar(); openSettings();" title="Settings" data-i18n-title="settings_title"><span aria-hidden="true">⚙</span></button>
                 <button onclick="signOut()" title="Sign Out" data-i18n-title="sign_out"><span aria-hidden="true">⏻</span></button>
             </div>
         </div>
@@ -1916,24 +1895,7 @@
                 <div id="help" class="tab-content">
                     <div class="section">
                         <h2 class="section-title" data-i18n="settings_need_help">Need Help?</h2>
-                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="help_intro">Integration guides below. Contact us for support.</p>
-                    </div>
-
-                    <div class="section">
-                        <h2 class="section-title">QuickBooks Online</h2>
-                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbo_desc">Sync P&amp;L, Balance Sheet, and customer revenue data in real-time.</p>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbo_step1">Go to developer.intuit.com and create a new app</span></div>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbo_step2">Copy your Client ID and Client Secret</span></div>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbo_step3">Set redirect URI: https://wealthspring-dashboard.vercel.app/api/auth/qbo/callback</span></div>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>4.</strong> <span data-i18n="help_qbo_step4">Paste credentials in Integrations section of Settings</span></div>
-                    </div>
-
-                    <div class="section">
-                        <h2 class="section-title">QuickBooks Time</h2>
-                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;" data-i18n="help_qbtime_desc">Sync team hours for client-hours tracking, effective cost-per-hour, and per-person revenue attribution.</p>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>1.</strong> <span data-i18n="help_qbtime_step1">Go to the QuickBooks Time API Add-On page and create an application</span></div>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>2.</strong> <span data-i18n="help_qbtime_step2">Set the OAuth Redirect URI to: https://wealthspring-dashboard.vercel.app/api/auth/qbtime/callback</span></div>
-                        <div style="font-size: 13px; color: var(--text-light); margin: 6px 0;"><strong>3.</strong> <span data-i18n="help_qbtime_step3">Toggle QuickBooks Time on above and sign in when prompted</span></div>
+                        <p style="color: var(--text-muted); font-size: 13px;" data-i18n="help_intro">A quick guide to using the dashboard, answers to common questions, and how to reach support.</p>
                     </div>
 
                     <div class="section">
@@ -2348,6 +2310,8 @@
                 theme_dark_title: "Dark Theme",
                 period_go_title: "Apply period",
                 theme_light_title: "Light Theme",
+                theme_toggle_to_light: "Switch to Light Theme",
+                theme_toggle_to_dark: "Switch to Dark Theme",
 
                 title_overview: "Executive Dashboard",
                 title_financial: "Financial Performance",
@@ -2463,7 +2427,7 @@
                 label_auto_refresh: "Auto-Refresh (Minutes)",
                 label_dashboard_language: "Dashboard Language",
 
-                help_intro: "Integration guides below. Contact us for support.",
+                help_intro: "A quick guide to using the dashboard, answers to common questions, and how to reach support.",
                 help_qbo_desc: "Sync P&L, Balance Sheet, and customer revenue data in real-time.",
                 help_qbo_step1: "Go to developer.intuit.com and create a new app",
                 help_qbo_step2: "Copy your Client ID and Client Secret",
@@ -2526,6 +2490,8 @@
                 theme_dark_title: "Tema Oscuro",
                 period_go_title: "Aplicar período",
                 theme_light_title: "Tema Claro",
+                theme_toggle_to_light: "Cambiar a Tema Claro",
+                theme_toggle_to_dark: "Cambiar a Tema Oscuro",
 
                 title_overview: "Panel Ejecutivo",
                 title_financial: "Desempeño Financiero",
@@ -2642,7 +2608,7 @@
                 label_auto_refresh: "Actualización Automática (Minutos)",
                 label_dashboard_language: "Idioma del Panel",
 
-                help_intro: "Guías de integración a continuación. Contáctenos para soporte.",
+                help_intro: "Una guía rápida para usar el panel, respuestas a preguntas comunes y cómo contactar con soporte.",
                 help_qbo_desc: "Sincronice el Estado de Resultados, Balance General y datos de ingresos de clientes en tiempo real.",
                 help_qbo_step1: "Vaya a developer.intuit.com y cree una nueva aplicación",
                 help_qbo_step2: "Copie su Client ID y Client Secret",
@@ -3437,14 +3403,17 @@
 
         function setTheme(theme) {
             localStorage.setItem('dashboardTheme', theme);
+            const icon = document.getElementById('themeToggleIcon');
+            const btn = document.getElementById('themeToggleBtn');
+            const t = translations[currentLanguage] || translations.en;
             if (theme === 'dark') {
                 document.body.classList.remove('light-theme');
-                document.querySelectorAll('.theme-icon').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.theme-icon')[0].classList.add('active');
+                if (icon) icon.textContent = '☾';
+                if (btn) btn.title = t.theme_toggle_to_light;
             } else {
                 document.body.classList.add('light-theme');
-                document.querySelectorAll('.theme-icon').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.theme-icon')[1].classList.add('active');
+                if (icon) icon.textContent = '☀';
+                if (btn) btn.title = t.theme_toggle_to_dark;
             }
 
             // Chart.js bakes colors into each chart instance at creation time
@@ -3457,6 +3426,11 @@
                     loadFinancialPerformanceCharts(true);
                 }
             }
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.contains('light-theme');
+            setTheme(isLight ? 'dark' : 'light');
         }
 
         function openSettings() {
