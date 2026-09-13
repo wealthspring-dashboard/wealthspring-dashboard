@@ -1626,8 +1626,8 @@
 
                     <div class="section" id="exp-biggest-mover-section" style="display:none;">
                         <div style="background: var(--primary-darker); border-radius: 8px; padding: 16px 20px; border-left: 3px solid var(--accent-gold);">
-                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;" data-i18n="expense_mover_label">Biggest Mover This Period</div>
-                            <div id="exp-biggest-mover-text" style="font-size:15px; color:var(--text-light);"></div>
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;" data-i18n="expense_mover_label">Biggest Movers This Period</div>
+                            <div id="exp-biggest-mover-list" style="display:flex; flex-direction:column; gap:8px;"></div>
                         </div>
                     </div>
 
@@ -2421,7 +2421,7 @@
                 kpi_monthly_revenue: "Monthly Revenue",
                 kpi_operating_expenses: "Operating Expenses",
                 kpi_expense_ratio: "Operating Expense Ratio",
-                expense_mover_label: "Biggest Mover This Period",
+                expense_mover_label: "Biggest Movers This Period",
                 section_expense_trend: "Revenue vs. Expenses (Last 12 Months)",
                 section_expense_breakdown: "Expense Breakdown by Category",
                 section_top_expenses: "Inside \"Other\"",
@@ -2627,7 +2627,7 @@
                 kpi_monthly_revenue: "Ingresos Mensuales",
                 kpi_operating_expenses: "Gastos Operativos",
                 kpi_expense_ratio: "Razón de Gastos Operativos",
-                expense_mover_label: "Mayor Cambio Este Período",
+                expense_mover_label: "Mayores Cambios Este Período",
                 section_expense_trend: "Ingresos vs. Gastos (Últimos 12 Meses)",
                 section_expense_breakdown: "Desglose de Gastos por Categoría",
                 section_top_expenses: "Dentro de \"Otros\"",
@@ -3102,17 +3102,19 @@
                 }
 
                 const moverSection = document.getElementById('exp-biggest-mover-section');
-                const moverText = document.getElementById('exp-biggest-mover-text');
-                if (moverSection && moverText) {
-                    const mover = data.biggestMover;
-                    if (mover && mover.change !== 0) {
-                        const increased = mover.change > 0;
-                        const color = increased ? 'var(--status-red)' : 'var(--status-green)';
-                        const arrow = increased ? '↑' : '↓';
-                        const pctText = mover.changePercent !== null
-                            ? ` (${increased ? '+' : ''}${mover.changePercent}%)`
-                            : ''; // previous period had $0 in this category -- % change is undefined, show the dollar move alone
-                        moverText.innerHTML = `<strong>${escapeHtml(mover.name)}</strong> ${increased ? 'increased' : 'decreased'} by <strong style="color:${color};">${arrow} $${Math.round(Math.abs(mover.change)).toLocaleString()}${pctText}</strong> vs. the previous period — from $${Math.round(mover.previousAmount).toLocaleString()} to $${Math.round(mover.currentAmount).toLocaleString()}.`;
+                const moverList = document.getElementById('exp-biggest-mover-list');
+                if (moverSection && moverList) {
+                    const movers = Array.isArray(data.biggestMovers) ? data.biggestMovers : [];
+                    if (movers.length > 0) {
+                        moverList.innerHTML = movers.map((mover) => {
+                            const increased = mover.change > 0;
+                            const color = increased ? 'var(--status-red)' : 'var(--status-green)';
+                            const arrow = increased ? '↑' : '↓';
+                            const pctText = mover.changePercent !== null
+                                ? ` (${increased ? '+' : ''}${mover.changePercent}%)`
+                                : ''; // previous period had $0 in this category -- % change is undefined, show the dollar move alone
+                            return `<div style="font-size:14px;"><strong>${escapeHtml(mover.name)}</strong> ${increased ? 'increased' : 'decreased'} by <strong style="color:${color};">${arrow} $${Math.round(Math.abs(mover.change)).toLocaleString()}${pctText}</strong> — from $${Math.round(mover.previousAmount).toLocaleString()} to $${Math.round(mover.currentAmount).toLocaleString()}.</div>`;
+                        }).join('');
                         moverSection.style.display = '';
                     } else {
                         moverSection.style.display = 'none';
