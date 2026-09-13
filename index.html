@@ -4354,6 +4354,8 @@
                     : periodLabelFor(state),
                 revenue: summaryRes.periodRevenue ?? null,
                 netProfitMargin: summaryRes.netProfitMargin ?? null,
+                totalOperatingExpenses: summaryRes.totalOperatingExpenses ?? null,
+                operatingExpenseRatio: summaryRes.operatingExpenseRatio ?? null,
                 recurringRevenue: clientsRes.recurringRevenue ?? null,
                 retentionRate: clientsRes.retentionRate ?? null,
                 newClientCount: pipelineRes.newClientCount ?? null,
@@ -4370,6 +4372,8 @@
         const COMPARE_ROWS = [
             { label: 'Revenue', key: 'revenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Net Profit Margin', key: 'netProfitMargin', fmt: (v) => `${v}%`, isAlreadyPercent: true },
+            { label: 'Operating Expenses', key: 'totalOperatingExpenses', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
+            { label: 'Operating Expense Ratio', key: 'operatingExpenseRatio', fmt: (v) => `${v}%`, isAlreadyPercent: true },
             { label: 'Recurring Revenue', key: 'recurringRevenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Client Retention', key: 'retentionRate', fmt: (v) => `${v}%`, isAlreadyPercent: true },
             { label: 'New Clients Won', key: 'newClientCount', fmt: (v) => `${v}` },
