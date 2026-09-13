@@ -1386,6 +1386,10 @@
                 <span class="nav-icon">💰</span>
                 <span class="nav-text" data-i18n="nav_financial">Financial Performance</span>
             </div>
+            <div class="nav-item" data-tab="expenses" onclick="switchTab(event, 'expenses')">
+                <span class="nav-icon">🧾</span>
+                <span class="nav-text" data-i18n="nav_expenses">Expenses</span>
+            </div>
             <div class="nav-item" data-tab="clients" onclick="switchTab(event, 'clients')">
                 <span class="nav-icon">👥</span>
                 <span class="nav-text" data-i18n="nav_clients">Client Intelligence</span>
@@ -1475,6 +1479,13 @@
                             <div class="kpi-value">$30.8K</div>
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                             <div class="kpi-period-note" id="kpi-metric1-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
+                        </div>
+                        <div class="kpi-card" id="kpi-metric9"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of the Expenses section of your P&L for the selected period -- rent, insurance, software, and similar overhead. Excludes Cost of Goods Sold (labor costs), tracked separately as Contract Labor Spend, to avoid counting the same dollars twice. See the Expenses tab for the full breakdown.">i</span>
+                            <div class="kpi-status-indicator green" id="kpi-metric9-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                            <div class="kpi-label" data-i18n="kpi_operating_expenses">Operating Expenses</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric9-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            <div class="kpi-period-note" id="kpi-metric9-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
                         </div>
                         <div class="kpi-card" id="kpi-metric2"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="This period's billings from clients who were also billed in this same period last year — a proxy for &quot;recurring,&quot; since QuickBooks has no subscription concept.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric2-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
@@ -1594,7 +1605,59 @@
                     </div>
                 </div>
 
-                <!-- CLIENTS TAB -->
+                <!-- EXPENSES TAB -->
+                <div id="expenses" class="tab-content">
+                    <div class="section">
+                        <div class="kpi-grid">
+                            <div class="kpi-card" id="exp-total"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of the Expenses section of your P&L for the selected period -- rent, insurance, software, utilities, and similar overhead. Excludes Cost of Goods Sold (labor costs), which are already tracked separately as Contract Labor Spend on Team & Operations, to avoid counting the same dollars twice.">i</span>
+                                <div class="kpi-status-indicator green" id="exp-total-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                                <div class="kpi-label" data-i18n="kpi_operating_expenses">Operating Expenses</div>
+                                <div class="kpi-value">—</div>
+                                <div class="kpi-change" id="exp-total-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            </div>
+                            <div class="kpi-card" id="exp-ratio"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Operating Expenses ÷ Revenue for the selected period. How much of every dollar earned goes to running the business, aside from labor.">i</span>
+                                <div class="kpi-status-indicator green" id="exp-ratio-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
+                                <div class="kpi-label" data-i18n="kpi_expense_ratio">Operating Expense Ratio</div>
+                                <div class="kpi-value">—</div>
+                                <div class="kpi-change" id="exp-ratio-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title-row"><h2 class="section-title" data-i18n="section_expense_trend">Expense Trend (Last 12 Months)</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Operating Expenses per month, trailing 12 months ending at your selected period.">i</span></div>
+                        <div class="chart-container">
+                            <canvas id="expenseTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title-row"><h2 class="section-title" data-i18n="section_expense_breakdown">Expense Breakdown by Category</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Your real QuickBooks expense accounts for the selected period, largest first. The 8 biggest are shown individually; everything else is grouped as Other so the chart stays readable.">i</span></div>
+                        <div class="chart-container">
+                            <canvas id="expenseBreakdownChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-i18n="section_top_expenses">Expense Categories</h2>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_category">Category</th>
+                                    <th data-i18n="th_amount">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseCategoriesTableBody">
+                                <tr><td colspan="2" style="color: var(--text-muted); text-align:center; padding:20px;" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</td></tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div id="expenseCategoriesPaginationNote" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+                    </div>
+                </div>
+
+
                 <div id="clients" class="tab-content">
                     <div class="kpi-grid">
                         <div class="kpi-card" id="ci-active-clients"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Count of distinct clients billed anything this period, from QuickBooks' Sales by Customer report.">i</span>
@@ -2155,6 +2218,10 @@
                             <input type="checkbox" checked data-tab-toggle="financial" onchange="toggleTabVisibility('financial', this.checked)">
                         </div>
                         <div class="setting-item">
+                            <label data-i18n="nav_expenses">Expenses</label>
+                            <input type="checkbox" checked data-tab-toggle="expenses" onchange="toggleTabVisibility('expenses', this.checked)">
+                        </div>
+                        <div class="setting-item">
                             <label data-i18n="nav_clients">Client Intelligence</label>
                             <input type="checkbox" checked data-tab-toggle="clients" onchange="toggleTabVisibility('clients', this.checked)">
                         </div>
@@ -2287,6 +2354,7 @@
                 nav_section_intel: "Intelligence",
                 nav_overview: "Overview",
                 nav_financial: "Financial Performance",
+                nav_expenses: "Expenses",
                 nav_clients: "Client Intelligence",
                 nav_pipeline: "Pipeline & Sales",
                 nav_team: "Team & Operations",
@@ -2315,6 +2383,7 @@
 
                 title_overview: "Executive Dashboard",
                 title_financial: "Financial Performance",
+                title_expenses: "Expenses",
                 title_clients: "Client Intelligence",
                 title_pipeline: "Pipeline & Sales",
                 title_team: "Team & Operations",
@@ -2322,6 +2391,13 @@
                 title_help: "Help & Support",
 
                 kpi_monthly_revenue: "Monthly Revenue",
+                kpi_operating_expenses: "Operating Expenses",
+                kpi_expense_ratio: "Operating Expense Ratio",
+                section_expense_trend: "Expense Trend (Last 12 Months)",
+                section_expense_breakdown: "Expense Breakdown by Category",
+                section_top_expenses: "Expense Categories",
+                th_category: "Category",
+                th_amount: "Amount",
                 kpi_mrr: "Recurring Revenue",
                 kpi_mrr_short: "MRR",
                 kpi_profit_margin: "Net Profit Margin",
@@ -2480,6 +2556,7 @@
                 nav_section_intel: "Inteligencia",
                 nav_overview: "Resumen",
                 nav_financial: "Desempeño Financiero",
+                nav_expenses: "Gastos",
                 nav_clients: "Inteligencia de Clientes",
                 nav_pipeline: "Canal y Ventas",
                 nav_team: "Equipo y Operaciones",
@@ -2508,6 +2585,7 @@
 
                 title_overview: "Panel Ejecutivo",
                 title_financial: "Desempeño Financiero",
+                title_expenses: "Gastos",
                 title_clients: "Inteligencia de Clientes",
                 title_pipeline: "Canal y Ventas",
                 title_team: "Equipo y Operaciones",
@@ -2515,6 +2593,13 @@
                 title_help: "Ayuda y Soporte",
 
                 kpi_monthly_revenue: "Ingresos Mensuales",
+                kpi_operating_expenses: "Gastos Operativos",
+                kpi_expense_ratio: "Razón de Gastos Operativos",
+                section_expense_trend: "Tendencia de Gastos (Últimos 12 Meses)",
+                section_expense_breakdown: "Desglose de Gastos por Categoría",
+                section_top_expenses: "Categorías de Gastos",
+                th_category: "Categoría",
+                th_amount: "Monto",
                 kpi_mrr: "Ingresos Recurrentes",
                 kpi_mrr_short: "MRR",
                 kpi_profit_margin: "Margen de Utilidad Neta",
@@ -2675,6 +2760,7 @@
         const pageTitleKeys = {
             overview: 'title_overview',
             financial: 'title_financial',
+            expenses: 'title_expenses',
             clients: 'title_clients',
             pipeline: 'title_pipeline',
             team: 'title_team',
@@ -2725,7 +2811,7 @@
         localStorage.setItem('dashboardMetrics', JSON.stringify(metricState));
 
         const defaultTabState = {
-            overview: true, financial: true, clients: true, pipeline: true, team: true, compare: true, help: true
+            overview: true, financial: true, expenses: true, clients: true, pipeline: true, team: true, compare: true, help: true
         };
         let tabState = { ...defaultTabState, ...loadJSON('dashboardTabs', defaultTabState) };
 
@@ -2872,10 +2958,164 @@
             }
         }
 
+        async function loadExpenses() {
+            const params = buildPeriodParams();
+
+            try {
+                const res = await fetch(`/api/quickbooks/summary?${params.toString()}`);
+                const data = await res.json();
+
+                if (!data.connected) {
+                    const msg = data.error === 'reauth_required'
+                        ? 'QuickBooks connection expired — please reconnect in Settings'
+                        : 'Connect QuickBooks in Settings';
+                    setKpiMessage('exp-total', msg);
+                    setKpiMessage('exp-ratio', msg);
+                    setTableMessage('expenseCategoriesTableBody', 'expenseCategoriesPaginationNote', 2, msg);
+                    return;
+                }
+
+                const rangeLabel = (data.periodStart && data.periodEnd)
+                    ? formatPeriodRangeLabel(data.periodStart, data.periodEnd)
+                    : '';
+
+                if (data.totalOperatingExpenses !== null && data.totalOperatingExpenses !== undefined) {
+                    applyRealKpiValue('exp-total', data.totalOperatingExpenses, (v) => `$${Math.round(v).toLocaleString()}`);
+                    const changeEl = document.getElementById('exp-total-change');
+                    if (changeEl) { changeEl.textContent = rangeLabel; changeEl.className = 'kpi-change'; }
+                } else {
+                    setKpiMessage('exp-total', 'Could not load right now. Try again shortly.');
+                }
+
+                if (data.operatingExpenseRatio !== null && data.operatingExpenseRatio !== undefined) {
+                    applyRealKpiValue('exp-ratio', data.operatingExpenseRatio, (v) => `${v}%`);
+                    const changeEl = document.getElementById('exp-ratio-change');
+                    if (changeEl) { changeEl.textContent = 'of revenue this period'; changeEl.className = 'kpi-change'; }
+                } else {
+                    setKpiMessage('exp-ratio', 'Could not load right now. Try again shortly.');
+                }
+
+                const categories = Array.isArray(data.expenseCategories) ? data.expenseCategories : [];
+                const tbody = document.getElementById('expenseCategoriesTableBody');
+                if (tbody) {
+                    if (categories.length > 0) {
+                        tbody.innerHTML = categories.map((c) => `
+                            <tr>
+                                <td>${escapeHtml(c.name)}</td>
+                                <td>$${Math.round(c.amount).toLocaleString()}</td>
+                            </tr>
+                        `).join('');
+                        applyRowsPerPage();
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No expenses recorded for ${escapeHtml(rangeLabel)}.</td></tr>`;
+                    }
+                }
+
+                // Breakdown chart: top 8 categories individually, everything
+                // else grouped as "Other" so the chart stays readable rather
+                // than cramming in two dozen thin bars.
+                const top = categories.slice(0, 8);
+                const otherTotal = categories.slice(8).reduce((sum, c) => sum + c.amount, 0);
+                const chartLabels = top.map((c) => c.name).concat(otherTotal > 0 ? ['Other'] : []);
+                const chartValues = top.map((c) => c.amount).concat(otherTotal > 0 ? [otherTotal] : []);
+
+                destroyIfExists(expenseBreakdownChart);
+                const breakdownCanvas = document.getElementById('expenseBreakdownChart');
+                if (breakdownCanvas) {
+                    const { tickColor, gridColor } = getChartThemeColors();
+                    expenseBreakdownChart = new Chart(breakdownCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{
+                                label: 'Expenses',
+                                data: chartValues,
+                                backgroundColor: RATIO_CHART_COLORS.gold,
+                                borderRadius: 4,
+                                datalabels: {
+                                    display: true,
+                                    color: RATIO_CHART_COLORS.gold,
+                                    font: { weight: 'bold', size: 10 },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    clip: false,
+                                    formatter: (v) => `$${Math.round(v).toLocaleString()}`,
+                                },
+                            }],
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { beginAtZero: true, ticks: { color: tickColor, callback: (v) => `$${v.toLocaleString()}` }, grid: { color: gridColor, drawBorder: false } },
+                                y: { ticks: { color: tickColor }, grid: { display: false } },
+                            },
+                        },
+                    });
+                }
+
+                await loadExpenseTrendChart();
+            } catch (e) {
+                console.error('Expenses fetch failed:', e);
+                flagDashboardIssue('expenses-fetch-failed', 'Expenses failed to load. Will retry automatically.', 'warning');
+            }
+        }
+
+        async function loadExpenseTrendChart() {
+            const canvas = document.getElementById('expenseTrendChart');
+            if (!canvas) return;
+            const anchor = revenueTrendAnchor();
+
+            try {
+                const params = new URLSearchParams({ type: 'month', year: anchor.year, month: anchor.month, count: 12 });
+                const res = await fetch(`/api/quickbooks/ratios?${params.toString()}`);
+                const data = await res.json();
+
+                const container = canvas.closest('.chart-container');
+                if (!data.connected) {
+                    if (container) {
+                        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">Connect QuickBooks in Settings</div>';
+                    }
+                    return;
+                }
+                if (data.error || !Array.isArray(data.series)) {
+                    flagDashboardIssue('expense-trend-fetch-failed', 'Expense Trend chart failed to load. Will retry automatically.', 'warning');
+                    return;
+                }
+                clearDashboardIssue('expense-trend-fetch-failed');
+
+                destroyIfExists(expenseTrendChart);
+                const { tickColor, gridColor, cardBg } = getChartThemeColors();
+                expenseTrendChart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: data.series.map((p) => p.label),
+                        datasets: [ratioAreaDataset('Operating Expenses', data.series.map((p) => (p.totalOperatingExpenses !== null && p.totalOperatingExpenses !== undefined ? Math.round(p.totalOperatingExpenses) : null)), RATIO_CHART_COLORS.rust, (v) => `$${Math.round(v / 1000)}K`)],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: tickColor, callback: (v) => `$${Math.round(v / 1000)}K` }, grid: { color: gridColor, drawBorder: false } },
+                            x: { ticks: { color: tickColor }, grid: { display: false } },
+                        },
+                    },
+                });
+            } catch (e) {
+                console.error('Expense Trend chart fetch failed:', e);
+                flagDashboardIssue('expense-trend-fetch-failed', 'Expense Trend chart failed to load. Will retry automatically.', 'warning');
+            }
+        }
+
         /* ============================================================
            FINANCIAL PERFORMANCE RATIO CHARTS
            ============================================================ */
         let grossMarginChart, operatingMarginChart, netMarginChart, revenueGrowthChart, cashFlowMarginChart, roaChart, roeChart, currentRatioChart, debtEquityChart;
+        let expenseTrendChart, expenseBreakdownChart;
         let financialChartsCacheKey = null;
 
         const RATIO_CHART_COLORS = {
@@ -3350,6 +3590,8 @@
                 runWithLoadingIndicator(loadOverviewExtras);
             } else if (tabName === 'financial') {
                 runWithLoadingIndicator(loadFinancialPerformanceCharts);
+            } else if (tabName === 'expenses') {
+                runWithLoadingIndicator(loadExpenses);
             } else if (tabName === 'clients') {
                 runWithLoadingIndicator(loadClientIntelligence);
             } else if (tabName === 'pipeline') {
@@ -3376,7 +3618,7 @@
         }
 
         function activateFirstVisibleTab() {
-            const order = ['overview', 'financial', 'clients', 'pipeline', 'team', 'compare', 'help'];
+            const order = ['overview', 'financial', 'expenses', 'clients', 'pipeline', 'team', 'compare', 'help'];
             const target = order.find(t => tabState[t] !== false) || 'overview';
             const navItem = document.querySelector(`.nav-item[data-tab="${target}"]`);
             if (navItem) {
@@ -3682,6 +3924,7 @@
                 { body: 'atRiskTableBody', paginationNote: 'atRiskPaginationNote' },
                 { body: 'newClientsTableBody', paginationNote: 'newClientsPaginationNote' },
                 { body: 'teamTableBody', paginationNote: 'teamPaginationNote' },
+                { body: 'expenseCategoriesTableBody', paginationNote: 'expenseCategoriesPaginationNote' },
             ].forEach(({ body, paginationNote }) => {
                 const tbody = document.getElementById(body);
                 const noteEl = document.getElementById(paginationNote);
@@ -4324,6 +4567,7 @@
 
             const tabLoader = currentTab === 'overview' ? loadOverviewExtras
                 : currentTab === 'financial' ? loadFinancialPerformanceCharts
+                : currentTab === 'expenses' ? loadExpenses
                 : currentTab === 'clients' ? loadClientIntelligence
                 : currentTab === 'pipeline' ? loadPipelineSales
                 : currentTab === 'team' ? loadTeamOperations
@@ -4392,19 +4636,35 @@
                         setKpiNoData('kpi-metric3');
                     }
 
-                    // Revenue and Net Profit Margin both use whatever period is
-                    // selected -- unlike Cash Balance and At-Risk Clients below,
-                    // which are always "right now" regardless of the selector.
-                    // Their main text slot shows the vs-target comparison, so
-                    // the actual date range goes here instead, to make that
+                    if (data.totalOperatingExpenses !== null && data.totalOperatingExpenses !== undefined) {
+                        applyRealKpiValue('kpi-metric9', data.totalOperatingExpenses, (v) => `$${(v / 1000).toFixed(1)}K`);
+                        const metric9ChangeEl = document.getElementById('kpi-metric9-change');
+                        if (metric9ChangeEl) {
+                            metric9ChangeEl.textContent = (data.operatingExpenseRatio !== null && data.operatingExpenseRatio !== undefined)
+                                ? `${data.operatingExpenseRatio}% of revenue`
+                                : '';
+                            metric9ChangeEl.className = 'kpi-change';
+                        }
+                    } else {
+                        setKpiNoData('kpi-metric9');
+                    }
+
+                    // Revenue, Net Profit Margin, and Operating Expenses all
+                    // use whatever period is selected -- unlike Cash Balance
+                    // and At-Risk Clients below, which are always "right now"
+                    // regardless of the selector. Their main text slot shows
+                    // the vs-target comparison (or expense ratio), so the
+                    // actual date range goes here instead, to make that
                     // distinction clear at a glance rather than leaving people
                     // to guess which cards move with the period picker.
                     if (data.periodStart && data.periodEnd) {
                         const periodRangeLabel = formatPeriodRangeLabel(data.periodStart, data.periodEnd);
                         const metric1PeriodEl = document.getElementById('kpi-metric1-period');
                         const metric3PeriodEl = document.getElementById('kpi-metric3-period');
+                        const metric9PeriodEl = document.getElementById('kpi-metric9-period');
                         if (metric1PeriodEl) metric1PeriodEl.textContent = periodRangeLabel;
                         if (metric3PeriodEl) metric3PeriodEl.textContent = periodRangeLabel;
+                        if (metric9PeriodEl) metric9PeriodEl.textContent = periodRangeLabel;
                     }
 
                     if (data.cashBalance !== null && data.cashBalance !== undefined) {
