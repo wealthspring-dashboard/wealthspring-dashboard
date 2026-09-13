@@ -1639,7 +1639,8 @@
                     </div>
 
                     <div class="section">
-                        <h2 class="section-title" data-i18n="section_top_expenses">Expense Categories</h2>
+                        <h2 class="section-title" data-i18n="section_top_expenses">Inside "Other"</h2>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: -8px; margin-bottom: 12px;" data-i18n="expense_other_note">The categories grouped into "Other" in the chart above, broken out individually.</p>
                         <div class="table-responsive">
                         <table>
                             <thead>
@@ -2395,7 +2396,8 @@
                 kpi_expense_ratio: "Operating Expense Ratio",
                 section_expense_trend: "Expense Trend (Last 12 Months)",
                 section_expense_breakdown: "Expense Breakdown by Category",
-                section_top_expenses: "Expense Categories",
+                section_top_expenses: "Inside \"Other\"",
+                expense_other_note: "The categories grouped into \"Other\" in the chart above, broken out individually.",
                 th_category: "Category",
                 th_amount: "Amount",
                 kpi_mrr: "Recurring Revenue",
@@ -2597,7 +2599,8 @@
                 kpi_expense_ratio: "Razón de Gastos Operativos",
                 section_expense_trend: "Tendencia de Gastos (Últimos 12 Meses)",
                 section_expense_breakdown: "Desglose de Gastos por Categoría",
-                section_top_expenses: "Categorías de Gastos",
+                section_top_expenses: "Dentro de \"Otros\"",
+                expense_other_note: "Las categorías agrupadas como \"Otros\" en la gráfica de arriba, desglosadas individualmente.",
                 th_category: "Categoría",
                 th_amount: "Monto",
                 kpi_mrr: "Ingresos Recurrentes",
@@ -2996,16 +2999,27 @@
                 }
 
                 const categories = Array.isArray(data.expenseCategories) ? data.expenseCategories : [];
+
+                // Same top-8/Other split the chart uses -- the table below
+                // shows exactly what the chart's "Other" bucket contains,
+                // rather than repeating the same top categories the chart
+                // already shows individually.
+                const top = categories.slice(0, 8);
+                const otherCategories = categories.slice(8);
+                const otherTotal = otherCategories.reduce((sum, c) => sum + c.amount, 0);
+
                 const tbody = document.getElementById('expenseCategoriesTableBody');
                 if (tbody) {
-                    if (categories.length > 0) {
-                        tbody.innerHTML = categories.map((c) => `
+                    if (otherCategories.length > 0) {
+                        tbody.innerHTML = otherCategories.map((c) => `
                             <tr>
                                 <td>${escapeHtml(c.name)}</td>
                                 <td>$${Math.round(c.amount).toLocaleString()}</td>
                             </tr>
                         `).join('');
                         applyRowsPerPage();
+                    } else if (categories.length > 0) {
+                        tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">All categories are shown individually in the chart above — nothing was grouped into "Other" this period.</td></tr>`;
                     } else {
                         tbody.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px;">No expenses recorded for ${escapeHtml(rangeLabel)}.</td></tr>`;
                     }
@@ -3014,8 +3028,6 @@
                 // Breakdown chart: top 8 categories individually, everything
                 // else grouped as "Other" so the chart stays readable rather
                 // than cramming in two dozen thin bars.
-                const top = categories.slice(0, 8);
-                const otherTotal = categories.slice(8).reduce((sum, c) => sum + c.amount, 0);
                 const chartLabels = top.map((c) => c.name).concat(otherTotal > 0 ? ['Other'] : []);
                 const chartValues = top.map((c) => c.amount).concat(otherTotal > 0 ? [otherTotal] : []);
 
