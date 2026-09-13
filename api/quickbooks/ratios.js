@@ -141,6 +141,7 @@ export default async function handler(request) {
         periodStart: pnl.startDate,
         periodEnd: pnl.endDate,
         totalRevenue: pnl.totalRevenue,
+        totalOperatingExpenses: pnl.totalOperatingExpenses,
         revenueGrowthRate,
         grossMargin: ratio(pnl.grossProfit, pnl.totalRevenue),
         operatingMargin: ratio(pnl.operatingIncome, pnl.totalRevenue),
