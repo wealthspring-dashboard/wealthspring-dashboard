@@ -1632,7 +1632,7 @@
                     </div>
 
                     <div class="section">
-                        <div class="section-title-row"><h2 class="section-title" data-i18n="section_expense_trend">Expense Trend (Last 12 Months)</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Operating Expenses per month, trailing 12 months ending at your selected period.">i</span></div>
+                        <div class="section-title-row"><h2 class="section-title" data-i18n="section_expense_trend">Revenue vs. Expenses (Last 12 Months)</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Revenue (gross income) and Operating Expenses per month, trailing 12 months ending at your selected period. The gap between the two lines roughly tracks profit — Revenue is not net of expenses, these are two independent numbers shown together.">i</span></div>
                         <div class="chart-container">
                             <canvas id="expenseTrendChart"></canvas>
                         </div>
@@ -2422,7 +2422,7 @@
                 kpi_operating_expenses: "Operating Expenses",
                 kpi_expense_ratio: "Operating Expense Ratio",
                 expense_mover_label: "Biggest Mover This Period",
-                section_expense_trend: "Expense Trend (Last 12 Months)",
+                section_expense_trend: "Revenue vs. Expenses (Last 12 Months)",
                 section_expense_breakdown: "Expense Breakdown by Category",
                 section_top_expenses: "Inside \"Other\"",
                 expense_other_note: "The categories grouped into \"Other\" in the chart above, broken out individually.",
@@ -2628,7 +2628,7 @@
                 kpi_operating_expenses: "Gastos Operativos",
                 kpi_expense_ratio: "Razón de Gastos Operativos",
                 expense_mover_label: "Mayor Cambio Este Período",
-                section_expense_trend: "Tendencia de Gastos (Últimos 12 Meses)",
+                section_expense_trend: "Ingresos vs. Gastos (Últimos 12 Meses)",
                 section_expense_breakdown: "Desglose de Gastos por Categoría",
                 section_top_expenses: "Dentro de \"Otros\"",
                 expense_other_note: "Las categorías agrupadas como \"Otros\" en la gráfica de arriba, desglosadas individualmente.",
@@ -3151,16 +3151,25 @@
 
                 destroyIfExists(expenseTrendChart);
                 const { tickColor, gridColor, cardBg } = getChartThemeColors();
+                const revenueDataset = ratioLineDataset('Revenue', data.series.map((p) => (p.totalRevenue !== null && p.totalRevenue !== undefined ? Math.round(p.totalRevenue) : null)), RATIO_CHART_COLORS.gold, (v) => `$${Math.round(v / 1000)}K`);
+                const expenseDataset = ratioAreaDataset('Operating Expenses', data.series.map((p) => (p.totalOperatingExpenses !== null && p.totalOperatingExpenses !== undefined ? Math.round(p.totalOperatingExpenses) : null)), RATIO_CHART_COLORS.rust, (v) => `$${Math.round(v / 1000)}K`);
+                // Two lines that can sit close together read better without
+                // a bold value tag at every point (they'd overlap and
+                // clutter) -- hover still shows exact values via Chart.js's
+                // built-in tooltip, same as any other chart.
+                revenueDataset.datalabels = { display: false };
+                expenseDataset.datalabels = { display: false };
+
                 expenseTrendChart = new Chart(canvas, {
                     type: 'line',
                     data: {
                         labels: data.series.map((p) => p.label),
-                        datasets: [ratioAreaDataset('Operating Expenses', data.series.map((p) => (p.totalOperatingExpenses !== null && p.totalOperatingExpenses !== undefined ? Math.round(p.totalOperatingExpenses) : null)), RATIO_CHART_COLORS.rust, (v) => `$${Math.round(v / 1000)}K`)],
+                        datasets: [revenueDataset, expenseDataset],
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: { legend: { display: true, position: 'top', align: 'end', labels: { color: tickColor, boxWidth: 12, font: { size: 11 } } } },
                         scales: {
                             y: { beginAtZero: true, ticks: { color: tickColor, callback: (v) => `$${Math.round(v / 1000)}K` }, grid: { color: gridColor, drawBorder: false } },
                             x: { ticks: { color: tickColor }, grid: { display: false } },
