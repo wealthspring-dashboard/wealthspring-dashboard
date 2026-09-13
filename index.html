@@ -1624,6 +1624,13 @@
                         </div>
                     </div>
 
+                    <div class="section" id="exp-biggest-mover-section" style="display:none;">
+                        <div style="background: var(--primary-darker); border-radius: 8px; padding: 16px 20px; border-left: 3px solid var(--accent-gold);">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;" data-i18n="expense_mover_label">Biggest Mover This Period</div>
+                            <div id="exp-biggest-mover-text" style="font-size:15px; color:var(--text-light);"></div>
+                        </div>
+                    </div>
+
                     <div class="section">
                         <div class="section-title-row"><h2 class="section-title" data-i18n="section_expense_trend">Expense Trend (Last 12 Months)</h2><span class="tooltip-icon tooltip-icon-chart" data-tooltip="Total Operating Expenses per month, trailing 12 months ending at your selected period.">i</span></div>
                         <div class="chart-container">
@@ -1952,6 +1959,24 @@
                         </table>
                         </div>
                         <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;" data-i18n="compare_excluded_note">Cash Balance and At-Risk Clients aren't shown here — both reflect your accounts right now, not a specific period, so comparing them across two different periods wouldn't mean anything.</p>
+                    </div>
+
+                    <div class="section" id="compareExpenseCategorySection" style="display:none;">
+                        <h2 class="section-title" data-i18n="compare_expense_categories_title">Expense Category Changes</h2>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;" data-i18n="compare_expense_categories_note">Every real expense category that appears in either period, largest change first.</p>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_category">Category</th>
+                                    <th id="compareExpenseColA">Period A</th>
+                                    <th id="compareExpenseColB">Period B</th>
+                                    <th data-i18n="compare_th_change">Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compareExpenseCategoryBody"></tbody>
+                        </table>
+                        </div>
                     </div>
                 </div>
 
@@ -2371,6 +2396,8 @@
                 compare_th_metric: "Metric",
                 compare_th_change: "Change",
                 compare_excluded_note: "Cash Balance and At-Risk Clients aren't shown here — both reflect your accounts right now, not a specific period, so comparing them across two different periods wouldn't mean anything.",
+                compare_expense_categories_title: "Expense Category Changes",
+                compare_expense_categories_note: "Every real expense category that appears in either period, largest change first.",
                 sign_out: "Sign Out",
                 toggle_sidebar_title: "Toggle Sidebar",
                 settings_title: "Settings",
@@ -2394,6 +2421,7 @@
                 kpi_monthly_revenue: "Monthly Revenue",
                 kpi_operating_expenses: "Operating Expenses",
                 kpi_expense_ratio: "Operating Expense Ratio",
+                expense_mover_label: "Biggest Mover This Period",
                 section_expense_trend: "Expense Trend (Last 12 Months)",
                 section_expense_breakdown: "Expense Breakdown by Category",
                 section_top_expenses: "Inside \"Other\"",
@@ -2574,6 +2602,8 @@
                 compare_th_metric: "Métrica",
                 compare_th_change: "Cambio",
                 compare_excluded_note: "El Saldo de Caja y los Clientes en Riesgo no se muestran aquí — ambos reflejan sus cuentas en este momento, no un período específico, por lo que compararlos entre dos períodos diferentes no tendría sentido.",
+                compare_expense_categories_title: "Cambios en Categorías de Gastos",
+                compare_expense_categories_note: "Cada categoría de gastos real que aparece en cualquiera de los períodos, con el mayor cambio primero.",
                 sign_out: "Cerrar Sesión",
                 toggle_sidebar_title: "Alternar Barra Lateral",
                 settings_title: "Configuración",
@@ -2597,6 +2627,7 @@
                 kpi_monthly_revenue: "Ingresos Mensuales",
                 kpi_operating_expenses: "Gastos Operativos",
                 kpi_expense_ratio: "Razón de Gastos Operativos",
+                expense_mover_label: "Mayor Cambio Este Período",
                 section_expense_trend: "Tendencia de Gastos (Últimos 12 Meses)",
                 section_expense_breakdown: "Desglose de Gastos por Categoría",
                 section_top_expenses: "Dentro de \"Otros\"",
@@ -2963,6 +2994,7 @@
 
         async function loadExpenses() {
             const params = buildPeriodParams();
+            params.set('includeMover', '1');
 
             try {
                 const res = await fetch(`/api/quickbooks/summary?${params.toString()}`);
@@ -3067,6 +3099,24 @@
                             },
                         },
                     });
+                }
+
+                const moverSection = document.getElementById('exp-biggest-mover-section');
+                const moverText = document.getElementById('exp-biggest-mover-text');
+                if (moverSection && moverText) {
+                    const mover = data.biggestMover;
+                    if (mover && mover.change !== 0) {
+                        const increased = mover.change > 0;
+                        const color = increased ? 'var(--status-red)' : 'var(--status-green)';
+                        const arrow = increased ? '↑' : '↓';
+                        const pctText = mover.changePercent !== null
+                            ? ` (${increased ? '+' : ''}${mover.changePercent}%)`
+                            : ''; // previous period had $0 in this category -- % change is undefined, show the dollar move alone
+                        moverText.innerHTML = `<strong>${escapeHtml(mover.name)}</strong> ${increased ? 'increased' : 'decreased'} by <strong style="color:${color};">${arrow} $${Math.round(Math.abs(mover.change)).toLocaleString()}${pctText}</strong> vs. the previous period — from $${Math.round(mover.previousAmount).toLocaleString()} to $${Math.round(mover.currentAmount).toLocaleString()}.`;
+                        moverSection.style.display = '';
+                    } else {
+                        moverSection.style.display = 'none';
+                    }
                 }
 
                 await loadExpenseTrendChart();
@@ -4367,6 +4417,7 @@
                 revenue: summaryRes.periodRevenue ?? null,
                 netProfitMargin: summaryRes.netProfitMargin ?? null,
                 totalOperatingExpenses: summaryRes.totalOperatingExpenses ?? null,
+                expenseCategories: Array.isArray(summaryRes.expenseCategories) ? summaryRes.expenseCategories : [],
                 operatingExpenseRatio: summaryRes.operatingExpenseRatio ?? null,
                 recurringRevenue: clientsRes.recurringRevenue ?? null,
                 retentionRate: clientsRes.retentionRate ?? null,
@@ -4384,8 +4435,8 @@
         const COMPARE_ROWS = [
             { label: 'Revenue', key: 'revenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Net Profit Margin', key: 'netProfitMargin', fmt: (v) => `${v}%`, isAlreadyPercent: true },
-            { label: 'Operating Expenses', key: 'totalOperatingExpenses', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
-            { label: 'Operating Expense Ratio', key: 'operatingExpenseRatio', fmt: (v) => `${v}%`, isAlreadyPercent: true },
+            { label: 'Operating Expenses', key: 'totalOperatingExpenses', fmt: (v) => `$${Math.round(v).toLocaleString()}`, lowerIsBetter: true },
+            { label: 'Operating Expense Ratio', key: 'operatingExpenseRatio', fmt: (v) => `${v}%`, isAlreadyPercent: true, lowerIsBetter: true },
             { label: 'Recurring Revenue', key: 'recurringRevenue', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
             { label: 'Client Retention', key: 'retentionRate', fmt: (v) => `${v}%`, isAlreadyPercent: true },
             { label: 'New Clients Won', key: 'newClientCount', fmt: (v) => `${v}` },
@@ -4394,8 +4445,8 @@
             { label: 'Total Team Hours', key: 'totalHours', fmt: (v) => `${v.toLocaleString()} hrs` },
             { label: 'Client Hours %', key: 'clientHoursPct', fmt: (v) => `${v}%`, isAlreadyPercent: true },
             { label: 'Revenue per Hour', key: 'revenuePerHour', fmt: (v) => `$${v.toFixed(0)}/hr` },
-            { label: 'Contract Labor Spend', key: 'contractLaborSpend', fmt: (v) => `$${Math.round(v).toLocaleString()}` },
-            { label: 'Effective Cost/Hour', key: 'costPerHour', fmt: (v) => `$${v.toFixed(2)}` },
+            { label: 'Contract Labor Spend', key: 'contractLaborSpend', fmt: (v) => `$${Math.round(v).toLocaleString()}`, lowerIsBetter: true },
+            { label: 'Effective Cost/Hour', key: 'costPerHour', fmt: (v) => `$${v.toFixed(2)}`, lowerIsBetter: true },
         ];
 
         function renderCompareRow(row, a, b) {
@@ -4408,7 +4459,13 @@
             if (hasA && hasB) {
                 const diff = b - a;
                 const arrow = diff >= 0 ? '↑' : '↓';
-                const colorClass = diff >= 0 ? 'compare-delta-positive' : 'compare-delta-negative';
+                // For most metrics, numerically higher is better (more
+                // revenue, more retention). For cost-type metrics it's the
+                // opposite -- a rising expense is unfavorable even though
+                // the number itself went up, so the color (not the arrow
+                // direction) flips for anything flagged lowerIsBetter.
+                const isFavorable = row.lowerIsBetter ? diff < 0 : diff >= 0;
+                const colorClass = isFavorable ? 'compare-delta-positive' : 'compare-delta-negative';
                 if (row.isAlreadyPercent) {
                     // Already a %, e.g. margin going from 22% to 25% -- the
                     // meaningful figure is "+3 points," not a % change of a
@@ -4447,6 +4504,8 @@
                     emptyState.textContent = 'Connect QuickBooks in Settings to run a comparison.';
                     emptyState.style.display = '';
                     resultsSection.style.display = 'none';
+                    const categorySectionEl = document.getElementById('compareExpenseCategorySection');
+                    if (categorySectionEl) categorySectionEl.style.display = 'none';
                     return;
                 }
 
@@ -4455,6 +4514,37 @@
 
                 const tbody = document.getElementById('compareResultsBody');
                 tbody.innerHTML = COMPARE_ROWS.map((row) => renderCompareRow(row, metricsA[row.key], metricsB[row.key])).join('');
+
+                // Per-category expense changes -- union of every category
+                // name seen in either period (a category can appear in one
+                // period and not the other), each treated as its own
+                // cost-type row so an increase shows red, sorted by the
+                // size of the change so the biggest movers surface first.
+                const categorySection = document.getElementById('compareExpenseCategorySection');
+                const categoryBody = document.getElementById('compareExpenseCategoryBody');
+                if (categorySection && categoryBody) {
+                    const namesA = new Map((metricsA.expenseCategories || []).map((c) => [c.name, c.amount]));
+                    const namesB = new Map((metricsB.expenseCategories || []).map((c) => [c.name, c.amount]));
+                    const allNames = new Set([...namesA.keys(), ...namesB.keys()]);
+
+                    if (allNames.size > 0) {
+                        document.getElementById('compareExpenseColA').textContent = metricsA.periodLabel;
+                        document.getElementById('compareExpenseColB').textContent = metricsB.periodLabel;
+
+                        const categoryRows = Array.from(allNames).map((name) => {
+                            const a = namesA.get(name) ?? 0;
+                            const b = namesB.get(name) ?? 0;
+                            return { name, a, b, absChange: Math.abs(b - a) };
+                        }).sort((x, y) => y.absChange - x.absChange);
+
+                        categoryBody.innerHTML = categoryRows.map((c) =>
+                            renderCompareRow({ label: c.name, fmt: (v) => `$${Math.round(v).toLocaleString()}`, lowerIsBetter: true }, c.a, c.b)
+                        ).join('');
+                        categorySection.style.display = '';
+                    } else {
+                        categorySection.style.display = 'none';
+                    }
+                }
 
                 emptyState.style.display = 'none';
                 resultsSection.style.display = '';
