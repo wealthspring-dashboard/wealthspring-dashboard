@@ -96,41 +96,41 @@ export default async function handler(request) {
         : Promise.resolve(null),
     ]);
 
-    // Biggest mover: the expense category with the largest absolute dollar
-    // change vs. the immediately preceding period (not last year -- last
-    // period, same type/length). Matched by name, since a category can
-    // appear in one period and not the other (e.g. a one-off "Repair &
-    // Maintenance" charge) -- those still count, compared against zero.
-    let biggestMover = null;
+    // Biggest movers: the expense categories with the largest absolute
+    // dollar change vs. the immediately preceding period (not last year --
+    // last period, same type/length). Matched by name, since a category
+    // can appear in one period and not the other (e.g. a one-off "Repair
+    // & Maintenance" charge, or one that stopped) -- those still count,
+    // compared against zero. Top 3 rather than just the single biggest --
+    // one number alone can hide the bigger picture (e.g. Insurance up
+    // while Rent is down a similar amount nearby).
+    let biggestMovers = [];
     if (previousPnl && Array.isArray(pnl.expenseCategories)) {
       const previousByName = new Map(
         (previousPnl.expenseCategories || []).map((c) => [c.name, c.amount])
       );
-      let best = null;
+      const moves = [];
       for (const c of pnl.expenseCategories) {
         const previousAmount = previousByName.get(c.name) ?? 0;
         const change = c.amount - previousAmount;
-        if (!best || Math.abs(change) > Math.abs(best.change)) {
-          best = { name: c.name, currentAmount: c.amount, previousAmount, change };
-        }
+        moves.push({ name: c.name, currentAmount: c.amount, previousAmount, change });
         previousByName.delete(c.name);
       }
       // Categories present last period but gone entirely this period also
       // count as a real (negative) move, not just categories that grew.
       for (const [name, previousAmount] of previousByName.entries()) {
-        const change = 0 - previousAmount;
-        if (!best || Math.abs(change) > Math.abs(best.change)) {
-          best = { name, currentAmount: 0, previousAmount, change };
-        }
+        moves.push({ name, currentAmount: 0, previousAmount, change: 0 - previousAmount });
       }
-      if (best) {
-        biggestMover = {
-          ...best,
-          changePercent: best.previousAmount !== 0
-            ? Math.round((best.change / best.previousAmount) * 1000) / 10
+      biggestMovers = moves
+        .filter((m) => m.change !== 0)
+        .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+        .slice(0, 3)
+        .map((m) => ({
+          ...m,
+          changePercent: m.previousAmount !== 0
+            ? Math.round((m.change / m.previousAmount) * 1000) / 10
             : null,
-        };
-      }
+        }));
     }
 
     return new Response(
@@ -151,7 +151,7 @@ export default async function handler(request) {
         totalOperatingExpenses: pnl.totalOperatingExpenses,
         operatingExpenseRatio: pnl.operatingExpenseRatio,
         expenseCategories: pnl.expenseCategories,
-        biggestMover,
+        biggestMovers,
         cashBalance: cash.total,
         cashBreakdown: cash.breakdown,
       }),
