@@ -1,5 +1,5 @@
 import { getQboTokens, setQboTokens, clearQboTokens } from '../../lib/kv.js';
-import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance, QboAuthError } from '../../lib/qbo.js';
+import { ensureFreshTokens, fetchProfitAndLossSummary, fetchCashBalance, getPreviousPeriodParams, QboAuthError } from '../../lib/qbo.js';
 
 export const config = { runtime: 'edge' };
 
@@ -81,10 +81,57 @@ export default async function handler(request) {
       await setQboTokens(freshTokens);
     }
 
-    const [pnl, cash] = await Promise.all([
+    // The prior-period fetch (for "biggest mover") doubles the number of
+    // P&L report calls this endpoint makes -- only worth it for Cost
+    // Insights, which actually shows that callout. Overview calls this
+    // same endpoint far more often and doesn't need it, so it stays opt-in
+    // via a flag rather than running on every request.
+    const includeMover = url.searchParams.get('includeMover') === '1';
+
+    const [pnl, cash, previousPnl] = await Promise.all([
       fetchProfitAndLossSummary(freshTokens, requestedPeriod),
       fetchCashBalance(freshTokens),
+      includeMover
+        ? fetchProfitAndLossSummary(freshTokens, getPreviousPeriodParams(requestedPeriod)).catch(() => null)
+        : Promise.resolve(null),
     ]);
+
+    // Biggest mover: the expense category with the largest absolute dollar
+    // change vs. the immediately preceding period (not last year -- last
+    // period, same type/length). Matched by name, since a category can
+    // appear in one period and not the other (e.g. a one-off "Repair &
+    // Maintenance" charge) -- those still count, compared against zero.
+    let biggestMover = null;
+    if (previousPnl && Array.isArray(pnl.expenseCategories)) {
+      const previousByName = new Map(
+        (previousPnl.expenseCategories || []).map((c) => [c.name, c.amount])
+      );
+      let best = null;
+      for (const c of pnl.expenseCategories) {
+        const previousAmount = previousByName.get(c.name) ?? 0;
+        const change = c.amount - previousAmount;
+        if (!best || Math.abs(change) > Math.abs(best.change)) {
+          best = { name: c.name, currentAmount: c.amount, previousAmount, change };
+        }
+        previousByName.delete(c.name);
+      }
+      // Categories present last period but gone entirely this period also
+      // count as a real (negative) move, not just categories that grew.
+      for (const [name, previousAmount] of previousByName.entries()) {
+        const change = 0 - previousAmount;
+        if (!best || Math.abs(change) > Math.abs(best.change)) {
+          best = { name, currentAmount: 0, previousAmount, change };
+        }
+      }
+      if (best) {
+        biggestMover = {
+          ...best,
+          changePercent: best.previousAmount !== 0
+            ? Math.round((best.change / best.previousAmount) * 1000) / 10
+            : null,
+        };
+      }
+    }
 
     return new Response(
       JSON.stringify({
@@ -104,6 +151,7 @@ export default async function handler(request) {
         totalOperatingExpenses: pnl.totalOperatingExpenses,
         operatingExpenseRatio: pnl.operatingExpenseRatio,
         expenseCategories: pnl.expenseCategories,
+        biggestMover,
         cashBalance: cash.total,
         cashBreakdown: cash.breakdown,
       }),
