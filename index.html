@@ -1386,9 +1386,9 @@
                 <span class="nav-icon">💰</span>
                 <span class="nav-text" data-i18n="nav_financial">Financial Performance</span>
             </div>
-            <div class="nav-item" data-tab="expenses" onclick="switchTab(event, 'expenses')">
-                <span class="nav-icon">🧾</span>
-                <span class="nav-text" data-i18n="nav_expenses">Expenses</span>
+            <div class="nav-item" data-tab="team" onclick="switchTab(event, 'team')">
+                <span class="nav-icon">👔</span>
+                <span class="nav-text" data-i18n="nav_team">Team &amp; Operations</span>
             </div>
             <div class="nav-item" data-tab="clients" onclick="switchTab(event, 'clients')">
                 <span class="nav-icon">👥</span>
@@ -1398,9 +1398,9 @@
                 <span class="nav-icon">📈</span>
                 <span class="nav-text" data-i18n="nav_pipeline">Pipeline &amp; Sales</span>
             </div>
-            <div class="nav-item" data-tab="team" onclick="switchTab(event, 'team')">
-                <span class="nav-icon">👔</span>
-                <span class="nav-text" data-i18n="nav_team">Team &amp; Operations</span>
+            <div class="nav-item" data-tab="expenses" onclick="switchTab(event, 'expenses')">
+                <span class="nav-icon">🧾</span>
+                <span class="nav-text" data-i18n="nav_expenses">Expenses</span>
             </div>
             <div class="nav-item" data-tab="compare" onclick="switchTab(event, 'compare')">
                 <span class="nav-icon">⚖️</span>
@@ -2219,8 +2219,8 @@
                             <input type="checkbox" checked data-tab-toggle="financial" onchange="toggleTabVisibility('financial', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="nav_expenses">Expenses</label>
-                            <input type="checkbox" checked data-tab-toggle="expenses" onchange="toggleTabVisibility('expenses', this.checked)">
+                            <label data-i18n="nav_team">Team &amp; Operations</label>
+                            <input type="checkbox" checked data-tab-toggle="team" onchange="toggleTabVisibility('team', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="nav_clients">Client Intelligence</label>
@@ -2231,8 +2231,8 @@
                             <input type="checkbox" checked data-tab-toggle="pipeline" onchange="toggleTabVisibility('pipeline', this.checked)">
                         </div>
                         <div class="setting-item">
-                            <label data-i18n="nav_team">Team &amp; Operations</label>
-                            <input type="checkbox" checked data-tab-toggle="team" onchange="toggleTabVisibility('team', this.checked)">
+                            <label data-i18n="nav_expenses">Expenses</label>
+                            <input type="checkbox" checked data-tab-toggle="expenses" onchange="toggleTabVisibility('expenses', this.checked)">
                         </div>
                         <div class="setting-item">
                             <label data-i18n="nav_compare">Compare Periods</label>
@@ -3630,7 +3630,7 @@
         }
 
         function activateFirstVisibleTab() {
-            const order = ['overview', 'financial', 'expenses', 'clients', 'pipeline', 'team', 'compare', 'help'];
+            const order = ['overview', 'financial', 'team', 'clients', 'pipeline', 'expenses', 'compare', 'help'];
             const target = order.find(t => tabState[t] !== false) || 'overview';
             const navItem = document.querySelector(`.nav-item[data-tab="${target}"]`);
             if (navItem) {
