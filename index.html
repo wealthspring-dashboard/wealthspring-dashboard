@@ -1627,7 +1627,14 @@
 
                     <div class="section" id="exp-biggest-mover-section" style="display:none;">
                         <div style="background: var(--primary-darker); border-radius: 8px; padding: 16px 20px; border-left: 3px solid var(--accent-gold);">
-                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;" data-i18n="expense_mover_label">Biggest Movers This Period</div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                                <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;" data-i18n="expense_mover_label">Biggest Movers This Period</div>
+                                <select id="exp-mover-count" onchange="setMoverCount(this.value)" aria-label="Number of movers to show" style="font-size:11px; padding:3px 6px; background:var(--primary-forest); color:var(--text-light); border:1px solid var(--border-subtle); border-radius:5px; cursor:pointer;">
+                                    <option value="3">3</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
                             <div id="exp-biggest-mover-list" style="display:flex; flex-direction:column; gap:8px;"></div>
                         </div>
                     </div>
@@ -3034,6 +3041,45 @@
             }
         }
 
+        // Biggest Movers count preference -- how many of the (up to 10)
+        // movers the backend returns are actually displayed. Persisted so
+        // the choice survives a reload; lastBiggestMovers holds the full
+        // fetched list so changing this doesn't require a re-fetch.
+        let lastBiggestMovers = [];
+
+        function getMoverCount() {
+            const stored = parseInt(localStorage.getItem('wsfMoverCount'), 10);
+            return [3, 5, 10].includes(stored) ? stored : 3;
+        }
+
+        function setMoverCount(value) {
+            const count = parseInt(value, 10);
+            localStorage.setItem('wsfMoverCount', String(count));
+            renderBiggestMovers();
+        }
+
+        function renderBiggestMovers() {
+            const moverSection = document.getElementById('exp-biggest-mover-section');
+            const moverList = document.getElementById('exp-biggest-mover-list');
+            if (!moverSection || !moverList) return;
+
+            const movers = lastBiggestMovers.slice(0, getMoverCount());
+            if (movers.length > 0) {
+                moverList.innerHTML = movers.map((mover) => {
+                    const increased = mover.change > 0;
+                    const color = increased ? 'var(--status-red)' : 'var(--status-green)';
+                    const arrow = increased ? '↑' : '↓';
+                    const pctText = mover.changePercent !== null
+                        ? ` (${increased ? '+' : ''}${mover.changePercent}%)`
+                        : ''; // previous period had $0 in this category -- % change is undefined, show the dollar move alone
+                    return `<div style="font-size:14px;"><strong>${escapeHtml(mover.name)}</strong> ${increased ? 'increased' : 'decreased'} by <strong style="color:${color};">${arrow} $${Math.round(Math.abs(mover.change)).toLocaleString()}${pctText}</strong> — from $${Math.round(mover.previousAmount).toLocaleString()} to $${Math.round(mover.currentAmount).toLocaleString()}.</div>`;
+                }).join('');
+                moverSection.style.display = '';
+            } else {
+                moverSection.style.display = 'none';
+            }
+        }
+
         async function loadExpenses() {
             const params = buildPeriodParams();
             params.set('includeMover', '1');
@@ -3143,25 +3189,10 @@
                     });
                 }
 
-                const moverSection = document.getElementById('exp-biggest-mover-section');
-                const moverList = document.getElementById('exp-biggest-mover-list');
-                if (moverSection && moverList) {
-                    const movers = Array.isArray(data.biggestMovers) ? data.biggestMovers : [];
-                    if (movers.length > 0) {
-                        moverList.innerHTML = movers.map((mover) => {
-                            const increased = mover.change > 0;
-                            const color = increased ? 'var(--status-red)' : 'var(--status-green)';
-                            const arrow = increased ? '↑' : '↓';
-                            const pctText = mover.changePercent !== null
-                                ? ` (${increased ? '+' : ''}${mover.changePercent}%)`
-                                : ''; // previous period had $0 in this category -- % change is undefined, show the dollar move alone
-                            return `<div style="font-size:14px;"><strong>${escapeHtml(mover.name)}</strong> ${increased ? 'increased' : 'decreased'} by <strong style="color:${color};">${arrow} $${Math.round(Math.abs(mover.change)).toLocaleString()}${pctText}</strong> — from $${Math.round(mover.previousAmount).toLocaleString()} to $${Math.round(mover.currentAmount).toLocaleString()}.</div>`;
-                        }).join('');
-                        moverSection.style.display = '';
-                    } else {
-                        moverSection.style.display = 'none';
-                    }
-                }
+                lastBiggestMovers = Array.isArray(data.biggestMovers) ? data.biggestMovers : [];
+                const moverCountSelect = document.getElementById('exp-mover-count');
+                if (moverCountSelect) moverCountSelect.value = String(getMoverCount());
+                renderBiggestMovers();
 
                 await loadExpenseTrendChart();
             } catch (e) {
