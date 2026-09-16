@@ -1480,7 +1480,7 @@
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                             <div class="kpi-period-note" id="kpi-metric1-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
                         </div>
-                        <div class="kpi-card" id="kpi-metric9"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of the Expenses section of your P&L for the selected period -- rent, insurance, software, and similar overhead. Excludes Cost of Goods Sold (labor costs), tracked separately as Contract Labor Spend, to avoid counting the same dollars twice. See the Expenses tab for the full breakdown.">i</span>
+                        <div class="kpi-card" id="kpi-metric9"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of every real cost on your P&L for the selected period -- Expenses, Cost of Goods Sold (including labor), and Other Expenses. Labor costs also appear separately as Contract Labor Spend on Team & Operations, shown in both places on purpose. See the Cost Insights tab for the full breakdown.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric9-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
                             <div class="kpi-label" data-i18n="kpi_operating_expenses">Operating Expenses</div>
                             <div class="kpi-value">—</div>
@@ -1609,19 +1609,20 @@
                 <div id="expenses" class="tab-content">
                     <div class="section">
                         <div class="kpi-grid">
-                            <div class="kpi-card" id="exp-total"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of the Expenses section of your P&L for the selected period -- rent, insurance, software, utilities, and similar overhead. Excludes Cost of Goods Sold (labor costs), which are already tracked separately as Contract Labor Spend on Team & Operations, to avoid counting the same dollars twice.">i</span>
+                            <div class="kpi-card" id="exp-total"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of every real cost on your P&L for the selected period -- Expenses, Cost of Goods Sold (including labor), and Other Expenses. Labor costs here also appear separately as Contract Labor Spend on Team & Operations -- shown in both places on purpose, so nothing here looks like it's missing.">i</span>
                                 <div class="kpi-status-indicator green" id="exp-total-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
                                 <div class="kpi-label" data-i18n="kpi_operating_expenses">Operating Expenses</div>
                                 <div class="kpi-value">—</div>
                                 <div class="kpi-change" id="exp-total-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                             </div>
-                            <div class="kpi-card" id="exp-ratio"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Operating Expenses ÷ Revenue for the selected period. How much of every dollar earned goes to running the business, aside from labor.">i</span>
+                            <div class="kpi-card" id="exp-ratio"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Operating Expenses ÷ Revenue for the selected period. How much of every dollar earned goes to running the business, including labor.">i</span>
                                 <div class="kpi-status-indicator green" id="exp-ratio-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
                                 <div class="kpi-label" data-i18n="kpi_expense_ratio">Operating Expense Ratio</div>
                                 <div class="kpi-value">—</div>
                                 <div class="kpi-change" id="exp-ratio-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                             </div>
                         </div>
+                        <p style="color: var(--text-muted); font-size: 12px; margin-top: 8px;" data-i18n="expense_labor_overlap_note">Includes labor costs (Wages, Cost of Labor), which also appear separately as Contract Labor Spend on Team &amp; Operations — shown in both places by design, not double-counted by mistake.</p>
                     </div>
 
                     <div class="section" id="exp-biggest-mover-section" style="display:none;">
@@ -2458,6 +2459,7 @@
                 section_expense_trend: "Revenue vs. Expenses (Last 12 Months)",
                 section_expense_breakdown: "Expense Breakdown by Category",
                 section_top_expenses: "Inside \"Other\"",
+                expense_labor_overlap_note: "Includes labor costs (Wages, Cost of Labor), which also appear separately as Contract Labor Spend on Team & Operations — shown in both places by design, not double-counted by mistake.",
                 expense_other_note: "The categories grouped into \"Other\" in the chart above, broken out individually.",
                 th_category: "Category",
                 th_amount: "Amount",
@@ -2666,6 +2668,7 @@
                 section_expense_trend: "Ingresos vs. Gastos (Últimos 12 Meses)",
                 section_expense_breakdown: "Desglose de Gastos por Categoría",
                 section_top_expenses: "Dentro de \"Otros\"",
+                expense_labor_overlap_note: "Incluye costos de mano de obra (Salarios, Costo de Mano de Obra), que también aparecen por separado como Gasto de Mano de Obra por Contrato en Equipo y Operaciones — mostrados en ambos lugares intencionalmente, no duplicados por error.",
                 expense_other_note: "Las categorías agrupadas como \"Otros\" en la gráfica de arriba, desglosadas individualmente.",
                 th_category: "Categoría",
                 th_amount: "Monto",
