@@ -4,6 +4,7 @@ import {
   fetchProfitAndLossSummary,
   fetchBalanceSheetSummary,
   fetchCashFlowSummary,
+  fetchLaborRelatedAccounts,
   mapWithConcurrency,
   QboAuthError,
 } from '../../lib/qbo.js';
@@ -108,9 +109,15 @@ export default async function handler(request) {
       periods.push(stepPeriodBack({ type, year, month, quarter }, i));
     }
 
+    // Fetched once and reused for every period below -- the Chart of
+    // Accounts doesn't change month to month, so there's no reason to
+    // re-fetch it (count + 1) times for what would be an identical answer
+    // each time.
+    const laborAccounts = await fetchLaborRelatedAccounts(freshTokens).catch(() => []);
+
     // P&L needed for every period (growth rate needs the adjacent one).
     const pnlResults = await mapWithConcurrency(periods, QBO_CONCURRENCY, (p) =>
-      fetchProfitAndLossSummary(freshTokens, { type, year: p.year, month: p.month, quarter: p.quarter })
+      fetchProfitAndLossSummary(freshTokens, { type, year: p.year, month: p.month, quarter: p.quarter, laborAccounts })
     );
 
     // Balance Sheet / Cash Flow only needed for the periods we actually
