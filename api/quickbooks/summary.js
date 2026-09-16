@@ -101,9 +101,9 @@ export default async function handler(request) {
     // last period, same type/length). Matched by name, since a category
     // can appear in one period and not the other (e.g. a one-off "Repair
     // & Maintenance" charge, or one that stopped) -- those still count,
-    // compared against zero. Top 3 rather than just the single biggest --
-    // one number alone can hide the bigger picture (e.g. Insurance up
-    // while Rent is down a similar amount nearby).
+    // compared against zero. Returns up to 10 -- the frontend lets the
+    // person choose how many to actually display (3/5/10) and slices
+    // client-side, so changing that preference doesn't need a new fetch.
     let biggestMovers = [];
     if (previousPnl && Array.isArray(pnl.expenseCategories)) {
       const previousByName = new Map(
@@ -124,7 +124,7 @@ export default async function handler(request) {
       biggestMovers = moves
         .filter((m) => m.change !== 0)
         .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-        .slice(0, 3)
+        .slice(0, 10)
         .map((m) => ({
           ...m,
           changePercent: m.previousAmount !== 0
