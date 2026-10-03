@@ -592,6 +592,65 @@
             margin-bottom: 24px;
         }
 
+        /* Overview "bento" layout. The old auto-fit grid left a short, stretched-
+           looking last row whenever the card count didn't divide evenly into the
+           columns that happened to fit. Here the layout is fixed per width so every
+           row fills exactly: 3 "hero" cards (most important numbers, shown largest)
+           followed by 6 standard tiles --
+             6 columns: heroes span 2 each (one full row), then 6 tiles in one row
+             4 columns: 2 heroes, then hero + 2 tiles, then 4 tiles
+             2 columns: heroes span the full width, then tiles in pairs
+             1 column:  everything stacked
+           dense flow back-fills gaps if someone hides cards via Display Metrics. */
+        .kpi-grid.kpi-grid-bento {
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-flow: dense;
+        }
+
+        .kpi-grid-bento .kpi-card-hero {
+            grid-column: span 2;
+            border-top: 3px solid var(--accent-gold);
+            padding: 24px 24px 22px;
+        }
+
+        .kpi-grid-bento .kpi-card-hero .kpi-label {
+            font-size: 13px;
+        }
+
+        .kpi-grid-bento .kpi-card-hero .kpi-value {
+            font-size: 44px;
+        }
+
+        .kpi-grid-bento .kpi-card-hero .kpi-change {
+            font-size: 14px;
+        }
+
+        @media (min-width: 1200px) {
+            .kpi-grid.kpi-grid-bento {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1680px) {
+            .kpi-grid.kpi-grid-bento {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .kpi-grid.kpi-grid-bento {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid-bento .kpi-card-hero {
+                grid-column: span 1;
+            }
+
+            .kpi-grid-bento .kpi-card-hero .kpi-value {
+                font-size: 40px;
+            }
+        }
+
         .kpi-card {
             background: var(--primary-forest);
             border: 1px solid var(--border-subtle);
@@ -1472,13 +1531,26 @@
             <div class="content-area">
                 <!-- OVERVIEW TAB -->
                 <div id="overview" class="tab-content active">
-                    <div class="kpi-grid">
-                        <div class="kpi-card" id="kpi-metric1" data-value="30.8"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Total Income for the selected period, from QuickBooks' Profit &amp; Loss report.">i</span>
+                    <div class="kpi-grid kpi-grid-bento">
+                        <div class="kpi-card kpi-card-hero" id="kpi-metric1" data-value="30.8"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Total Income for the selected period, from QuickBooks' Profit &amp; Loss report.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric1-status"></div>
                             <div class="kpi-label" id="kpi-metric1-label" data-i18n="kpi_monthly_revenue">Monthly Revenue</div>
                             <div class="kpi-value">$30.8K</div>
                             <div class="kpi-change positive" id="kpi-metric1-change">↑ +12% vs target</div>
                             <div class="kpi-period-note" id="kpi-metric1-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
+                        </div>
+                        <div class="kpi-card kpi-card-hero" id="kpi-metric3" data-value="22"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Net Income ÷ Total Income, from the same P&amp;L report.">i</span>
+                            <div class="kpi-status-indicator yellow" id="kpi-metric3-status"></div>
+                            <div class="kpi-label" id="kpi-metric3-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
+                            <div class="kpi-value">22%</div>
+                            <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
+                            <div class="kpi-period-note" id="kpi-metric3-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
+                        </div>
+                        <div class="kpi-card kpi-card-hero" id="kpi-metric4"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of all Bank-type account balances, from QuickBooks' Balance Sheet.">i</span>
+                            <div class="kpi-status-indicator green" id="kpi-metric4-status"></div>
+                            <div class="kpi-label" data-i18n="kpi_cash_balance">Cash Balance</div>
+                            <div class="kpi-value">—</div>
+                            <div class="kpi-change" id="kpi-metric4-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric9"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of every real cost on your P&L for the selected period -- Expenses, Cost of Goods Sold (including labor), and Other Expenses. Labor costs also appear separately as Contract Labor Spend on Team & Operations, shown in both places on purpose. See the Cost Insights tab for the full breakdown.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric9-status" data-tooltip="This one is informational only — it's not currently being measured against a target, so it always shows green."></div>
@@ -1492,19 +1564,6 @@
                             <div class="kpi-label" data-i18n="kpi_mrr">Recurring Revenue</div>
                             <div class="kpi-value">—</div>
                             <div class="kpi-change" id="kpi-metric2-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
-                        </div>
-                        <div class="kpi-card" id="kpi-metric3" data-value="22"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Net Income ÷ Total Income, from the same P&amp;L report.">i</span>
-                            <div class="kpi-status-indicator yellow" id="kpi-metric3-status"></div>
-                            <div class="kpi-label" id="kpi-metric3-label" data-i18n="kpi_profit_margin">Net Profit Margin</div>
-                            <div class="kpi-value">22%</div>
-                            <div class="kpi-change negative" id="kpi-metric3-change">↓ -3% vs target</div>
-                            <div class="kpi-period-note" id="kpi-metric3-period" style="font-size:11px;color:var(--text-muted);margin-top:3px;"></div>
-                        </div>
-                        <div class="kpi-card" id="kpi-metric4"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="Sum of all Bank-type account balances, from QuickBooks' Balance Sheet.">i</span>
-                            <div class="kpi-status-indicator green" id="kpi-metric4-status"></div>
-                            <div class="kpi-label" data-i18n="kpi_cash_balance">Cash Balance</div>
-                            <div class="kpi-value">—</div>
-                            <div class="kpi-change" id="kpi-metric4-change" data-i18n="kpi_connect_qbo">Connect QuickBooks in Settings</div>
                         </div>
                         <div class="kpi-card" id="kpi-metric5"><span class="tooltip-icon tooltip-icon-kpi" data-tooltip="% of clients billed in the prior trailing-12-month window who were also billed in the current trailing-12-month window. A client who paused and came back still counts as retained.">i</span>
                             <div class="kpi-status-indicator green" id="kpi-metric5-status"></div>
